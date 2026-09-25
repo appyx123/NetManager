@@ -37,7 +37,7 @@ class LogController extends Controller
 
     public function export(Request $request)
     {
-        $logs = AuditLog::query();
+        $logs = AuditLog::with('user');
 
         if ($request->filled('date_from')) {
             $logs->where('created_at', '>=', $request->date_from);
@@ -52,7 +52,8 @@ class LogController extends Controller
         // Generate CSV
         $csv = "ID,User,Action,Description,Created At\n";
         foreach ($logsData as $log) {
-            $csv .= "{$log->id},\"{$log->user->name}\",{$log->action},\"{$log->description}\",{$log->created_at}\n";
+            $userName = $log->user?->name ?? 'Deleted User';
+            $csv .= "{$log->id},\"{$userName}\",{$log->action},\"{$log->description}\",{$log->created_at}\n";
         }
 
         return response()->streamDownload(function () use ($csv) {

@@ -61,12 +61,13 @@ class RouterController extends Controller
 
     public function testConnection(NetworkAsset $router)
     {
-        // Test connection to the router
-        $isOnline = $this->pingHost($router->ip_address);
+        // Tes koneksi non-blocking ke port API MikroTik (default 8728)
+        $port = (int) config('services.mikrotik.port', 8728);
+        $isOnline = $this->checkSocket($router->ip_address, $port, 2);
 
         return response()->json([
             'status' => $isOnline ? 'online' : 'offline',
-            'message' => $isOnline ? 'Koneksi berhasil' : 'Koneksi gagal',
+            'message' => $isOnline ? 'Koneksi ke perangkat berhasil (Online)' : 'Perangkat tidak merespons (Offline / Timeout)',
         ]);
     }
 
@@ -76,23 +77,21 @@ class RouterController extends Controller
         return redirect()->route('admin.routers.index')->with('success', 'Perangkat jaringan berhasil dihapus');
     }
 
-    private function pingHost($host)
+    /**
+     * Pengecekan socket non-blocking dengan timeout pendek untuk menghindari thread hanging
+     */
+    private function checkSocket(string $host, int $port = 8728, int $timeout = 2): bool
     {
-        $exitcode = null;
-        $output = [];
+        $errno = 0;
+        $errstr = '';
 
-        // Amankan input IP Address untuk mencegah Command Injection
-        $safeHost = escapeshellarg($host);
+        $connection = @fsockopen($host, $port, $errno, $errstr, $timeout);
 
-        // Deteksi Sistem Operasi (Windows vs Linux/Mac)
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            // Windows menggunakan parameter -n
-            exec("ping -n 4 $safeHost", $output, $exitcode);
-        } else {
-            // Linux/Unix/Mac menggunakan parameter -c
-            exec("ping -c 4 $safeHost", $output, $exitcode);
+        if (is_resource($connection)) {
+            fclose($connection);
+            return true;
         }
 
-        return $exitcode === 0;
+        return false;
     }
 }

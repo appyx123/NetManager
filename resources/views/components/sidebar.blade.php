@@ -175,6 +175,10 @@
                 </div>
                 
                 <div class="space-y-1">
+                    <x-sidebar-link href="{{ route('client.dashboard') }}" :active="request()->routeIs('client.dashboard')" icon="chart-pie">
+                        {{ __('Dashboard') }}
+                    </x-sidebar-link>
+
                     <x-sidebar-link href="{{ route('client.billing.index') }}" :active="request()->routeIs('client.billing.*')" icon="wallet">
                         {{ __('Pembayaran') }}
                     </x-sidebar-link>

@@ -56,8 +56,8 @@
                             <p class="text-white font-bold mt-1 text-xl">{{ $invoice->subscription->package->name ?? '-' }}</p>
                             <p class="text-slate-400 text-sm mt-1">Kecepatan Optimal Tanpa Batas</p>
                             <div class="mt-auto pt-4 w-full md:w-auto">
-                                <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">User PPPoE / Koneksi</p>
-                                <p class="text-slate-300 font-mono bg-slate-950 px-3 py-1 rounded border border-slate-700 inline-block">{{ $invoice->subscription->pppoe_username ?? 'Tidak Diketahui' }}</p>
+                                <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">ID Pelanggan</p>
+                                <p class="text-amber-400 font-mono font-bold bg-slate-950 px-3 py-1 rounded border border-slate-700 inline-block">{{ $invoice->subscription->customer->customer_code ?? '-' }}</p>
                             </div>
                         </div>
                     </div>
@@ -140,6 +140,14 @@
                                     </button>
                                 </form>
                             @endif
+
+                            <form id="check-status-form" action="{{ route('client.billing.checkStatus', $invoice) }}" method="POST" class="mt-4">
+                                @csrf
+                                <button type="submit" class="text-sm text-indigo-400 hover:text-indigo-300 font-semibold flex items-center justify-center gap-2 transition-colors py-1.5 px-4 rounded-lg bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                    Sudah bayar? Cek & Sinkronkan Status
+                                </button>
+                            </form>
                         @else
                             <div class="w-full bg-emerald-500/10 border-2 border-dashed border-emerald-500/30 rounded-2xl p-8 flex flex-col items-center justify-center relative overflow-hidden group">
                                 <div class="absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors"></div>
@@ -178,7 +186,13 @@
                     window.snap.pay(token, {
                         onSuccess: function (result) {
                             console.log('Payment success:', result);
-                            window.location.reload();
+                            // Otomatis sinkronkan status ke backend via check-status
+                            const checkForm = document.getElementById('check-status-form');
+                            if (checkForm) {
+                                checkForm.submit();
+                            } else {
+                                window.location.reload();
+                            }
                         },
                         onPending: function (result) {
                             console.log('Payment pending:', result);

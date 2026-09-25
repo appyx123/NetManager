@@ -36,6 +36,8 @@ use App\Http\Controllers\SuperAdmin\MaintenanceController;
 // 4. Marketing
 use App\Http\Controllers\Marketing\MarketingDashboardController;
 use App\Http\Controllers\Marketing\LeadController;
+use App\Http\Controllers\Marketing\CustomerController as MarketingCustomerController;
+use App\Http\Controllers\Marketing\ReportController as MarketingReportController;
 
 // 5. Technician
 use App\Http\Controllers\Technician\TechnicianDashboardController;
@@ -56,6 +58,13 @@ use App\Http\Controllers\Customer\ComplaintController;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Registrasi Layanan Internet Mandiri (Publik)
+use App\Http\Controllers\Public\PublicRegistrationController;
+
+Route::get('/register-service', [PublicRegistrationController::class, 'index'])->name('register-service');
+Route::post('/register-service', [PublicRegistrationController::class, 'store'])->name('public.register.store');
+Route::get('/register-service/success', [PublicRegistrationController::class, 'success'])->name('public.register.success');
 
 // Midtrans Payment Webhook Notification
 Route::post('/midtrans/notification', [MidtransWebhookController::class, 'handleNotification'])->name('midtrans.notification');
@@ -82,7 +91,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         };
     })->name('dashboard');
 
-
+    // Dokumen Pelanggan Terlindungi (KTP, Dokumen Identitas)
+    Route::get('/documents/ktp/{lead}', [\App\Http\Controllers\CustomerDocumentController::class, 'showKtp'])->name('documents.ktp');
     // ====================================================================
     // ZONE 0: SUPER ADMIN AREA (HANYA Super Admin)
     // ====================================================================
@@ -184,11 +194,11 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::resource('leads', LeadController::class);
         Route::post('/leads/{lead}/convert', [LeadController::class, 'convert'])->name('leads.convert');
         
-        // View Pages (Sesuai dengan direktori view marketing)
-        Route::view('/customers', 'marketing.customers.index')->name('customers.index');
-        Route::view('/customers/{id}', 'marketing.customers.show')->name('customers.show');
+        // Pelanggan Milik Marketing
+        Route::get('/customers', [MarketingCustomerController::class, 'index'])->name('customers.index');
+        Route::get('/customers/{customer}', [MarketingCustomerController::class, 'show'])->name('customers.show');
         Route::view('/schedules', 'marketing.schedules.index')->name('schedules.index');
-        Route::view('/reports', 'marketing.reports.index')->name('reports.index');
+        Route::get('/reports', [MarketingReportController::class, 'index'])->name('reports.index');
         Route::view('/profile', 'marketing.profile.index')->name('profile.index');
     });
 
@@ -206,14 +216,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         
         // 2. Meja Kerja (My Tasks)
         Route::get('/my-tasks', [TicketController::class, 'processIndex'])->name('process.index');
-        Route::get('/my-tasks/{ticket}/input', [TicketController::class, 'processInput'])->name('process.input');
-        Route::post('/my-tasks/{ticket}', [TicketController::class, 'processStore'])->name('process.store');
-        Route::get('/my-tasks/{ticket}/show', [TicketController::class, 'processShow'])->name('process.show');
-        Route::get('/my-tasks/{ticket}/edit', [TicketController::class, 'processEdit'])->name('process.edit');
+        Route::get('/my-tasks/{ticket}', [TicketController::class, 'processShow'])->name('process.show');
         Route::put('/my-tasks/{ticket}', [TicketController::class, 'processUpdate'])->name('process.update');
-        // Rute Meja Kerja (My Tasks)
-Route::get('/my-tasks', [App\Http\Controllers\Technician\TicketController::class, 'processIndex'])->name('process.index');
-Route::get('/my-tasks/{ticket}', [App\Http\Controllers\Technician\TicketController::class, 'processShow'])->name('process.show');
+        // TODO: Implementasikan method berikut jika form input/edit bertahap dibutuhkan:
+        // Route::get('/my-tasks/{ticket}/input', [TicketController::class, 'processInput'])->name('process.input');
+        // Route::post('/my-tasks/{ticket}', [TicketController::class, 'processStore'])->name('process.store');
+        // Route::get('/my-tasks/{ticket}/edit', [TicketController::class, 'processEdit'])->name('process.edit');
         
         // View Pages Statis
         Route::get('/history', [TicketController::class, 'historyIndex'])->name('history.index');
@@ -231,6 +239,8 @@ Route::get('/my-tasks/{ticket}', [App\Http\Controllers\Technician\TicketControll
         Route::get('/billing', [InvoiceController::class, 'index'])->name('billing.index');
         Route::get('/billing/{invoice}', [InvoiceController::class, 'show'])->name('billing.show');
         Route::post('/billing/{invoice}/pay', [InvoiceController::class, 'pay'])->name('billing.pay');
+        Route::post('/billing/{invoice}/check-status', [InvoiceController::class, 'checkStatus'])->name('billing.checkStatus');
+
 
         // Pengajuan / Keluhan (Statis berdasarkan views)
         Route::get('/complaints', [ComplaintController::class, 'index'])->name('complaints.index');

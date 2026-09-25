@@ -40,8 +40,8 @@ class AuditController extends Controller
 
     public function export(Request $request)
     {
-        // Export audit logs to CSV/Excel
-        $logs = AuditLog::query();
+        // Export audit logs to CSV
+        $logs = AuditLog::with('user');
 
         if ($request->filled('date_from')) {
             $logs->where('created_at', '>=', $request->date_from);
@@ -51,6 +51,16 @@ class AuditController extends Controller
             $logs->where('created_at', '<=', $request->date_to);
         }
 
-        return response()->download('export.csv');
+        $logsData = $logs->get();
+
+        $csv = "ID,User,Action,IP Address,Created At\n";
+        foreach ($logsData as $log) {
+            $userName = $log->user?->name ?? 'Deleted User';
+            $csv .= "{$log->id},\"{$userName}\",{$log->action},\"{$log->ip_address}\",{$log->created_at}\n";
+        }
+
+        return response()->streamDownload(function () use ($csv) {
+            echo $csv;
+        }, 'audit-logs-' . now()->format('Y-m-d-H-i-s') . '.csv');
     }
 }

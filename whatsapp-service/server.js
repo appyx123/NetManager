@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Inisialisasi WhatsApp Client dengan sesi persisten (LocalAuth)
+// Inisialisasi WhatsApp Client dengan sesi persisten & webVersionCache stabil
 const client = new Client({
     authStrategy: new LocalAuth({
         dataPath: './.wwebjs_auth'
@@ -103,18 +103,44 @@ app.post('/send-message', async (req, res) => {
 
     try {
         const formattedNumber = formatWaNumber(number);
-        console.log(`[WhatsApp Bot] Mengirim pesan ke ${formattedNumber}...`);
+        let targetNumber = formattedNumber;
 
-        const result = await client.sendMessage(formattedNumber, message);
+        // Validasi nomor terdaftar jika getNumberId mengembalikan @c.us, jangan gunakan @lid
+        try {
+            const numberDetails = await client.getNumberId(formattedNumber);
+            if (numberDetails && numberDetails._serialized && !numberDetails._serialized.endsWith('@lid')) {
+                targetNumber = numberDetails._serialized;
+            }
+        } catch (e) {
+            console.warn('[WhatsApp Bot] getNumberId notice:', e.message);
+        }
+
+        console.log(`[WhatsApp Bot] Mengirim pesan ke ${targetNumber}...`);
+
+        let result = null;
+        try {
+            result = await client.sendMessage(targetNumber, message);
+        } catch (sendErr) {
+            // Tangani bug false negative whatsapp-web.js jika pesan terkirim tapi reading 'id' error
+            if (sendErr && sendErr.message && sendErr.message.includes("reading 'id'")) {
+                console.warn('[WhatsApp Bot] Warning: Return message model missing ID, but dispatch proceeded.');
+                return res.json({
+                    status: 'success',
+                    message: 'Pesan berhasil dikirim.',
+                    to: targetNumber
+                });
+            }
+            throw sendErr;
+        }
 
         return res.json({
             status: 'success',
             message: 'Pesan berhasil dikirim.',
-            message_id: result.id ? result.id._serialized : null,
-            to: formattedNumber
+            message_id: (result && result.id) ? result.id._serialized : null,
+            to: targetNumber
         });
     } catch (err) {
-        console.error('[WhatsApp Bot Error]', err);
+        console.error('[WhatsApp Bot Error]', err.message);
         return res.status(500).json({
             status: 'error',
             message: 'Gagal mengirim pesan: ' + err.message

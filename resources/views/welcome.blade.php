@@ -81,10 +81,12 @@
                 </div>
 
                 <div class="flex items-center space-x-4">
+                    <a href="{{ route('register-service') }}"
+                        class="px-4 py-2.5 text-sm font-bold text-slate-900 bg-amber-400 rounded-lg hover:bg-amber-300 hover:shadow-lg hover:shadow-amber-500/20 transition transform hover:-translate-y-0.5">Daftar Sekarang</a>
                     @if (Route::has('login'))
                         @auth
                             <a href="{{ url('/dashboard') }}"
-                                class="px-5 py-2.5 text-sm font-bold text-slate-900 bg-amber-400 rounded-lg hover:bg-amber-300 hover:shadow-lg hover:shadow-amber-500/20 transition transform hover:-translate-y-0.5">Masuk
+                                class="px-5 py-2.5 text-sm font-bold text-slate-900 bg-slate-100 rounded-lg hover:bg-white hover:shadow-lg transition transform hover:-translate-y-0.5">Masuk
                                 ke Sistem</a>
                         @else
                             <a href="{{ route('login') }}"
@@ -119,9 +121,9 @@
             </h1>
 
             <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mt-10">
-                <a href="#kontak"
+                <a href="{{ route('register-service') }}"
                     class="w-full sm:w-auto px-8 py-4 text-base font-bold text-slate-900 bg-amber-400 rounded-xl hover:bg-amber-300 shadow-lg shadow-amber-500/20 transition transform hover:-translate-y-1">
-                    Hubungi Kami
+                    Daftar Sekarang
                 </a>
                 <a href="#tentang"
                     class="w-full sm:w-auto px-8 py-4 text-base font-bold text-white border-2 border-slate-600 rounded-xl hover:border-slate-400 hover:bg-slate-800/50 transition">

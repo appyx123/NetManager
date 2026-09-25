@@ -4,7 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
+use App\Services\NetworkService;
+use App\Services\WhatsappService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class BillingController extends Controller
 {
@@ -44,9 +48,40 @@ class BillingController extends Controller
             'payment_method' => 'manual_admin',
         ]);
 
-        // Opsional: Jika pelanggan terisolir, kita bisa menyalakan internetnya kembali di sini nanti
+        // Aktifkan Router MikroTik jika pelanggan sebelumnya terisolir
+        if ($invoice->subscription) {
+            try {
+                $invoice->subscription->update(['status' => 'active']);
+                if ($invoice->subscription->customer) {
+                    $invoice->subscription->customer->update(['is_isolated' => false]);
+                }
+                app(NetworkService::class)->enableCustomer($invoice->subscription);
+            } catch (Throwable $e) {
+                Log::error("Admin markAsPaid: Gagal aktivasi router: " . $e->getMessage());
+            }
+        }
 
-        return back()->with('success', 'Tagihan berhasil ditandai LUNAS secara manual.');
+        // Kirim WhatsApp bukti pembayaran lunas
+        if ($invoice->subscription && $invoice->subscription->customer) {
+            try {
+                $customer = $invoice->subscription->customer;
+                $customerName = $customer->user?->name ?? 'Pelanggan';
+                $customerPhone = $customer->phone_number ?? $customer->user?->phone_number ?? null;
+
+                if ($customerPhone) {
+                    WhatsappService::sendPaymentSuccess(
+                        $customerName,
+                        $customerPhone,
+                        $invoice->invoice_number,
+                        $invoice->amount
+                    );
+                }
+            } catch (Throwable $e) {
+                Log::error("Admin markAsPaid: Gagal kirim WA lunas: " . $e->getMessage());
+            }
+        }
+
+        return back()->with('success', 'Tagihan berhasil ditandai LUNAS secara manual dan notifikasi WhatsApp telah dikirim.');
     }
 
     // Tampilkan Form Edit Tagihan

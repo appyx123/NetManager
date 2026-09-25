@@ -59,7 +59,7 @@ class LeadController extends Controller
             'customer_image' => 'nullable|image|max:5120',
         ]);
 
-        $ktpPath = $request->file('ktp_image') ? $request->file('ktp_image')->store('uploads/ktp', 'public') : null;
+        $ktpPath = $request->file('ktp_image') ? $request->file('ktp_image')->store('uploads/ktp', 'local') : null;
         $housePath = $request->file('house_image') ? $request->file('house_image')->store('uploads/house', 'public') : null;
         $custPath = $request->file('customer_image') ? $request->file('customer_image')->store('uploads/customer', 'public') : null;
 
@@ -148,10 +148,14 @@ class LeadController extends Controller
 
         $ktpPath = $lead->ktp_image_path;
         if ($request->hasFile('ktp_image')) {
-            if ($ktpPath && Storage::disk('public')->exists($ktpPath)) {
-                Storage::disk('public')->delete($ktpPath);
+            if ($ktpPath) {
+                if (Storage::disk('local')->exists($ktpPath)) {
+                    Storage::disk('local')->delete($ktpPath);
+                } elseif (Storage::disk('public')->exists($ktpPath)) {
+                    Storage::disk('public')->delete($ktpPath);
+                }
             }
-            $ktpPath = $request->file('ktp_image')->store('uploads/ktp', 'public');
+            $ktpPath = $request->file('ktp_image')->store('uploads/ktp', 'local');
         }
 
         $housePath = $lead->house_image_path;
@@ -267,20 +271,15 @@ class LeadController extends Controller
             // C. Update Status Lead
             $lead->update(['status' => 'converted']);
 
-            // D. Buat Form Instalasi terlebih dahulu sebagai Induk (Polymorphic)
-            $installationForm = \App\Models\InstallationForm::create([
-                'lead_id' => $lead->id,
-                'connection_type' => 'fiber', // Nilai bawaan
-                'status' => 'pending',
-            ]);
-
-            // E. Buat Tiket yang diikat (Morph) ke Form Instalasi tadi
-            $installationForm->ticket()->create([
-                'customer_id' => $customer->id,
+            // D. Buat Tiket Langsung Terhubung ke Customer (Bypass model InstallationForm yang usang)
+            $customer->tickets()->create([
                 'technician_id' => null, // Belum ada teknisi
                 'type' => 'installation',
-                'subject' => 'Pasang Baru: ' . ($lead->package->name ?? 'Paket Kustom'),
                 'status' => 'open',
+                'subject' => 'Pasang Baru: ' . ($lead->package->name ?? 'Paket Kustom'),
+                'description' => 'Instalasi pelanggan baru ' . $lead->name . '. Paket: ' . ($lead->package->name ?? '-') . '. Alamat: ' . ($lead->address_installation ?? $lead->address),
+                'connection_type' => 'fiber',
+                'notes' => $lead->notes_summary ?? null,
             ]);
 
             session()->flash('generated_credential', [

@@ -30,11 +30,9 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.123-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                         </div>
                     </div>
-                    <h3 class="text-4xl font-black text-white tracking-tighter">127</h3>
-                    <div class="flex items-center gap-1.5 mt-3 text-emerald-400 font-bold text-xs">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
-                        <span>12.4%</span>
-                        <span class="text-slate-500 font-medium ml-1">vs last month</span>
+                    <h3 class="text-4xl font-black text-white tracking-tighter">{{ $kpis['total_leads'] }}</h3>
+                    <div class="flex items-center gap-1.5 mt-3 text-indigo-400 font-bold text-xs">
+                        <span>Total prospek terdaftar</span>
                     </div>
                 </div>
 
@@ -45,41 +43,35 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
                     </div>
-                    <h3 class="text-4xl font-black text-white tracking-tighter">18</h3>
+                    <h3 class="text-4xl font-black text-white tracking-tighter">{{ $kpis['conversions'] }}</h3>
                     <div class="flex items-center gap-1.5 mt-3 text-emerald-400 font-bold text-xs">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
-                        <span>8.1%</span>
-                        <span class="text-slate-500 font-medium ml-1">vs target</span>
+                        <span>Pelanggan aktif</span>
                     </div>
                 </div>
 
                 <div class="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-[2rem] p-7 relative overflow-hidden group hover:border-emerald-500/50 transition-all duration-500">
                     <div class="flex items-center justify-between mb-6">
-                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Avg. Success Rate</p>
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Success Rate</p>
                         <div class="p-2 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                         </div>
                     </div>
-                    <h3 class="text-4xl font-black text-white tracking-tighter">14.2<span class="text-xl text-slate-500 ml-1">%</span></h3>
-                    <div class="flex items-center gap-1.5 mt-3 text-rose-400 font-bold text-xs">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
-                        <span>2.1%</span>
-                        <span class="text-slate-500 font-medium ml-1">below average</span>
+                    <h3 class="text-4xl font-black text-white tracking-tighter">{{ $kpis['conversion_rate'] }}<span class="text-xl text-slate-500 ml-1">%</span></h3>
+                    <div class="flex items-center gap-1.5 mt-3 text-slate-400 font-bold text-xs">
+                        <span>Rasio konversi closing</span>
                     </div>
                 </div>
 
                 <div class="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-[2rem] p-7 relative overflow-hidden group hover:border-purple-500/50 transition-all duration-500">
                     <div class="flex items-center justify-between mb-6">
-                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Revenue</p>
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Est. MRR Generated</p>
                         <div class="p-2 bg-purple-500/10 rounded-xl text-purple-400 border border-purple-500/20">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
                     </div>
-                    <h3 class="text-4xl font-black text-white tracking-tighter">Rp 5.4M</h3>
+                    <h3 class="text-3xl font-black text-white tracking-tighter">Rp {{ number_format($kpis['revenue'], 0, ',', '.') }}</h3>
                     <div class="flex items-center gap-1.5 mt-3 text-emerald-400 font-bold text-xs">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
-                        <span>18.0%</span>
-                        <span class="text-slate-500 font-medium ml-1">growth</span>
+                        <span>Pendapatan bulanan berulang</span>
                     </div>
                 </div>
             </div>
@@ -91,21 +83,20 @@
                 <div class="bg-slate-900/50 border border-slate-800 rounded-[2.5rem] p-10">
                     <div class="flex items-center justify-between mb-10">
                         <h4 class="text-lg font-black text-white tracking-tight uppercase">Tren Perolehan Lead</h4>
-                        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-800 px-3 py-1 rounded-lg">Last 3 Quarters</div>
+                        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-800 px-3 py-1 rounded-lg">3 Bulan Terakhir</div>
                     </div>
                     <div class="space-y-10">
-                        @for ($month = 1; $month <= 3; $month++)
-                            @php $count = rand(80, 130); $percentage = ($count / 130) * 100; @endphp
+                        @foreach ($monthlyTrends as $trend)
                             <div class="relative">
                                 <div class="flex justify-between items-center mb-3">
-                                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest">{{ now()->subMonths(3 - $month)->format('F Y') }}</span>
-                                    <span class="text-sm font-black text-white font-mono">{{ $count }} <span class="text-[10px] text-slate-500 font-bold uppercase">Leads</span></span>
+                                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest">{{ $trend['month'] }}</span>
+                                    <span class="text-sm font-black text-white font-mono">{{ $trend['count'] }} <span class="text-[10px] text-slate-500 font-bold uppercase">Leads</span></span>
                                 </div>
                                 <div class="w-full bg-slate-800 rounded-full h-2">
-                                    <div class="bg-gradient-to-r from-indigo-600 to-cyan-400 h-2 rounded-full shadow-[0_0_10px_rgba(79,70,229,0.3)] transition-all duration-1000" style="width: {{ $percentage }}%"></div>
+                                    <div class="bg-gradient-to-r from-indigo-600 to-cyan-400 h-2 rounded-full shadow-[0_0_10px_rgba(79,70,229,0.3)] transition-all duration-1000" style="width: {{ $trend['percentage'] }}%"></div>
                                 </div>
                             </div>
-                        @endfor
+                        @endforeach
                     </div>
                 </div>
 
@@ -117,18 +108,13 @@
                     </div>
                     <div class="space-y-8">
                         @php
-                            $statuses = [
-                                ['label' => 'New Prospect', 'count' => 45, 'color' => 'indigo'],
-                                ['label' => 'Survey Process', 'count' => 28, 'color' => 'amber'],
-                                ['label' => 'Installation', 'count' => 36, 'color' => 'purple'],
-                                ['label' => 'Active Account', 'count' => 18, 'color' => 'emerald'],
-                            ];
+                            $maxPipeline = max(1, $kpis['total_leads']);
                         @endphp
                         @foreach($statuses as $status)
-                            @php $statusPerc = ($status['count'] / 127) * 100; @endphp
+                            @php $statusPerc = min(100, round(($status['count'] / $maxPipeline) * 100)); @endphp
                             <div class="group">
                                 <div class="flex justify-between items-center mb-2">
-                                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest group-hover:text-{{ $status['color'] }}-400 transition-colors">{{ $status['label'] }}</span>
+                                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest">{{ $status['label'] }}</span>
                                     <span class="text-sm font-black text-white font-mono">{{ $status['count'] }}</span>
                                 </div>
                                 <div class="w-full bg-slate-800 rounded-full h-4 p-1">
@@ -154,7 +140,7 @@
                         <div class="p-2 bg-slate-800 rounded-xl text-indigo-400 border border-slate-700">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
-                        <h4 class="text-lg font-black text-white tracking-tight uppercase">Log Aktivitas Harian</h4>
+                        <h4 class="text-lg font-black text-white tracking-tight uppercase">Log Aktivitas 10 Hari Terakhir</h4>
                     </div>
                 </div>
 
@@ -171,31 +157,28 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-800/60 text-sm font-medium">
-                            @for ($i = 1; $i <= 10; $i++)
-                                @php
-                                    $leads = rand(3, 10);
-                                    $followup = rand(5, 15);
-                                    $converted = rand(0, 3);
-                                    $rate = $leads > 0 ? round(($converted / $leads) * 100, 1) : 0;
-                                    $revenue = $converted * 299000;
-                                @endphp
+                            @forelse ($dailyBreakdown as $row)
                                 <tr class="hover:bg-slate-800/40 transition-all duration-300 group">
                                     <td class="px-8 py-6 text-white font-bold tracking-tight">
-                                        {{ now()->subDays($i)->format('d M Y') }}
+                                        {{ $row['date']->format('d M Y') }}
                                     </td>
                                     <td class="px-6 py-6 text-center">
-                                        <span class="inline-flex px-3 py-1 bg-indigo-500/10 text-indigo-400 rounded-lg text-xs font-black">{{ $leads }}</span>
+                                        <span class="inline-flex px-3 py-1 bg-indigo-500/10 text-indigo-400 rounded-lg text-xs font-black">{{ $row['leads'] }}</span>
                                     </td>
                                     <td class="px-6 py-6 text-center">
-                                        <span class="inline-flex px-3 py-1 bg-amber-500/10 text-amber-400 rounded-lg text-xs font-black">{{ $followup }}</span>
+                                        <span class="inline-flex px-3 py-1 bg-amber-500/10 text-amber-400 rounded-lg text-xs font-black">{{ $row['followup'] }}</span>
                                     </td>
                                     <td class="px-6 py-6 text-center">
-                                        <span class="inline-flex px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg text-xs font-black">{{ $converted }}</span>
+                                        <span class="inline-flex px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg text-xs font-black">{{ $row['conversions'] }}</span>
                                     </td>
-                                    <td class="px-6 py-6 text-center font-mono font-bold text-cyan-400 tracking-tighter">{{ $rate }}%</td>
-                                    <td class="px-8 py-6 text-right font-mono font-bold text-slate-300">Rp {{ number_format($revenue, 0, ',', '.') }}</td>
+                                    <td class="px-6 py-6 text-center font-mono font-bold text-cyan-400 tracking-tighter">{{ $row['rate'] }}%</td>
+                                    <td class="px-8 py-6 text-right font-mono font-bold text-slate-300">Rp {{ number_format($row['revenue'], 0, ',', '.') }}</td>
                                 </tr>
-                            @endfor
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="px-8 py-12 text-center text-slate-400">Belum ada riwayat aktivitas harian.</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

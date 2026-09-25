@@ -25,6 +25,7 @@ class RestrictCustomerPortal
 
         return $routeName === 'dashboard'
             || $routeName === 'logout'
+            || $routeName === 'documents.ktp'
             || str_starts_with((string) $routeName, 'client.');
     }
 }

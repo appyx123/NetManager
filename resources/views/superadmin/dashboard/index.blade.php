@@ -206,10 +206,13 @@
                                 <tr class="hover:bg-slate-800/40 transition-colors group">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center gap-3">
+                                            @php
+                                                $userName = $log->user?->name ?? 'System';
+                                            @endphp
                                             <div class="w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
-                                                <span class="text-white font-black text-xs">{{ substr($log->user->name, 0, 1) }}</span>
+                                                <span class="text-white font-black text-xs">{{ substr($userName, 0, 1) }}</span>
                                             </div>
-                                            <span class="font-medium text-slate-200 group-hover:text-white transition-colors">{{ $log->user->name }}</span>
+                                            <span class="font-medium text-slate-200 group-hover:text-white transition-colors">{{ $userName }}</span>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-slate-300">{{ $log->action }}</td>

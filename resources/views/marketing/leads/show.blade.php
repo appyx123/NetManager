@@ -267,8 +267,8 @@
                             <div class="space-y-2">
                                 <span class="block text-[10px] font-black text-slate-500 uppercase tracking-widest">Identitas (KTP)</span>
                                 @if ($lead->ktp_image_path)
-                                    <a href="{{ Storage::url($lead->ktp_image_path) }}" target="_blank" class="block group relative h-32 rounded-2xl overflow-hidden border border-slate-700 shadow-md">
-                                        <img src="{{ Storage::url($lead->ktp_image_path) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                    <a href="{{ route('documents.ktp', $lead) }}" target="_blank" class="block group relative h-32 rounded-2xl overflow-hidden border border-slate-700 shadow-md">
+                                        <img src="{{ route('documents.ktp', $lead) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                                         <div class="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                                             <span class="px-4 py-2 bg-slate-800 text-white text-xs font-black uppercase tracking-widest rounded-lg border border-slate-600 shadow-xl">Lihat Berkas</span>
                                         </div>

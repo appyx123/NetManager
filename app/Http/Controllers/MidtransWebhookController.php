@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Integrations\NetworkController;
-use App\Http\Controllers\Integrations\WhatsappController;
+use App\Services\NetworkService;
+use App\Services\WhatsappService;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -25,17 +25,21 @@ class MidtransWebhookController extends Controller
         $signatureKey = $request->input('signature_key');
         $serverKey = config('services.midtrans.server_key');
 
-        // Validasi keamanan: Verifikasi SHA-512 Signature Key dari Midtrans
-        if ($serverKey) {
-            $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
-            if ($signatureKey !== $expectedSignature) {
-                Log::warning('Midtrans Webhook: Invalid signature', [
-                    'order_id' => $orderId,
-                    'provided' => $signatureKey,
-                    'expected' => $expectedSignature,
-                ]);
-                return response()->json(['message' => 'Invalid signature key'], 403);
-            }
+        // Validasi keamanan: Pastikan Midtrans Server Key telah dikonfigurasi
+        if (empty($serverKey)) {
+            Log::error('Midtrans Webhook: Midtrans Server Key is not configured in environment.');
+            return response()->json(['message' => 'Midtrans Server Key is not configured'], 500);
+        }
+
+        // Verifikasi SHA-512 Signature Key dari Midtrans
+        $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
+        if ($signatureKey !== $expectedSignature) {
+            Log::warning('Midtrans Webhook: Invalid signature', [
+                'order_id' => $orderId,
+                'provided' => $signatureKey,
+                'expected' => $expectedSignature,
+            ]);
+            return response()->json(['message' => 'Invalid signature key'], 403);
         }
 
         // Cari tagihan terkait berdasarkan invoice_number
@@ -43,6 +47,12 @@ class MidtransWebhookController extends Controller
         if (!$invoice) {
             Log::warning('Midtrans Webhook: Invoice not found for order_id ' . $orderId);
             return response()->json(['message' => 'Invoice not found'], 404);
+        }
+
+        // Idempotency: Jika invoice sudah dibayar, langsung return 200 OK untuk cegah duplikasi MikroTik & WA spam
+        if ($invoice->status === 'paid') {
+            Log::info("Midtrans Webhook: Invoice #{$invoice->invoice_number} is already paid. Skipping duplicate processing.");
+            return response()->json(['message' => 'Already processed'], 200);
         }
 
         $transactionStatus = $request->input('transaction_status');
@@ -61,8 +71,8 @@ class MidtransWebhookController extends Controller
             // Otomatisasi Router MikroTik: Aktifkan kembali layanan / un-isolate PPPoE pelanggan
             if ($invoice->subscription) {
                 try {
-                    $networkController = app(NetworkController::class);
-                    $networkController->enableCustomer($invoice->subscription);
+                    $networkService = app(NetworkService::class);
+                    $networkService->enableCustomer($invoice->subscription);
                     Log::info("Midtrans Webhook: Perintah aktivasi router MikroTik dieksekusi untuk Subscription #{$invoice->subscription->id}.");
                 } catch (Throwable $e) {
                     // Fail-safe jika router fisik offline/timeout agar sistem tidak crash & tagihan tetap lunas
@@ -78,7 +88,7 @@ class MidtransWebhookController extends Controller
                     $customerPhone = $customer->phone_number ?? $customer->user?->phone_number ?? $customer->lead?->phone ?? null;
 
                     if ($customerPhone) {
-                        WhatsappController::sendPaymentSuccess(
+                        WhatsappService::sendPaymentSuccess(
                             $customerName,
                             $customerPhone,
                             $invoice->invoice_number,
@@ -96,9 +106,13 @@ class MidtransWebhookController extends Controller
         } elseif ($transactionStatus === 'pending') {
             // Transaksi sedang menunggu pembayaran (misal: VA / Indomaret dibuat)
             Log::info("Midtrans Webhook: Invoice #{$invoice->invoice_number} is PENDING.");
-        } elseif (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
-            // Transaksi dibatalkan / gagal / kedaluwarsa
-            Log::info("Midtrans Webhook: Invoice #{$invoice->invoice_number} is {$transactionStatus}.");
+        } elseif (in_array($transactionStatus, ['deny', 'cancel', 'expire'])) {
+            // Transaksi ditolak / dibatalkan / kedaluwarsa: kembalikan ke unpaid dan bersihkan snap_token
+            $invoice->update([
+                'status'     => 'unpaid',
+                'snap_token' => null,
+            ]);
+            Log::info("Midtrans Webhook: Invoice #{$invoice->invoice_number} updated to unpaid and snap_token cleared (status: {$transactionStatus}).");
         }
 
         return response()->json([

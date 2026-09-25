@@ -1,17 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\Integrations;
+namespace App\Services;
 
-use App\Http\Controllers\Controller;
 use App\Models\Subscription;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use RouterOS\Client;
 use RouterOS\Config;
 use RouterOS\Query;
 use Throwable;
 
-class NetworkController extends Controller
+class NetworkService
 {
     /**
      * Membuat koneksi Client RouterOS MikroTik
@@ -232,37 +230,9 @@ class NetworkController extends Controller
     }
 
     /**
-     * Endpoint / Action Controller untuk isolasi via Web UI
-     */
-    public function isolateCustomer(Subscription $subscription)
-    {
-        $success = $this->disableCustomer($subscription);
-
-        if ($success) {
-            return back()->with('success', 'Pelanggan berhasil diisolasi di jaringan.');
-        }
-
-        return back()->with('warning', 'Status pelanggan diisolasi di sistem lokal, namun router MikroTik sedang tidak dapat dihubungi.');
-    }
-
-    /**
-     * Endpoint / Action Controller untuk restore via Web UI
-     */
-    public function restoreCustomer(Subscription $subscription)
-    {
-        $success = $this->enableCustomer($subscription);
-
-        if ($success) {
-            return back()->with('success', 'Akses internet pelanggan berhasil dipulihkan.');
-        }
-
-        return back()->with('warning', 'Status pelanggan diaktifkan di sistem lokal, namun router MikroTik sedang tidak dapat dihubungi.');
-    }
-
-    /**
      * Cek status koneksi real-time (Uptime, IP saat ini) dari MikroTik
      */
-    public function checkStatus(string $username)
+    public function checkStatus(string $username): array
     {
         try {
             $client = $this->getClient();
@@ -272,12 +242,12 @@ class NetworkController extends Controller
 
             if (!empty($sessions)) {
                 $session = $sessions[0];
-                return response()->json([
+                return [
                     'status'     => 'online',
                     'uptime'     => $session['uptime'] ?? '-',
                     'ip_address' => $session['address'] ?? '-',
                     'caller_id'  => $session['caller-id'] ?? '-',
-                ]);
+                ];
             }
 
             // Jika tidak ada di active session, cek secret
@@ -287,24 +257,24 @@ class NetworkController extends Controller
 
             if (!empty($secrets)) {
                 $isDisabled = ($secrets[0]['disabled'] ?? 'false') === 'true' || ($secrets[0]['disabled'] ?? false) === true;
-                return response()->json([
+                return [
                     'status'  => 'offline',
                     'state'   => $isDisabled ? 'disabled' : 'enabled',
                     'profile' => $secrets[0]['profile'] ?? 'default',
-                ]);
+                ];
             }
 
-            return response()->json([
+            return [
                 'status'  => 'not_found',
                 'message' => 'PPPoE Secret tidak terdaftar di MikroTik',
-            ], 404);
+            ];
 
         } catch (Throwable $e) {
             Log::error("MikroTik checkStatus error: " . $e->getMessage());
-            return response()->json([
+            return [
                 'status'  => 'router_offline',
                 'error'   => $e->getMessage(),
-            ], 503);
+            ];
         }
     }
 }

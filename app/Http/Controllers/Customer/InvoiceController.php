@@ -99,4 +99,74 @@ class InvoiceController extends Controller
 
         return back()->with('snap_token', $invoice->snap_token);
     }
+
+    /**
+     * Sinkronisasi status transaksi langsung dari Midtrans API
+     * (Sangat krusial untuk localhost / dev di mana webhook tidak bisa menembus firewall / private IP)
+     */
+    public function checkStatus(Request $request, Invoice $invoice)
+    {
+        $invoice->load('subscription.customer.user');
+
+        if ($invoice->subscription->customer->user_id !== Auth::id()) {
+            abort(403, 'Akses Ditolak.');
+        }
+
+        if ($invoice->status === 'paid') {
+            return back()->with('info', 'Tagihan ini sudah berstatus lunas.');
+        }
+
+        \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
+        \Midtrans\Config::$isProduction = (bool) config('services.midtrans.is_production', false);
+
+        try {
+            $status = \Midtrans\Transaction::status($invoice->invoice_number);
+            $transactionStatus = is_object($status) ? $status->transaction_status : ($status['transaction_status'] ?? null);
+            $fraudStatus = is_object($status) ? ($status->fraud_status ?? null) : ($status['fraud_status'] ?? null);
+            $paymentType = is_object($status) ? ($status->payment_type ?? 'midtrans') : ($status['payment_type'] ?? 'midtrans');
+
+            if ($transactionStatus === 'settlement' || ($transactionStatus === 'capture' && $fraudStatus === 'accept')) {
+                $invoice->update([
+                    'status'         => 'paid',
+                    'paid_at'        => now(),
+                    'payment_method' => $paymentType,
+                ]);
+
+                // Aktifkan Router MikroTik
+                if ($invoice->subscription) {
+                    try {
+                        app(\App\Services\NetworkService::class)->enableCustomer($invoice->subscription);
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::error("Router activation error: " . $e->getMessage());
+                    }
+                }
+
+                // Kirim notifikasi WA
+                if ($invoice->subscription && $invoice->subscription->customer) {
+                    try {
+                        $customer = $invoice->subscription->customer;
+                        $customerName = $customer->user?->name ?? 'Pelanggan';
+                        $customerPhone = $customer->phone_number ?? null;
+                        if ($customerPhone) {
+                            \App\Services\WhatsappService::sendPaymentSuccess($customerName, $customerPhone, $invoice->invoice_number, $invoice->amount);
+                        }
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::error("WA notification error: " . $e->getMessage());
+                    }
+                }
+
+                return back()->with('info', 'Pembayaran berhasil dikonfirmasi! Tagihan telah lunas.');
+            } elseif (in_array($transactionStatus, ['deny', 'cancel', 'expire'])) {
+                $invoice->update([
+                    'status'     => 'unpaid',
+                    'snap_token' => null,
+                ]);
+                return back()->with('error', 'Pembayaran dibatalkan atau kedaluwarsa. Silakan lakukan pembayaran ulang.');
+            }
+
+            return back()->with('info', 'Status pembayaran di Midtrans: ' . strtoupper($transactionStatus ?? 'Menunggu Pembayaran'));
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memeriksa status dari Midtrans: ' . $e->getMessage());
+        }
+    }
 }

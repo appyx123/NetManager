@@ -114,46 +114,4 @@ class Lead extends Model
     {
         return $this->hasOne(Customer::class, 'lead_id');
     }
-
-    // Relasi ke Survey
-    public function survey()
-    {
-        return $this->hasOne(SurveyForm::class);
-    }
-
-    // Relasi ke Installation
-    public function installation()
-    {
-        return $this->hasOne(InstallationForm::class);
-    }
-
-    // Relasi ke Device Config
-    public function device()
-    {
-        return $this->hasOne(DeviceConfig::class);
-    }
-
-    // Relasi ke Network Config
-    public function network()
-    {
-        return $this->hasOne(NetworkConfig::class);
-    }
-
-    // Relasi ke Internet Account
-    public function internetAccount()
-    {
-        return $this->hasOne(InternetAccount::class);
-    }
-
-    // Relasi ke Connection Test
-    public function connectionTest()
-    {
-        return $this->hasOne(ConnectionTest::class);
-    }
-
-    // Relasi ke Handover Confirmation
-    public function handover()
-    {
-        return $this->hasOne(HandoverConfirmation::class);
-    }
 }

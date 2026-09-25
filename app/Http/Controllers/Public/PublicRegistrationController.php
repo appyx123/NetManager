@@ -50,7 +50,7 @@ class PublicRegistrationController extends Controller
         }
 
         // B. Upload Foto Dokumen
-        $ktpPath = $request->file('ktp_image')->store('uploads/ktp', 'public');
+        $ktpPath = $request->file('ktp_image')->store('uploads/ktp', 'local');
         $housePath = $request->file('house_image') ? $request->file('house_image')->store('uploads/house', 'public') : null;
         $custPath = $request->file('customer_image') ? $request->file('customer_image')->store('uploads/customer', 'public') : null;
 

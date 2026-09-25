@@ -39,20 +39,24 @@ class SuperAdminDashboardController extends Controller
             'backgroundColor' => ['#8b5cf6', '#ef4444', '#f59e0b', '#3b82f6', '#10b981'],
         ];
 
-        // Chart Data: Revenue Trend (Last 12 Months)
+        // Chart Data: Revenue Trend (Last 12 Months) - Single aggregated query
+        $startDate = now()->subMonths(11)->startOfMonth();
+        $monthlyRevenues = Invoice::where('status', 'paid')
+            ->where('created_at', '>=', $startDate)
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, SUM(amount) as total')
+            ->groupByRaw('YEAR(created_at), MONTH(created_at)')
+            ->get()
+            ->keyBy(function ($row) {
+                return sprintf('%d-%02d', $row->year, $row->month);
+            });
+
         $revenueTrend = [];
         $labels = [];
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);
-            $month = $date->format('M Y');
-            $labels[] = $month;
-            
-            $revenue = Invoice::where('status', 'paid')
-                ->whereMonth('created_at', $date->month)
-                ->whereYear('created_at', $date->year)
-                ->sum('amount');
-            
-            $revenueTrend[] = $revenue;
+            $key = $date->format('Y-m');
+            $labels[] = $date->format('M Y');
+            $revenueTrend[] = (float) ($monthlyRevenues->get($key)->total ?? 0);
         }
 
         $revenueChart = [
@@ -74,15 +78,19 @@ class SuperAdminDashboardController extends Controller
             'backgroundColor' => ['#10b981', '#ef4444', '#f59e0b', '#6b7280'],
         ];
 
-        // Chart Data: Daily User Growth (Last 7 days)
+        // Chart Data: Daily User Growth (Last 7 days) - Single aggregated query
+        $startDateGrowth = now()->subDays(6)->startOfDay();
+        $dailyUsers = User::where('created_at', '>=', $startDateGrowth)
+            ->selectRaw('DATE(created_at) as date, count(*) as count')
+            ->groupByRaw('DATE(created_at)')
+            ->pluck('count', 'date');
+
         $userGrowth = [];
         $growthLabels = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = now()->subDays($i);
             $growthLabels[] = $date->format('D');
-            
-            $count = User::whereDate('created_at', $date)->count();
-            $userGrowth[] = $count;
+            $userGrowth[] = (int) ($dailyUsers->get($date->format('Y-m-d')) ?? 0);
         }
 
         $userGrowthChart = [
