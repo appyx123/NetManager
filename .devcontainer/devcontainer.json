@@ -26,7 +26,7 @@
       "onAutoForward": "silent"
     }
   },
-  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postCreateCommand": "npm install && bash .devcontainer/setup.sh",
   "customizations": {
     "vscode": {
       "extensions": [
