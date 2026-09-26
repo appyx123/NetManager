@@ -75,6 +75,19 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        User::updateOrCreate(
+            ['email' => 'superadmin@netmanager.local'],
+            [
+                'name' => 'Super Admin NetManager',
+                'password' => Hash::make('password'),
+                'role' => 'super_admin',
+                'area_id' => $areaMakassar->id,
+                'phone_number' => '08111222334',
+                'email_verified_at' => now(),
+                'is_active' => true,
+            ]
+        );
+
         $admin = User::updateOrCreate(
             ['email' => 'admin@netmanager.local'],
             [
@@ -110,6 +123,19 @@ class DatabaseSeeder extends Seeder
                 'role' => 'technician',
                 'area_id' => $areaMakassar->id,
                 'phone_number' => '08444555666',
+                'email_verified_at' => now(),
+                'is_active' => true,
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'technician@netmanager.local'],
+            [
+                'name' => 'Field Technician',
+                'password' => Hash::make('password'),
+                'role' => 'technician',
+                'area_id' => $areaMakassar->id,
+                'phone_number' => '08444555667',
                 'email_verified_at' => now(),
                 'is_active' => true,
             ]
@@ -266,7 +292,7 @@ class DatabaseSeeder extends Seeder
             // ==========================================
             // 5. WORKFLOW: LEAD BARU (PROSPEK)
             // ==========================================
-            Lead::updateOrCreate(
+            $lead = Lead::updateOrCreate(
                 ['phone' => '089876543210'],
                 [
                     'marketing_id' => $marketing->id,
@@ -282,6 +308,17 @@ class DatabaseSeeder extends Seeder
                     'created_at' => now(),
                 ]
             );
+
+            $existingCustomer = Customer::where('lead_id', $lead->id)->first();
+            if ($existingCustomer) {
+                $existingCustomer->tickets()->delete();
+                $existingCustomer->subscriptions()->delete();
+                $userId = $existingCustomer->user_id;
+                $existingCustomer->delete();
+                if ($userId) {
+                    User::where('id', $userId)->delete();
+                }
+            }
         }
     }
 }
