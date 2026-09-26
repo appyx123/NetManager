@@ -56,8 +56,12 @@ use App\Http\Controllers\Customer\ComplaintController;
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
+    if (Auth::check() && Auth::user()->role === 'customer') {
+        return redirect()->route('client.dashboard');
+    }
+
     return view('welcome');
-});
+})->name('home');
 
 // Registrasi Layanan Internet Mandiri (Publik)
 use App\Http\Controllers\Public\PublicRegistrationController;
@@ -75,7 +79,7 @@ Route::post('/midtrans/notification', [MidtransWebhookController::class, 'handle
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
-    
+
     // GATEKEEPER DASHBOARD: Redirect ke dashboard masing-masing role
     Route::get('/dashboard', function () {
         /** @var User $user */
@@ -98,26 +102,26 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     // ====================================================================
     Route::middleware(['role:super_admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
         Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])->name('dashboard');
-        
+
         // Users Management
         Route::resource('users', UserManagementController::class)->except(['show']);
         Route::post('/users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.resetPassword');
-        
+
         // Roles & Permissions
         Route::get('/roles', [RoleAccessController::class, 'index'])->name('roles.index');
         Route::post('/roles/permissions', [RoleAccessController::class, 'updatePermissions'])->name('roles.updatePermissions');
-        
+
         // Master Data (Hanya Area, Pegawai dihapus)
         Route::get('/master', [MasterDataController::class, 'index'])->name('master.index');
         Route::post('/master/areas', [MasterDataController::class, 'storeArea'])->name('master.storeArea');
         Route::put('/master/areas/{area}', [MasterDataController::class, 'updateArea'])->name('master.updateArea');
         Route::delete('/master/areas/{area}', [MasterDataController::class, 'destroyArea'])->name('master.destroyArea');
-        
+
         // Audit & Security
         Route::get('/audits', [AuditController::class, 'index'])->name('audits.index');
         Route::get('/audits/export', [AuditController::class, 'export'])->name('audits.export');
         Route::get('/audits/{log}', [AuditController::class, 'show'])->name('audits.show');
-        
+
         // Maintenance
         Route::get('/maintenance', [MaintenanceController::class, 'index'])->name('maintenance.index');
         Route::post('/maintenance/mode', [MaintenanceController::class, 'toggleMaintenanceMode'])->name('maintenance.maintenanceMode');
@@ -134,29 +138,29 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     // ====================================================================
     Route::middleware(['role:admin,super_admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-        
+
         // Customers
         Route::get('/customers/search', [CustomerController::class, 'search'])->name('customers.search'); // Search harus di atas resource
         Route::resource('customers', CustomerController::class)->except(['create', 'store', 'destroy']);
         Route::post('/customers/{customer}/isolate', [CustomerController::class, 'isolate'])->name('customers.isolate');
         Route::post('/customers/{customer}/activate', [CustomerController::class, 'activate'])->name('customers.activate');
-        
+
         // Resources Utama
         Route::resource('packages', PackageController::class);
         Route::resource('routers', RouterController::class);
         Route::post('/routers/{router}/test', [RouterController::class, 'testConnection'])->name('routers.test');
-        
+
         // Billing
         Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
         Route::get('/billing/{invoice}', [BillingController::class, 'show'])->name('billing.show');
         Route::get('/billing/{invoice}/edit', [BillingController::class, 'edit'])->name('billing.edit');
         Route::put('/billing/{invoice}', [BillingController::class, 'update'])->name('billing.update');
         Route::post('/billing/{invoice}/mark-as-paid', [BillingController::class, 'markAsPaid'])->name('billing.markAsPaid');
-        
+
         // Integrations
         Route::resource('integrations', IntegrationController::class)->except(['create', 'show', 'edit']);
         Route::post('/integrations/{integration}/test', [IntegrationController::class, 'testConnection'])->name('integrations.test');
-        
+
         // Reports & Logs
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/customers', [ReportController::class, 'customerReport'])->name('reports.customers');
@@ -167,16 +171,16 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
         Route::get('/logs/export', [LogController::class, 'export'])->name('logs.export');
         Route::get('/logs/{log}', [LogController::class, 'show'])->name('logs.show');
-        
+
         // Profile Admin
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
         Route::post('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.updateProfile');
         Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
-        
+
         // Tickets (Data Teknisi)
         Route::resource('tickets', TicketManagementController::class);
         Route::patch('/tickets/{ticket}/status', [TicketManagementController::class, 'updateStatus'])->name('tickets.updateStatus');
-        
+
         // Leads (Data Marketing)
         Route::post('/leads/bulk-import', [LeadManagementController::class, 'bulkImport'])->name('leads.bulkImport');
         Route::resource('leads', LeadManagementController::class);
@@ -189,11 +193,11 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     // ====================================================================
     Route::middleware(['role:marketing'])->prefix('marketing')->name('marketing.')->group(function () {
         Route::get('/dashboard', [MarketingDashboardController::class, 'index'])->name('dashboard');
-        
+
         // Mengelola Prospek
         Route::resource('leads', LeadController::class);
         Route::post('/leads/{lead}/convert', [LeadController::class, 'convert'])->name('leads.convert');
-        
+
         // Pelanggan Milik Marketing
         Route::get('/customers', [MarketingCustomerController::class, 'index'])->name('customers.index');
         Route::get('/customers/{customer}', [MarketingCustomerController::class, 'show'])->name('customers.show');
@@ -208,12 +212,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     // ====================================================================
     Route::middleware(['role:technician'])->prefix('technician')->name('technician.')->group(function () {
         Route::get('/dashboard', [TechnicianDashboardController::class, 'index'])->name('dashboard');
-        
+
         // 1. Bursa Pekerjaan (Open Tickets)
         Route::get('/open-tickets', [App\Http\Controllers\Technician\TicketController::class, 'index'])->name('ticket.index');
         Route::get('/open-tickets/{ticket}', [App\Http\Controllers\Technician\TicketController::class, 'show'])->name('ticket.show');
         Route::post('/open-tickets/{ticket}/take', [App\Http\Controllers\Technician\TicketController::class, 'take'])->name('ticket.take');
-        
+
         // 2. Meja Kerja (My Tasks)
         Route::get('/my-tasks', [TicketController::class, 'processIndex'])->name('process.index');
         Route::get('/my-tasks/{ticket}', [TicketController::class, 'processShow'])->name('process.show');
@@ -222,7 +226,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         // Route::get('/my-tasks/{ticket}/input', [TicketController::class, 'processInput'])->name('process.input');
         // Route::post('/my-tasks/{ticket}', [TicketController::class, 'processStore'])->name('process.store');
         // Route::get('/my-tasks/{ticket}/edit', [TicketController::class, 'processEdit'])->name('process.edit');
-        
+
         // View Pages Statis
         Route::get('/history', [TicketController::class, 'historyIndex'])->name('history.index');
         Route::view('/profile', 'technician.profile.index')->name('profile');

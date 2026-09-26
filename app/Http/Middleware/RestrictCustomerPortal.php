@@ -24,6 +24,7 @@ class RestrictCustomerPortal
         $routeName = $request->route()?->getName();
 
         return $routeName === 'dashboard'
+            || $routeName === 'home'
             || $routeName === 'logout'
             || $routeName === 'documents.ktp'
             || str_starts_with((string) $routeName, 'client.');

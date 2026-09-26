@@ -7,7 +7,7 @@
     <title>PT. Mandiri Global Data</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,600,700,900&display=swap" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite('resources/css/app.css')
 
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
 
@@ -64,7 +64,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
                 <div class="flex items-center gap-3 cursor-pointer" onclick="window.scrollTo(0,0)">
-                    <img src="{{ asset('storage/img/LOGOMGD.png') }}" alt="Logo PT MGD"
+                    <img src="/storage/img/LOGOMGD.png" alt="Logo PT MGD"
                         class="h-12 w-auto object-contain">
                     <span class="font-black text-xl tracking-tight text-white hidden sm:block">PT. MANDIRI GLOBAL
                         DATA</span>
@@ -341,7 +341,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 justify-between items-center gap-8">
                 <div>
                     <div class="flex items-center gap-3 mb-4">
-                        <img src="{{ asset('storage/img/LOGOMGD.png') }}" alt="Logo MGD"
+                        <img src="/storage/img/LOGOMGD.png" alt="Logo MGD"
                             class="h-10 w-auto opacity-80 hover:opacity-100 transition">
                         <span class="font-black text-xl text-white">PT. Mandiri Global Data</span>
                     </div>
