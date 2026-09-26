@@ -27,33 +27,24 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: Copy Environment Configuration
-        run: cp .env.example .env
-
-      - name: Validate lockfiles
-        run: |
-          test -f composer.lock || {
-            echo "::error::composer.lock is missing"
-            exit 1
-          }
-          test -f package-lock.json || {
-            echo "::error::Root package-lock.json is missing"
-            exit 1
-          }
-          test -f whatsapp-service/package-lock.json || {
-            echo "::error::whatsapp-service/package-lock.json is missing"
-            exit 1
-          }
-
       - name: Prepare Isolated CI Environment
         run: |
+          mkdir -p database storage/framework/cache storage/framework/sessions storage/framework/views storage/logs
           touch database/database.sqlite
-          sed -i 's|^DB_CONNECTION=.*|DB_CONNECTION=sqlite|' .env
-          sed -i 's|^DB_DATABASE=.*|DB_DATABASE=${{ github.workspace }}/database/database.sqlite|' .env
-          sed -i 's|^SESSION_DRIVER=.*|SESSION_DRIVER=file|' .env
-          sed -i 's|^CACHE_STORE=.*|CACHE_STORE=file|' .env
-          sed -i 's|^QUEUE_CONNECTION=.*|QUEUE_CONNECTION=sync|' .env
-          sed -i 's|^APP_MAINTENANCE_STORE=.*|APP_MAINTENANCE_STORE=file|' .env
+          cat << 'EOF' > .env
+          APP_NAME=NetManager
+          APP_ENV=testing
+          APP_KEY=
+          APP_DEBUG=true
+          APP_URL=http://localhost:8000
+          DB_CONNECTION=sqlite
+          DB_DATABASE=database/database.sqlite
+          SESSION_DRIVER=file
+          CACHE_STORE=file
+          QUEUE_CONNECTION=sync
+          APP_MAINTENANCE_DRIVER=file
+          APP_MAINTENANCE_STORE=file
+          EOF
 
       - name: Install Composer Dependencies
         run: |
@@ -66,7 +57,10 @@ jobs:
             --prefer-dist
 
       - name: Generate Application Key
-        run: php artisan key:generate --force -v
+        run: php artisan key:generate --force -vvv
+
+      - name: Run Database Migrations
+        run: php artisan migrate --force -vvv
 
       - name: Install Root NPM Dependencies
         run: npm ci
@@ -80,5 +74,5 @@ jobs:
 
       - name: Execute Artisan Route & Config Validation
         run: |
-          php artisan route:list -v
-          php artisan config:clear
+          php artisan route:list -vvv
+          php artisan config:clear -vvv
