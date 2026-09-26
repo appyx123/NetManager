@@ -63,13 +63,6 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-// Registrasi Layanan Internet Mandiri (Publik)
-use App\Http\Controllers\Public\PublicRegistrationController;
-
-Route::get('/register-service', [PublicRegistrationController::class, 'index'])->name('register-service');
-Route::post('/register-service', [PublicRegistrationController::class, 'store'])->name('public.register.store');
-Route::get('/register-service/success', [PublicRegistrationController::class, 'success'])->name('public.register.success');
-
 // Midtrans Payment Webhook Notification
 Route::post('/midtrans/notification', [MidtransWebhookController::class, 'handleNotification'])->name('midtrans.notification');
 
