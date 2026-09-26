@@ -22,9 +22,9 @@ public function handle(Request $request, Closure $next, ...$roles): Response
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-            
+
             return redirect()->route('login')->withErrors([
-                'email' => 'Sesi berakhir. Akun Anda telah dinonaktifkan.'
+                'email' => 'Akun Anda belum aktif. Silakan hubungi administrator untuk aktivasi.'
             ]);
         }
 

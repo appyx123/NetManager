@@ -42,7 +42,7 @@
                             <h3 class="text-lg font-bold text-white mt-3">{{ $ticket->subject }}</h3>
                             <p class="text-slate-400 mt-2 text-sm">{{ $ticket->description }}</p>
                         </div>
-                        <a href="#" class="text-amber-400 hover:text-amber-300 font-semibold text-sm">
+                        <a href="{{ route('client.complaints.show', $ticket) }}" class="text-amber-400 hover:text-amber-300 font-semibold text-sm">
                             Lihat Detail
                         </a>
                     </div>

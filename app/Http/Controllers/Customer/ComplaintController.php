@@ -18,6 +18,16 @@ class ComplaintController extends Controller
         return view('client.complaints.index', compact('tickets'));
     }
 
+    public function show(Ticket $ticket)
+    {
+        $ticket = $this->customer()
+            ->tickets()
+            ->with('technician')
+            ->findOrFail($ticket->id);
+
+        return view('client.complaints.show', compact('ticket'));
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

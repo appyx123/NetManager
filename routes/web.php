@@ -241,6 +241,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
         // Pengajuan / Keluhan (Statis berdasarkan views)
         Route::get('/complaints', [ComplaintController::class, 'index'])->name('complaints.index');
+        Route::get('/complaints/{ticket}', [ComplaintController::class, 'show'])->name('complaints.show');
         Route::view('/complaints/create', 'client.complaints.create')->name('complaints.create');
         Route::post('/complaints', [ComplaintController::class, 'store'])->name('complaints.store');
     });

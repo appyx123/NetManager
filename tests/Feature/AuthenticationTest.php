@@ -41,4 +41,24 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
     }
+
+    public function test_inactive_users_cannot_authenticate(): void
+    {
+        $user = User::factory()->create([
+            'is_active' => false,
+        ]);
+
+        $response = $this->from('/login')->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $response->assertRedirect('/login');
+        $this->assertGuest();
+        $response->assertSessionHasErrors(['email']);
+        $this->assertSame(
+            'Akun Anda belum aktif. Silakan hubungi administrator untuk aktivasi.',
+            session('errors')->get('email')[0]
+        );
+    }
 }

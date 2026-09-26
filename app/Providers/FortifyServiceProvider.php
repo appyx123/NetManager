@@ -43,7 +43,7 @@ class FortifyServiceProvider extends ServiceProvider
                 // Cek apakah akunnya aktif
                 if (!$user->is_active) {
                     throw ValidationException::withMessages([
-                        'email' => __('Akun ini telah dinonaktifkan. Silakan hubungi Administrator.'),
+                        'email' => __('Akun Anda belum aktif. Silakan hubungi administrator untuk aktivasi.'),
                     ]);
                 }
                 return $user;
