@@ -31,26 +31,24 @@ Saat Codespace dibuat, sistem otomatis mengeksekusi tahapan berikut:
 
 ## 3. Menjalankan Aplikasi di Codespaces
 
-Setelah proses loading selesai dan terminal menampilkan pesan `NetManager is 100% READY!`, jalankan service yang dibutuhkan:
+Aplikasi kini **100% otomatis aktif** saat container selesai dibuat. Web server pada port `8000`, container MySQL, dan WhatsApp Gateway otomatis berjalan di background.
+Browser akan otomatis terbuka menampilkan antarmuka NetManager.
 
-### Opsi A: Development Mode (Direkomendasikan)
-Buka terminal di Codespace dan jalankan:
+Jika Anda perlu me-restart atau mengontrol server secara manual:
 
-1. **Jalankan Web Server Laravel:**
-   ```bash
-   php artisan serve --host=0.0.0.0 --port=8000
-   ```
-2. **Jalankan WhatsApp Gateway (Tab Terminal Baru):**
-   ```bash
-   cd whatsapp-service
-   node server.js
-   ```
-
-### Opsi B: Full Stack Docker Compose (Simulasi Production)
-Jika ingin menjalankan seluruh stack (Nginx + PHP-FPM + MySQL + WhatsApp) di dalam container:
-```bash
-docker compose up -d
-```
+### Kontrol Manual (Jika Dibutuhkan)
+- **Restart Web Server:**
+  ```bash
+  php artisan serve --host=0.0.0.0 --port=8000
+  ```
+- **Restart Service Docker (MySQL & WhatsApp):**
+  ```bash
+  docker compose up -d mysql whatsapp
+  ```
+- **Full Stack Simulasi Production (Semua service dalam container):**
+  ```bash
+  docker compose up -d
+  ```
 
 ---
 

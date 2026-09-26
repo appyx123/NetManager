@@ -8,32 +8,32 @@ echo "=========================================================="
 # 1. Environment file setup
 if [ ! -f .env ]; then
   cp .env.example .env
-  echo "[1/7] Created .env from .env.example"
+  echo "[1/8] Created .env from .env.example"
 else
-  echo "[1/7] .env file already exists"
+  echo "[1/8] .env file already exists"
 fi
 
 # 2. PHP dependencies
-echo "[2/7] Installing Composer PHP dependencies..."
+echo "[2/8] Installing Composer PHP dependencies..."
 composer install --no-interaction --prefer-dist
 
 # 3. Application Key
-echo "[3/7] Generating application encryption key..."
+echo "[3/8] Generating application encryption key..."
 php artisan key:generate --force
 
 # 4. Frontend assets build
-echo "[4/7] Installing npm packages and compiling assets with Vite..."
+echo "[4/8] Installing npm packages and compiling assets with Vite..."
 npm install
 npm run build
 
 # 5. WhatsApp Gateway dependencies
-echo "[5/7] Installing WhatsApp Microservice dependencies..."
+echo "[5/8] Installing WhatsApp Microservice dependencies..."
 if [ -d whatsapp-service ]; then
   (cd whatsapp-service && npm install)
 fi
 
 # 6. Storage symlink & permissions
-echo "[6/7] Setting up storage symlink & directories..."
+echo "[6/8] Setting up storage symlink & directories..."
 php artisan storage:link || true
 mkdir -p storage/app/public/uploads/teknisi/bukti \
          storage/app/public/uploads/teknisi/lokasi \
@@ -43,7 +43,7 @@ mkdir -p storage/app/public/uploads/teknisi/bukti \
          storage/logs
 
 # 7. Start Docker background services & Run migrations
-echo "[7/7] Starting MySQL & WhatsApp services..."
+echo "[7/8] Starting MySQL & WhatsApp services..."
 if command -v docker &> /dev/null; then
   docker compose up -d mysql whatsapp || true
 
@@ -56,11 +56,15 @@ if command -v docker &> /dev/null; then
     sleep 1
   done
 
-  # Connect devcontainer to compose network so hostnames 'mysql' and 'whatsapp' resolve
+  # Connect devcontainer to named network 'netmanager_network'
   DEVCONTAINER_ID=$(hostname)
-  COMPOSE_NET=$(docker network ls --filter name=netmanager --format "{{.Name}}" | head -n 1)
-  if [ -n "$COMPOSE_NET" ]; then
-    docker network connect "$COMPOSE_NET" "$DEVCONTAINER_ID" 2>/dev/null || true
+  docker network connect netmanager_network "$DEVCONTAINER_ID" 2>/dev/null || true
+
+  # Check if 'mysql' hostname resolves; if not, configure 127.0.0.1 fallback in .env
+  if ! ping -c 1 -W 1 mysql &> /dev/null && ! nc -z -w 1 mysql 3306 2>/dev/null; then
+    echo "Configuring DB_HOST=127.0.0.1 and WA_API_URL=http://127.0.0.1:3000..."
+    sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+    sed -i 's|^WA_API_URL=.*|WA_API_URL=http://127.0.0.1:3000|' .env
   fi
 
   echo "Running database migrations and seeders..."
@@ -70,13 +74,19 @@ if command -v docker &> /dev/null; then
   }
 fi
 
+# 8. Start development server in background so app is 100% ready immediately
+echo "[8/8] Starting NetManager Web Server on port 8000..."
+nohup php artisan serve --host=0.0.0.0 --port=8000 > storage/logs/serve.log 2>&1 &
+sleep 2
+
 echo "=========================================================="
-echo "   NetManager is 100% READY!                              "
+echo "   NetManager is 100% READY & LIVE!                       "
+echo "   URL: http://localhost:8000                             "
 echo "=========================================================="
-echo "To start development server:"
-echo "  php artisan serve --host=0.0.0.0 --port=8000"
-echo "To start WhatsApp Gateway:"
-echo "  (cd whatsapp-service && node server.js)"
-echo "Or full stack via Docker Compose:"
-echo "  docker compose up -d"
+echo "Default Accounts (Password: password):"
+echo "  - Super Admin : owner@netmanager.local / superadmin@netmanager.local"
+echo "  - Admin       : admin@netmanager.local"
+echo "  - Marketing   : marketing@netmanager.local"
+echo "  - Technician  : teknisi@netmanager.local / technician@netmanager.local"
+echo "  - Customer    : budi@netmanager.local"
 echo "=========================================================="

@@ -1,12 +1,24 @@
 #!/bin/sh
 set -e
 
+# Ensure .env file exists in the container
+if [ ! -f /var/www/html/.env ]; then
+    if [ -f /var/www/html/.env.example ]; then
+        cp /var/www/html/.env.example /var/www/html/.env
+    else
+        touch /var/www/html/.env
+    fi
+fi
+
 # Ensure all required storage subdirectories exist (crucial when mounted as fresh volume)
 mkdir -p /var/www/html/storage/framework/cache/data \
          /var/www/html/storage/framework/sessions \
          /var/www/html/storage/framework/views \
-         /var/www/html/storage/app/public \
-         /var/www/html/storage/app/private \
+         /var/www/html/storage/app/public/uploads/teknisi/bukti \
+         /var/www/html/storage/app/public/uploads/teknisi/lokasi \
+         /var/www/html/storage/app/public/uploads/teknisi/speedtest \
+         /var/www/html/storage/app/public/uploads/customer-complaints \
+         /var/www/html/storage/app/private/documents/ktp \
          /var/www/html/storage/logs
 
 # Set directory permissions for web user
@@ -39,10 +51,15 @@ if [ -n "$DB_HOST" ] && [ "$DB_CONNECTION" = "mysql" ]; then
     echo "Database reachable!"
 fi
 
-# Optional automated migration flag
+# Automated migration and initial seeder flag
 if [ "$RUN_MIGRATIONS" = "true" ]; then
     echo "Running database migrations..."
     php artisan migrate --force || true
+
+    if [ "$RUN_SEEDERS" = "true" ]; then
+        echo "Seeding initial database data..."
+        php artisan db:seed --force || true
+    fi
 fi
 
 # Clear or cache configuration
