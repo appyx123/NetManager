@@ -41,13 +41,17 @@ class SuperAdminDashboardController extends Controller
 
         // Chart Data: Revenue Trend (Last 12 Months) - Single aggregated query
         $startDate = now()->subMonths(11)->startOfMonth();
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
+        $yearExpr = $isSqlite ? "strftime('%Y', created_at)" : "YEAR(created_at)";
+        $monthExpr = $isSqlite ? "strftime('%m', created_at)" : "MONTH(created_at)";
+
         $monthlyRevenues = Invoice::where('status', 'paid')
             ->where('created_at', '>=', $startDate)
-            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, SUM(amount) as total')
-            ->groupByRaw('YEAR(created_at), MONTH(created_at)')
+            ->selectRaw("{$yearExpr} as year, {$monthExpr} as month, SUM(amount) as total")
+            ->groupByRaw("{$yearExpr}, {$monthExpr}")
             ->get()
             ->keyBy(function ($row) {
-                return sprintf('%d-%02d', $row->year, $row->month);
+                return sprintf('%d-%02d', (int) $row->year, (int) $row->month);
             });
 
         $revenueTrend = [];

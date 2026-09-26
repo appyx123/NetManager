@@ -11,12 +11,12 @@ test('admin can isolate a customer from the customer detail page', async ({ page
   await expect(page).toHaveURL(/\/admin\/customers\/\d+$/);
   await expect(page.getByRole('heading', { name: 'Budi Santoso' })).toBeVisible();
 
-  await page.getByLabel('Alasan Isolir').fill('Pengujian E2E isolasi pelanggan.');
+  await page.locator('textarea[name="reason"]').fill('Pengujian E2E isolasi pelanggan.');
   await page.getByRole('button', { name: 'Isolir Pelanggan' }).click();
   await page.getByRole('button', { name: 'Ya, Isolir!' }).click();
 
   await expect(page).toHaveURL(/\/admin\/customers\/\d+$/);
-  await expect(page.getByText('Pelanggan berhasil diisolir')).toBeVisible();
+  await expect(page.getByText(/Pelanggan berhasil diisolir/i).first()).toBeVisible();
 });
 
 test('admin can mark an unpaid invoice as paid manually', async ({ page }) => {

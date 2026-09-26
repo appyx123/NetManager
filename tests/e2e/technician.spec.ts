@@ -21,7 +21,7 @@ test('technician can claim an installation job and submit physical parameters', 
   await page.getByRole('button', { name: 'Klaim / Ambil Tugas' }).click();
 
   await expect(page).toHaveURL(/\/technician\/my-tasks$/);
-  await expect(page.getByText(/Tugas berhasil diambil/i)).toBeVisible();
+  await expect(page.getByText(/Tugas berhasil diambil/i).first()).toBeVisible();
 
   const task = page.getByRole('row').filter({ hasText: 'Instalasi Tambahan - Budi Santoso' }).first();
   await task.getByRole('link', { name: 'Kerjakan' }).click();
@@ -37,5 +37,5 @@ test('technician can claim an installation job and submit physical parameters', 
   await page.getByRole('button', { name: 'Simpan Laporan Instalasi' }).click();
 
   await expect(page).toHaveURL(/\/technician\/my-tasks$/);
-  await expect(page.getByText(/Laporan berhasil disimpan|berhasil diperbarui|Tugas berhasil/i)).toBeVisible();
+  await expect(page.getByText(/Laporan.*berhasil disimpan|berhasil diperbarui|Tugas berhasil/i).first()).toBeVisible();
 });

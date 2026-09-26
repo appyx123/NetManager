@@ -266,7 +266,7 @@ class DatabaseSeeder extends Seeder
             // ==========================================
             // 5. WORKFLOW: LEAD BARU (PROSPEK)
             // ==========================================
-            Lead::firstOrCreate(
+            Lead::updateOrCreate(
                 ['phone' => '089876543210'],
                 [
                     'marketing_id' => $marketing->id,

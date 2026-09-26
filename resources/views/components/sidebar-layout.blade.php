@@ -116,7 +116,7 @@
         @livewireScripts
         @stack('scripts')
 
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.10.1/sweetalert2.all.min.js"></script>
         <script>
             function confirmLogout(source) {
                 Swal.fire({

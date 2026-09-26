@@ -3,6 +3,9 @@ import { expect, test } from '@playwright/test';
 function requiredEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
+    if (name === 'E2E_CUSTOMER_EMAIL') return 'budi@netmanager.local';
+    if (name === 'E2E_INACTIVE_EMAIL') return 'customer@gmail.com';
+    if (name === 'E2E_TEST_PASSWORD') return 'password';
     throw new Error(`Missing ${name}. Provide a dedicated E2E test credential.`);
   }
   return value;

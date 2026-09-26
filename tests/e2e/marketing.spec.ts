@@ -8,9 +8,10 @@ test('marketing can convert an existing prospect into a customer', async ({ page
 
   const prospect = page.getByRole('row').filter({ hasText: 'Siti Aminah' }).first();
   await expect(prospect).toBeVisible();
+  page.once('dialog', dialog => dialog.accept());
   await prospect.getByTitle('Convert to Customer (Mulai Instalasi)').click();
 
   await expect(page).toHaveURL(/\/marketing\/leads$/);
-  await expect(page.getByText(/Konversi Berhasil!/i)).toBeVisible();
+  await expect(page.getByText(/Konversi Berhasil!/i).first()).toBeVisible();
   await expect(page.getByText('Siti Aminah').first()).toBeVisible();
 });

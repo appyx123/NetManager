@@ -120,7 +120,7 @@ class LeadController extends Controller
             abort(403);
         }
 
-        if ($lead->status === 'converted') {
+        if (in_array($lead->status, ['converted', 'aktif'])) {
             return back()->with('error', 'Data yang sudah menjadi pelanggan tidak bisa diedit.');
         }
 
@@ -133,7 +133,7 @@ class LeadController extends Controller
     // 6. UPDATE: Simpan Perubahan
     public function update(Request $request, Lead $lead)
     {
-        if ($lead->status === 'converted') {
+        if (in_array($lead->status, ['converted', 'aktif'])) {
             return back()->with('error', 'Data terkunci (sudah convert).');
         }
 
@@ -273,7 +273,7 @@ class LeadController extends Controller
             ]);
 
             // C. Update Status Lead
-            $lead->update(['status' => 'converted']);
+            $lead->update(['status' => 'aktif']);
 
             // D. Buat Tiket Langsung Terhubung ke Customer (Bypass model InstallationForm yang usang)
             $customer->tickets()->create([

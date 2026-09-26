@@ -14,7 +14,7 @@ test('super admin sees staff accounts and reset password controls', async ({ pag
 test('super admin sees maintenance command controls', async ({ page }) => {
   await page.goto('/superadmin/maintenance');
 
-  await expect(page.getByText('Clear Cache')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Clear Cache' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Clear Cache' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Jalankan Optimasi' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Bersihkan Log' })).toBeVisible();
