@@ -19,6 +19,8 @@
   8. **Customer Portal Routing, Reverse Proxy & Auth UI Refresh (RESOLVED):** Authenticated customers visiting root URL `/` were blocked by portal restrictions; reverse proxies dropped SSL forwarding headers; landing page relied on slow external Tailwind CDN; login password lacked show/hide toggle. **Resolved:** Added `home` route allowance in `RestrictCustomerPortal` middleware; added `trustProxies` in `bootstrap/app.php`; bundled landing page CSS via `@vite('resources/css/app.css')`; implemented accessible password reveal toggle in `resources/views/auth/login.blade.php`; added automated feature test `CustomerPortalAccessTest.php`.
   9. **Containerization & DevContainer Hardening (RESOLVED):** Docker configuration lacked non-root database credentials and robust health checks; devcontainer missed PHP `sockets` and `zip` extensions. **Resolved:** Updated `compose.yaml` with non-root MySQL user, `CMD-SHELL` ping healthcheck, and devcontainer build scripts installing all required extensions.
   10. **Customer Activation, Fortify Guard & Complaint Detail View (RESOLVED):** Inactive user rejection was inconsistent between Fortify login and subsequent requests, customer complaints list had dead '#' links with no detail view, and database seeding lacked full realistic operations data. **Resolved:** Enforced `$user->is_active` validation in `FortifyServiceProvider` throwing an informative validation error message ("Akun Anda belum aktif. Silakan hubungi administrator untuk aktivasi."), verified by `tests/Feature/AuthenticationTest.php`; added `client.complaints.show` route (`/client/complaints/{ticket}`) and dark-themed `resources/views/client/complaints/show.blade.php` displaying assigned technician, status badge, issue description, and technician notes; overhauled `DatabaseSeeder.php` with complete realistic ISP workflow entities (roles, customer, active subscription, unpaid invoice, open repair ticket, prospect lead).
+  11. **Codespaces 1-Click Environment & Repository Decluttering (RESOLVED):** Repository contained orphaned dead controllers (`Admin\UserController`, `TicketQCController`), unmigrated dummy photos in public storage, and complex local setup steps. **Resolved:** Purged dead controllers and orphaned routes; protected storage directories with `.gitignore`; automated 1-Click cloud developer environment in `.devcontainer` and `codespace.md` running on containerized MySQL 8 and Node 20 WhatsApp service.
+  12. **Continuous Integration (CI) Workflow Hardening & Route Validation (RESOLVED):** GitHub Actions runner failed due to missing local MySQL service, uncommitted lockfile assertions, and route reflection errors. **Resolved:** Re-architected `.github/workflows/ci.yml` using isolated in-memory SQLite and file-backed session/cache/maintenance drivers; audited and committed explicit npm lockfiles; fully restored and verified Admin `CustomerController.php` with complete RouterOS PPPoE isolation & activation methods.
 
 ---
 
@@ -996,3 +998,67 @@ NetManagement is a comprehensive, production-hardened ISP management and billing
   - Outstanding unpaid invoice (`INV-YYYYMMDD-001`) with upcoming due date.
   - Active repair work order (`Gangguan LOS Merah - CUST-001`, status: `open`) ready for technician claiming.
   - Prospective sales lead (`Siti Aminah`, status: `prospek`) ready for marketing pipeline testing.
+
+---
+
+## 55. Codespaces 1-Click Environment & Repository Decluttering (Commit 86181bb)
+
+### 1. 1-Click GitHub Codespaces & Docker Devcontainer Setup
+- **Files:** `.devcontainer/devcontainer.json`, `.devcontainer/setup.sh`, `compose.yaml`, `codespace.md`.
+- **Enhancement:**
+  - Automated developer bootstrapping inside GitHub Codespaces. Developers can launch a cloud workspace in a single click without manual software installations.
+  - Configured port forwarding for port `8000` (Laravel Web Application), `3000` (Node.js WhatsApp microservice), and `3306` (MySQL Database).
+  - Built `.devcontainer/setup.sh` to automatically install Composer dependencies, NPM packages, generate application keys, create `.env`, run database migrations, and execute `DatabaseSeeder`.
+  - Added [codespace.md](file:///c:/Users/USER/OneDrive/Dokumen/Projects/NetManager/codespace.md) as a complete step-by-step developer reference.
+
+### 2. Codebase Decluttering & Elimination of Dead Controllers
+- **Files Deleted / Pruned:** `app/Http/Controllers/Admin/UserController.php`, `app/Http/Controllers/Admin/TicketQCController.php`, `resources/views/marketing/schedules/index.blade.php`.
+- **Problem:** `Admin/UserController.php` was redundant because staff management is exclusively governed by `SuperAdmin/UserManagementController.php`. `TicketQCController.php` contained dead legacy logic from the abandoned QC approval flow. `marketing/schedules` contained mock loops without a database backend.
+- **Resolution:** Deleted redundant controllers and views, pruned orphaned routes in `routes/web.php`, and cleaned navigation menus (`sidebar.blade.php`, `navigation-menu.blade.php`) to avoid broken links and maintain YAGNI (Ponytail principle).
+
+### 3. File Storage Clean-up & Directory Protection
+- **Files:** `storage/app/public/uploads/.gitignore`, `storage/app/private/documents/ktp/.gitignore`, `docs/docker-deployment-guide.md`.
+- **Enhancement:**
+  - Removed dummy/test camera uploads (`bmuW2kHz...jpg`, `rHVLqfJz...jpg`, `pxKYaEIY...jpg`) from `storage/app/public/uploads/teknisi/`.
+  - Added strict `.gitignore` rules (`*\n!.gitignore`) inside upload directories to prevent developer test uploads from polluting version control.
+  - Relocated unorganized root notes (`docker appyx.md`) into structured project documentation at [docs/docker-deployment-guide.md](file:///c:/Users/USER/OneDrive/Dokumen/Projects/NetManager/docs/docker-deployment-guide.md).
+
+---
+
+## 56. GitHub Actions CI Workflow Hardening & Route Validation (Commits 57af1b9, 54a9a87, 9d1ab4d, 97c2ec7)
+
+### 1. Isolated In-Memory SQLite Test Harness for CI
+- **File:** `.github/workflows/ci.yml`.
+- **Problem:** The GitHub Actions runner was failing because the default `.env.example` specified `DB_CONNECTION=mysql`, `SESSION_DRIVER=database`, and `APP_MAINTENANCE_STORE=database`, while the CI container did not host a live MySQL daemon.
+- **Resolution:**
+  - Replaced ad-hoc `sed` string replacements with a deterministic `.env` generator:
+    ```bash
+    cat << 'EOF' > .env
+    APP_NAME=NetManager-CI
+    APP_ENV=testing
+    APP_KEY=base64:zZg8G176X7L7o8n54mU6D+9P2f1M3sQ5r7T9u1V3w5Y=
+    APP_DEBUG=true
+    DB_CONNECTION=sqlite
+    DB_DATABASE=:memory:
+    SESSION_DRIVER=file
+    CACHE_STORE=file
+    APP_MAINTENANCE_STORE=file
+    QUEUE_CONNECTION=sync
+    EOF
+    ```
+  - Configured migrations to run against SQLite in-memory (`php artisan migrate:fresh --force -vvv`), validating foreign keys and schema syntax without requiring external services.
+
+### 2. Lockfile Verification & Dependency Auditing
+- **Files:** `package-lock.json`, `whatsapp-service/package-lock.json`, `.github/workflows/ci.yml`.
+- **Enhancement:**
+  - Verified that Composer and NPM lockfiles (`composer.lock`, root `package-lock.json`, and `whatsapp-service/package-lock.json`) are committed and synchronized with their respective `package.json` specifications.
+  - Decoupled `npm ci` for root and `whatsapp-service` in the CI pipeline with verbose error reporting so dependency issues can be diagnosed immediately.
+
+### 3. Route Integrity & CustomerController Full Restoration
+- **Files:** `app/Http/Controllers/Admin/CustomerController.php`, `routes/web.php`.
+- **Problem:** `app/Http/Controllers/Admin/CustomerController.php` was accidentally emptied during a file operation, causing `php artisan route:list` in CI to fail with `ReflectionException: Class "App\Http\Controllers\Admin\CustomerController" does not exist`.
+- **Resolution:**
+  - Completely restored and verified the Admin [CustomerController.php](file:///c:/Users/USER/OneDrive/Dokumen/Projects/NetManager/app/Http/Controllers/Admin/CustomerController.php) class.
+  - Re-implemented search, index, show, edit, and update methods, as well as `isolate` and `activate` endpoints with live calls to `NetworkService::disableCustomer` and `NetworkService::enableCustomer`.
+  - Added `-vvv` verbose flag to `php artisan route:list -vvv` in the CI workflow to ensure any future routing or controller reflection issues are immediately caught with full stack traces.
+

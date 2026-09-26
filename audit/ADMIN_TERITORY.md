@@ -2,7 +2,8 @@
 **Project:** NetManager - Integrated ISP Management System  
 **Auditor:** Senior System Auditor & Full-Stack Laravel Expert  
 **Target:** Admin Domain (`role:admin,super_admin`, NOC, Keuangan, Dispatch)  
-**Status Audit:** Verified, Hardened & Bulletproof (100% Implemented)
+**Status Audit:** Verified, Hardened & Bulletproof (100% Implemented)  
+**Last Synchronized:** 2026-09-26 (Synced to Commit `97c2ec7` / CI Green)
 
 ---
 
@@ -278,6 +279,7 @@ public function activate(Customer $customer)
 | **Keamanan Ping Router** | **PASSED** (100%) | Bersih dari Command Injection; menggunakan socket connection (`fsockopen`) non-blocking. |
 | **Sinkronisasi Billing (Manual Paid)** | **PASSED** (100%) | Terbungkus `DB::transaction()` atomik, sinkronisasi MikroTik & WhatsApp resi di luar transaksi. |
 | **Isolasi Manual Pelanggan** | **PASSED** (100%) | Terhubung penuh ke `NetworkService::disableCustomer` & `enableCustomer` dengan fault tolerance. |
+| **Restorasi CustomerController & CI** | **PASSED** (100%) | Implementasi lengkap `CustomerController` tersinkron dengan route list dan pipeline CI GitHub Actions. |
 | **Sanitasi Codebase (Ponytail)** | **PASSED** (100%) | File orphaned dead code (`Admin\UserController` & `TicketQCController`) telah dihapus. |
 
 ### Status Akhir:
