@@ -37,6 +37,8 @@
 # Testing & Framework Caches
 /.phpunit.cache
 .phpunit.result.cache
+playwright-report/
+test-results/
 
 # System & IDE files
 .DS_Store

@@ -140,12 +140,13 @@ class DatabaseSeeder extends Seeder
             // ==========================================
 
             // A. Data Lead (Prospek Awal)
-            $leadAktif = Lead::firstOrCreate(
-                ['phone' => '081234567890'],
+            $leadAktif = Lead::updateOrCreate(
+                ['email' => 'budisantoso@example.com'],
                 [
                     'marketing_id' => $marketing->id,
                     'package_id' => $paketPro->id,
                     'name' => 'Budi Santoso',
+                    'phone' => '087730353029',
                     'email' => 'budisantoso@example.com',
                     'customer_type' => 'personal',
                     'address' => 'Jl. Perintis Kemerdekaan No. 10',
@@ -165,18 +166,18 @@ class DatabaseSeeder extends Seeder
                     'name' => 'Budi Santoso',
                     'password' => Hash::make('password'),
                     'role' => 'customer',
-                    'phone_number' => '081234567890',
+                    'phone_number' => '087730353029',
                     'email_verified_at' => now(),
                     'is_active' => true,
                 ]
             );
 
-            $customer = Customer::firstOrCreate(
+            $customer = Customer::updateOrCreate(
                 ['user_id' => $userCustomer->id],
                 [
                     'lead_id' => $leadAktif->id,
                     'customer_code' => 'CUST-001',
-                    'phone_number' => '081234567890',
+                    'phone_number' => '087730353029',
                     'address_installation' => 'Jl. Perintis Kemerdekaan No. 10',
                 ]
             );
@@ -202,6 +203,17 @@ class DatabaseSeeder extends Seeder
                 ]
             );
 
+            Ticket::updateOrCreate(
+                ['customer_id' => $customer->id, 'subject' => 'Instalasi Tambahan - Budi Santoso'],
+                [
+                    'technician_id' => null,
+                    'type' => 'installation',
+                    'status' => 'open',
+                    'description' => 'Instalasi tambahan untuk pengujian alur kerja teknisi.',
+                    'created_at' => now(),
+                ]
+            );
+
             // D. Data Langganan & Tagihan
             $subscription = Subscription::firstOrCreate(
                 ['customer_id' => $customer->id],
@@ -215,13 +227,24 @@ class DatabaseSeeder extends Seeder
                 ]
             );
 
-            Invoice::firstOrCreate(
+            Invoice::updateOrCreate(
                 ['invoice_number' => 'INV-' . now()->format('Ymd') . '-001'],
                 [
                     'subscription_id' => $subscription->id,
                     'amount' => $paketPro->price,
                     'status' => 'unpaid',
                     'due_date' => now()->addDays(5),
+                    'payment_method' => null,
+                ]
+            );
+
+            Invoice::updateOrCreate(
+                ['invoice_number' => 'INV-' . now()->format('Ymd') . '-002'],
+                [
+                    'subscription_id' => $subscription->id,
+                    'amount' => $paketPro->price,
+                    'status' => 'unpaid',
+                    'due_date' => now()->addDays(12),
                     'payment_method' => null,
                 ]
             );

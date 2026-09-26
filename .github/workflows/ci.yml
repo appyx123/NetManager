@@ -62,11 +62,35 @@ jobs:
       - name: Run Database Migrations
         run: php artisan migrate --force -vvv
 
+      - name: Seed E2E Test Data
+        run: php artisan db:seed --force -vvv
+
       - name: Install Root NPM Dependencies
         run: npm ci
 
       - name: Build Assets
         run: npm run build
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Typecheck Playwright Tests
+        run: npm run typecheck:e2e
+
+      - name: Run Playwright E2E Tests
+        env:
+          E2E_CUSTOMER_EMAIL: budi@netmanager.local
+          E2E_INACTIVE_EMAIL: customer@gmail.com
+          E2E_TEST_PASSWORD: password
+        run: npm run test:e2e
+
+      - name: Upload Playwright Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
 
       - name: Install WhatsApp Service Dependencies
         working-directory: whatsapp-service
