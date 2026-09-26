@@ -18,6 +18,7 @@
   7. **Payment Gateway & WhatsApp Gateway Pre-Flight Hardening (RESOLVED):** Midtrans webhook lacked idempotency checks against duplicate webhooks, customer portal lacked real-time status reconciliation after checkout, customer dashboard leaked technical PPPoE parameters and clashed with the dark theme, WhatsApp gateway crashed when message models lacked `.id` or returned internal `@lid` accounts, and daily billing lacked H-0 (due today) reminders. **Resolved:** Implemented webhook idempotency early-return (`Already processed`), direct Midtrans status synchronization endpoint with Snap JS callback triggers, dark slate theme customer dashboard with customer support card, hardened Node.js gateway with `@c.us` target sanitization and safe exception handling, full H-3/H-1/H-0/overdue billing cycle, and triple-path payment success WA dispatching (Webhook, Customer Portal, Admin Manual). Live dispatch verified 100% successful.
   8. **Customer Portal Routing, Reverse Proxy & Auth UI Refresh (RESOLVED):** Authenticated customers visiting root URL `/` were blocked by portal restrictions; reverse proxies dropped SSL forwarding headers; landing page relied on slow external Tailwind CDN; login password lacked show/hide toggle. **Resolved:** Added `home` route allowance in `RestrictCustomerPortal` middleware; added `trustProxies` in `bootstrap/app.php`; bundled landing page CSS via `@vite('resources/css/app.css')`; implemented accessible password reveal toggle in `resources/views/auth/login.blade.php`; added automated feature test `CustomerPortalAccessTest.php`.
   9. **Containerization & DevContainer Hardening (RESOLVED):** Docker configuration lacked non-root database credentials and robust health checks; devcontainer missed PHP `sockets` and `zip` extensions. **Resolved:** Updated `compose.yaml` with non-root MySQL user, `CMD-SHELL` ping healthcheck, and devcontainer build scripts installing all required extensions.
+  10. **Customer Activation, Fortify Guard & Complaint Detail View (RESOLVED):** Inactive user rejection was inconsistent between Fortify login and subsequent requests, customer complaints list had dead '#' links with no detail view, and database seeding lacked full realistic operations data. **Resolved:** Enforced `$user->is_active` validation in `FortifyServiceProvider` throwing an informative validation error message ("Akun Anda belum aktif. Silakan hubungi administrator untuk aktivasi."), verified by `tests/Feature/AuthenticationTest.php`; added `client.complaints.show` route (`/client/complaints/{ticket}`) and dark-themed `resources/views/client/complaints/show.blade.php` displaying assigned technician, status badge, issue description, and technician notes; overhauled `DatabaseSeeder.php` with complete realistic ISP workflow entities (roles, customer, active subscription, unpaid invoice, open repair ticket, prospect lead).
 
 ---
 
@@ -127,7 +128,8 @@ graph TD
 | **Customer Pay Invoice** | Midtrans Snap checkout popup | Customer | `/client/billing/{invoice}/pay` | `Customer\InvoiceController@pay` | `invoices`, `subscriptions` | Confirmed Working | `InvoiceController.php:47-101` |
 | **Customer Status Sync** | Direct Midtrans API reconciliation | Customer | `/client/billing/{invoice}/check-status` | `Customer\InvoiceController@checkStatus` | `invoices`, `subscriptions` | Confirmed Working | `InvoiceController.php:103-145` |
 | **Midtrans Webhook** | Automated payment & auto-activation | Public Webhook | `/midtrans/notification` | `MidtransWebhookController` | `invoices`, `subscriptions`, `customers` | Confirmed Working & Hardened | Unconditional SHA-512 + Idempotency |
-| **Customer Complaints** | Submit issue with optional photo | Customer | `/client/complaints` | `Customer\ComplaintController` | `tickets` | Confirmed Working | `ComplaintController.php` |
+| **Customer Complaints** | Overview list & submit issue with photo | Customer | `/client/complaints`, `/client/complaints/create` | `Customer\ComplaintController` | `tickets` | Confirmed Working | `ComplaintController.php` |
+| **Complaint Details** | View ticket progress, technician, & notes | Customer | `/client/complaints/{ticket}` | `Customer\ComplaintController@show` | `tickets`, `users` | Confirmed Working | `client/complaints/show.blade.php` |
 | **System Maintenance** | Backup, cache clear, DB optimize | SuperAdmin | `/superadmin/maintenance` | `SuperAdmin\MaintenanceController` | Cache, Log, Filesystem | Confirmed Working | Genuine Artisan command executions |
 | **Closed Registration** | Internal-only onboarding (No public registration) | Admin, Marketing | `/marketing/leads`, `/admin/customers` | `LeadController`, `CustomerController` | `leads`, `customers` | Confirmed Working | 100% internal staff manual entry |
 
@@ -260,7 +262,6 @@ The application registers 158 total routes (including Fortify, Jetstream, Sanctu
 - `POST /marketing/leads/{lead}/convert` $\rightarrow$ `LeadController@convert`
 - `GET /marketing/customers` $\rightarrow$ `Marketing\CustomerController@index`
 - `GET /marketing/customers/{customer}` $\rightarrow$ `Marketing\CustomerController@show`
-- `GET /marketing/schedules` $\rightarrow$ `Route::view('marketing.schedules.index')`
 - `GET /marketing/reports` $\rightarrow$ `Marketing\ReportController@index`
 - `GET /marketing/profile` $\rightarrow$ `Route::view('marketing.profile.index')`
 
@@ -282,6 +283,7 @@ The application registers 158 total routes (including Fortify, Jetstream, Sanctu
 - `POST /client/billing/{invoice}/pay` $\rightarrow$ `InvoiceController@pay`
 - `POST /client/billing/{invoice}/check-status` $\rightarrow$ `InvoiceController@checkStatus`
 - `GET /client/complaints` $\rightarrow$ `ComplaintController@index`
+- `GET /client/complaints/{ticket}` $\rightarrow$ `ComplaintController@show`
 - `GET /client/complaints/create` $\rightarrow$ `Route::view('client.complaints.create')`
 - `POST /client/complaints` $\rightarrow$ `ComplaintController@store`
 
@@ -503,7 +505,7 @@ AuditLog (id, user_id, action, description, details, ip_address, user_agent)
   - Passwords hashed using Bcrypt (`BCRYPT_ROUNDS=12`).
   - Two-Factor Authentication (TOTP app / QR Code and recovery codes) via Fortify.
   - API Token authentication via Laravel Sanctum (`HasApiTokens` on `User`).
-- **Session Termination on Deactivation:** `EnsureUserHasRole` middleware verifies `$user->is_active`. If an administrator deactivates an employee account, the active session is invalidated immediately upon their next HTTP request.
+- **Login Validation & Deactivation Guard:** `FortifyServiceProvider` verifies `$user->is_active` during authentication. Inactive accounts are blocked before session creation with the validation error message: *"Akun Anda belum aktif. Silakan hubungi administrator untuk aktivasi."* (tested in `tests/Feature/AuthenticationTest.php`). If an active account is deactivated while logged in, `EnsureUserHasRole` middleware intercepts the next request, terminates the session, and redirects to login with the same message.
 
 ---
 
@@ -570,7 +572,7 @@ AuditLog (id, user_id, action, description, details, ip_address, user_agent)
 
 - **Queue Driver:** Configured as `QUEUE_CONNECTION=database` in `.env`.
 - **Database Tables:** `jobs`, `job_batches`, `failed_jobs`.
-- **Scheduled Tasks:** [ProcessDailyBilling.php](file:///c:/Users/LENOVO/Documents/Rafli/Project/NetManagement/app/Console/Commands/ProcessDailyBilling.php) is scheduled in [routes/console.php](file:///c:/Users/LENOVO/Documents/Rafli/Project/NetManagement/routes/console.php) to run daily at `00:01`:
+- **Scheduled Tasks:** [ProcessDailyBilling.php](file:///c:/Users/USER/OneDrive/Dokumen/Projects/NetManager/app/Console/Commands/ProcessDailyBilling.php) is scheduled in [routes/console.php](file:///c:/Users/USER/OneDrive/Dokumen/Projects/NetManager/routes/console.php) to run daily at `00:01`:
   - Dispatches H-3, H-1, and H-0 WhatsApp billing reminders.
   - Automatically isolates overdue accounts on MikroTik routers and marks customers isolated.
 
@@ -609,6 +611,7 @@ AuditLog (id, user_id, action, description, details, ip_address, user_agent)
   - `PublicAndCustomerWorkflowTest.php`: Tests complaint creation and invoice viewing.
 - **Feature Tests (`tests/Feature`):**
   - `CustomerPortalAccessTest.php`: Tests authenticated customer redirection from `/` to `/client/dashboard`.
+  - `AuthenticationTest.php`: Tests login authentication, invalid credential rejection, and strict rejection of inactive users (`test_inactive_users_cannot_authenticate`).
   - Jetstream standard authentication and account lifecycle tests.
 
 ---
@@ -616,7 +619,7 @@ AuditLog (id, user_id, action, description, details, ip_address, user_agent)
 ## 30. CI/CD
 
 - **Development Containers:** Full `.devcontainer` configuration (`devcontainer.json`, `Dockerfile`, `setup.sh`) supporting VS Code, GitHub Codespaces, and Docker Outside of Docker.
-- **Production Build:** Multi-stage production [Dockerfile](file:///c:/Users/LENOVO/Documents/Rafli/Project/NetManagement/Dockerfile) and [compose.yaml](file:///c:/Users/LENOVO/Documents/Rafli/Project/NetManagement/compose.yaml).
+- **Production Build:** Multi-stage production [Dockerfile](file:///c:/Users/USER/OneDrive/Dokumen/Projects/NetManager/Dockerfile) and [compose.yaml](file:///c:/Users/USER/OneDrive/Dokumen/Projects/NetManager/compose.yaml).
 
 ---
 
@@ -757,6 +760,8 @@ AuditLog (id, user_id, action, description, details, ip_address, user_agent)
   5. *Sep 2026 (f40564d):* Pre-flight hardening, webhook idempotency, daily billing cron.
   6. *Sep 2026 (cfec5bb):* Docker non-root user and MySQL health check.
   7. *Sep 2026 (6ab089d):* Customer portal root redirection fix, reverse proxy header trusting, auth UI password toggle, Vite bundling on landing page.
+  8. *Sep 2026 (43da18a):* Total removal of public self-registration; transition to strict closed-registration system (leads/customers created solely by Admin/Marketing).
+  9. *Sep 2026 (8dd3c8d):* Customer activation Fortify authentication guard, customer complaint detail view (`/client/complaints/{ticket}`), and realistic end-to-end database seeder.
 
 ---
 
@@ -766,6 +771,7 @@ AuditLog (id, user_id, action, description, details, ip_address, user_agent)
 1. **Lead Conversion Crash (FIXED):** `LeadController::convert` refactored to create `Ticket` directly linked to customer.
 2. **Missing View Error (FIXED):** Authored dark-themed `technician/profile/index.blade.php`.
 3. **Customer Portal Root Access (FIXED):** Customer visiting `/` now cleanly redirects to `/client/dashboard`.
+4. **Inactive User Authentication & Missing Complaint Detail (FIXED):** Added `$user->is_active` validation in `FortifyServiceProvider` with localized error feedback, added `client.complaints.show` route and Blade view, and updated complaint listing link.
 
 ### Security Problems (ALL RESOLVED)
 1. **Webhook Forgery (FIXED):** Strict SHA-512 verification in `MidtransWebhookController`.
@@ -788,10 +794,11 @@ AuditLog (id, user_id, action, description, details, ip_address, user_agent)
 - **Stage 1 — Stabilize Workflows:** Lead conversion refactored, technician view added, dead routes cleaned.
 - **Stage 2 — Secure Boundaries:** Mandatory SHA-512 signature validation, private KTP storage, safe socket router ping.
 - **Stage 3 — Architecture Cleanup:** Services extracted to `App\Services`, dead polymorphic tables dropped, indexes migrated.
-- **Stage 4 — Wire Public Registration:** Route bound and landing page CTA buttons wired.
+- **Stage 4 — Strict Closed-Registration:** Dropped public self-registration controllers and views, redirected landing page CTAs to login, enforced internal staff lead/customer registration only.
 - **Stage 5 — Query Optimization & Views:** Single aggregate revenue query, live marketing reports, genuine Artisan maintenance.
 - **Stage 6 — Hardening & Idempotency:** Webhook idempotency guard, real-time customer status sync, daily automated billing cycle.
 - **Stage 7 — Access & UI Refinement:** Customer portal root routing allowed, reverse proxy headers trusted, accessible login password toggle.
+- **Stage 8 — Closed Registration & Customer Self-Service Completion:** Fully removed public registration endpoints, fortified inactive user login authentication, added complaint detail route/view with technician assignment tracking, and refreshed database seeder with complete ISP operations data.
 
 ---
 
@@ -941,3 +948,51 @@ NetManagement is a comprehensive, production-hardened ISP management and billing
 ### 4. Accessible Password Reveal Toggle
 - **File:** `resources/views/auth/login.blade.php`
 - **Enhancement:** Implemented an interactive show/hide password toggle button within the password input wrapper. Includes SVG eye / eye-slash icons with accessible attributes (`aria-pressed`, `aria-label`, `aria-controls`), smooth focus rings, and centered submit button styling.
+
+---
+
+## 54. Closed Registration Architecture, Inactive User Fortify Guard & Complaint Detail View (Commits 43da18a & 8dd3c8d)
+
+### 1. Strict Closed Registration & Removal of Public Registration (Commit 43da18a)
+- **Files Modified / Removed:** `app/Http/Controllers/Public/PublicRegistrationController.php` (deleted), `resources/views/public/register.blade.php` (deleted), `resources/views/public/success.blade.php` (deleted), `routes/web.php`, `config/fortify.php`, `resources/views/welcome.blade.php`.
+- **Architectural Shift:** Open self-registration by unverified visitors created risks of invalid address data, missing KTP verification, and spam subscription records. The platform shifted entirely to a closed-registration model.
+- **Implementation:**
+  - Removed all public registration routes (`/register-service` and `/register`) and deleted legacy guest controllers and Blade views.
+  - Disabled Fortify public self-registration (`Features::registration()` commented out in `config/fortify.php`).
+  - Redirected public landing page CTA buttons ("Daftar Sekarang", "Mulai Berlangganan") to the internal login portal (`route('login')`).
+  - Enforced onboarding exclusively through internal workflows: Marketing enters prospects (`/marketing/leads`), converts them with site surveys and KTP verification, or Admin registers customers directly (`/admin/customers`).
+
+### 2. Inactive User Authentication Guard & Automated Verification (Commit 8dd3c8d)
+- **Files:** `app/Providers/FortifyServiceProvider.php`, `app/Http/Middleware/EnsureUserHasRole.php`, `tests/Feature/AuthenticationTest.php`.
+- **Problem:** Attempting to authenticate with an inactive (`is_active = false`) user account could trigger confusing feedback or pass initial Fortify authentication before being terminated by middleware on subsequent requests.
+- **Resolution:**
+  - Injected an explicit active account check into `Fortify::authenticateUsing` in `FortifyServiceProvider.php`:
+    ```php
+    if (!$user->is_active) {
+        throw ValidationException::withMessages([
+            'email' => __('Akun Anda belum aktif. Silakan hubungi administrator untuk aktivasi.'),
+        ]);
+    }
+    ```
+  - Aligned `EnsureUserHasRole.php` middleware with identical session-termination error messaging.
+  - Added automated test `test_inactive_users_cannot_authenticate()` in `tests/Feature/AuthenticationTest.php` asserting that disabled accounts are blocked, stay unauthenticated, and receive the localized Indonesian error notice.
+
+### 3. Customer Complaint Detail View & Tracking (Commit 8dd3c8d)
+- **Files:** `app/Http/Controllers/Customer/ComplaintController.php`, `resources/views/client/complaints/show.blade.php`, `resources/views/client/complaints/index.blade.php`, `routes/web.php`.
+- **Problem:** In the subscriber portal complaint list (`/client/complaints`), the "Lihat Detail" action had a placeholder `#` link, leaving subscribers unable to track the progress of reported issues, view the assigned technician, or read technician resolution notes.
+- **Resolution:**
+  - Added `ComplaintController@show(Ticket $ticket)` enforcing strict customer tenancy via `$this->customer()->tickets()->with('technician')->findOrFail($ticket->id)`.
+  - Registered route `GET /client/complaints/{ticket}` named `client.complaints.show`.
+  - Authored responsive dark-themed view `resources/views/client/complaints/show.blade.php` displaying ticket ID, submission timestamp, status badge, assigned technician name, problem description, and technician resolution notes (`technical_notes` / `final_technician_notes`).
+  - Updated "Lihat Detail" link in `client/complaints/index.blade.php` to target `route('client.complaints.show', $ticket)`.
+
+### 4. Comprehensive Production Database Seeder Overhaul (Commit 8dd3c8d)
+- **File:** `database/seeders/DatabaseSeeder.php`.
+- **Enhancement:** Overhauled database seeding logic with `firstOrCreate` guards to establish an immediate, end-to-end verifiable test dataset:
+  - Default staff accounts with preconfigured roles (`super_admin`, `admin`, `marketing`, `technician`).
+  - Active subscriber account (`customer`) with complete profile, unisolated status (`is_isolated = false`), and linked Master Area.
+  - Internet package catalogue (Paket Basic 20 Mbps & Paket Pro 50 Mbps).
+  - Active subscription linked to PPPoE credentials.
+  - Outstanding unpaid invoice (`INV-YYYYMMDD-001`) with upcoming due date.
+  - Active repair work order (`Gangguan LOS Merah - CUST-001`, status: `open`) ready for technician claiming.
+  - Prospective sales lead (`Siti Aminah`, status: `prospek`) ready for marketing pipeline testing.

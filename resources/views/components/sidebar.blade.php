@@ -131,10 +131,6 @@
                         {{ __('Pelanggan') }}
                     </x-sidebar-link>
                     
-                    <x-sidebar-link href="{{ route('marketing.schedules.index') }}" :active="request()->routeIs('marketing.schedules.*')" icon="calendar">
-                        {{ __('Jadwal') }}
-                    </x-sidebar-link>
-                    
                     <x-sidebar-link href="{{ route('marketing.reports.index') }}" :active="request()->routeIs('marketing.reports.*')" icon="document">
                         {{ __('Laporan') }}
                     </x-sidebar-link>

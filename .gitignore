@@ -1,14 +1,46 @@
-/.phpunit.cache
+# Dependencies
 /node_modules
-/public/build
-/public/hot
-/public/storage
-/storage/*.key
 /vendor
+/whatsapp-service/node_modules
+
+# Environment
 .env
 .env.backup
 .env.production
+.env.local
+.env.*.local
+
+# Storage & Uploads
+/storage/*.key
+/storage/logs/*.log
+/public/storage
+/public/build
+/public/hot
+
+# Ignore uploaded dynamic files, preserve directory structures via .gitignore
+/storage/app/public/uploads/*
+!/storage/app/public/uploads/.gitignore
+/storage/app/public/uploads/**/*
+!/storage/app/public/uploads/**/.gitignore
+
+/storage/app/private/documents/ktp/*
+!/storage/app/private/documents/ktp/.gitignore
+/storage/app/private/documents/ktp/**/*
+!/storage/app/private/documents/ktp/**/.gitignore
+
+# WhatsApp Gateway Session Data & Caches
+/whatsapp-service/.wwebjs_auth
+/whatsapp-service/.wwebjs_auth/
+/whatsapp-service/.wwebjs_cache
+/whatsapp-service/.wwebjs_cache/
+
+# Testing & Framework Caches
+/.phpunit.cache
 .phpunit.result.cache
+
+# System & IDE files
+.DS_Store
+Thumbs.db
 Homestead.json
 Homestead.yaml
 auth.json

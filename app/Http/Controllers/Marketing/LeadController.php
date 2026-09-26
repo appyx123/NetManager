@@ -219,8 +219,12 @@ class LeadController extends Controller
             abort(403);
         }
 
-        if ($lead->ktp_image_path && Storage::disk('public')->exists($lead->ktp_image_path)) {
-            Storage::disk('public')->delete($lead->ktp_image_path);
+        if ($lead->ktp_image_path) {
+            if (Storage::disk('local')->exists($lead->ktp_image_path)) {
+                Storage::disk('local')->delete($lead->ktp_image_path);
+            } elseif (Storage::disk('public')->exists($lead->ktp_image_path)) {
+                Storage::disk('public')->delete($lead->ktp_image_path);
+            }
         }
         if ($lead->house_image_path && Storage::disk('public')->exists($lead->house_image_path)) {
             Storage::disk('public')->delete($lead->house_image_path);

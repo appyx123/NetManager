@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Services\NetworkService;
 use App\Services\WhatsappService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -42,19 +43,25 @@ class BillingController extends Controller
             return back()->with('error', 'Tagihan ini sudah lunas.');
         }
 
-        $invoice->update([
-            'status' => 'paid',
-            'paid_at' => now(),
-            'payment_method' => 'manual_admin',
-        ]);
+        // 1. Eksekusi pembaruan status database secara atomik
+        DB::transaction(function () use ($invoice) {
+            $invoice->update([
+                'status' => 'paid',
+                'paid_at' => now(),
+                'payment_method' => 'manual_admin',
+            ]);
 
-        // Aktifkan Router MikroTik jika pelanggan sebelumnya terisolir
-        if ($invoice->subscription) {
-            try {
+            if ($invoice->subscription) {
                 $invoice->subscription->update(['status' => 'active']);
                 if ($invoice->subscription->customer) {
                     $invoice->subscription->customer->update(['is_isolated' => false]);
                 }
+            }
+        });
+
+        // 2. Aktifkan Router MikroTik jika pelanggan sebelumnya terisolir (di luar DB transaction)
+        if ($invoice->subscription) {
+            try {
                 app(NetworkService::class)->enableCustomer($invoice->subscription);
             } catch (Throwable $e) {
                 Log::error("Admin markAsPaid: Gagal aktivasi router: " . $e->getMessage());

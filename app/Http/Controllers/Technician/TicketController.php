@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
+use Exception;
 
 class TicketController extends Controller
 {
@@ -42,21 +45,27 @@ class TicketController extends Controller
      */
     public function take(Request $request, Ticket $ticket)
     {
-        // Validasi: Pastikan tiket masih open
-        if ($ticket->status !== 'open') {
+        try {
+            DB::transaction(function () use ($ticket) {
+                // Lock row tiket untuk mencegah race condition konkurensi teknisi lain
+                $lockedTicket = Ticket::where('id', $ticket->id)->lockForUpdate()->firstOrFail();
+
+                if ($lockedTicket->status !== 'open') {
+                    throw new Exception('Maaf, tugas ini sudah diambil oleh teknisi lain atau sudah ditutup.');
+                }
+
+                $lockedTicket->update([
+                    'technician_id' => Auth::id(),
+                    'status' => 'assigned',
+                ]);
+            });
+
+            return redirect()->route('technician.process.index')
+                ->with('success', 'Tugas berhasil diambil! Silakan mulai pengerjaan dari Meja Kerja Anda.');
+        } catch (\Throwable $e) {
             return redirect()->route('technician.ticket.index')
-                ->with('error', 'Maaf, tugas ini sudah diambil oleh teknisi lain atau sudah ditutup.');
+                ->with('error', $e->getMessage() ?: 'Gagal mengambil tugas.');
         }
-
-        // Update tiket menjadi milik teknisi yang sedang login
-        $ticket->update([
-            'technician_id' => Auth::id(),
-            'status' => 'assigned', // Ubah status agar masuk ke "Meja Kerja"
-        ]);
-
-        // Arahkan teknisi ke halaman Meja Kerja (Process)
-        return redirect()->route('technician.process.index')
-            ->with('success', 'Tugas berhasil diambil! Silakan mulai pengerjaan dari Meja Kerja Anda.');
     }
 
     /**
@@ -124,6 +133,11 @@ class TicketController extends Controller
 
         foreach (['location_photo_path' => 'uploads/teknisi/lokasi', 'evidence_photo_path' => 'uploads/teknisi/bukti'] as $field => $directory) {
             if ($request->hasFile($field)) {
+                // Bersihkan berkas foto lama dari storage disk public jika ada
+                if ($ticket->$field && Storage::disk('public')->exists($ticket->$field)) {
+                    Storage::disk('public')->delete($ticket->$field);
+                }
+
                 /** @var UploadedFile $file */
                 $validated[$field] = $request->file($field)->store($directory, 'public');
             }

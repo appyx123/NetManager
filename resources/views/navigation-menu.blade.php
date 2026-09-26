@@ -59,9 +59,6 @@
                         <x-nav-link href="{{ route('marketing.customers.index') }}" :active="request()->routeIs('marketing.customers.*')">
                             {{ __('Pelanggan') }}
                         </x-nav-link>
-                        <x-nav-link href="{{ route('marketing.schedules.index') }}" :active="request()->routeIs('marketing.schedules.*')">
-                            {{ __('Jadwal') }}
-                        </x-nav-link>
                         <x-nav-link href="{{ route('marketing.reports.index') }}" :active="request()->routeIs('marketing.reports.*')">
                             {{ __('Laporan') }}
                         </x-nav-link>
@@ -261,9 +258,6 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link href="{{ route('marketing.customers.index') }}" :active="request()->routeIs('marketing.customers.*')">
                     {{ __('Pelanggan') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link href="{{ route('marketing.schedules.index') }}" :active="request()->routeIs('marketing.schedules.*')">
-                    {{ __('Jadwal') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link href="{{ route('marketing.reports.index') }}" :active="request()->routeIs('marketing.reports.*')">
                     {{ __('Laporan') }}
