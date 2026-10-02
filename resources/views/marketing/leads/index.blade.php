@@ -30,6 +30,65 @@
                 </div>
             @endif
 
+            @if (session('generated_credential'))
+                @php
+                    $cred = session('generated_credential');
+                    $rawPhone = $cred['phone'] ?? '';
+                    $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+                    if (str_starts_with($cleanPhone, '0')) {
+                        $cleanPhone = '62' . substr($cleanPhone, 1);
+                    }
+                    $waText = urlencode("Halo {$cred['name']},\n\nTerima kasih telah berlangganan internet NetManager!\nBerikut adalah akun akses Client Portal Anda:\n\n*ID Pelanggan:* {$cred['code']}\n*Email:* {$cred['username']}\n*Password:* {$cred['password']}\n*Login Portal:* " . url('/login') . "\n\nSaat ini teknisi kami sedang mempersiapkan instalasi ke lokasi Anda. Anda dapat login ke portal terlebih dahulu untuk memantau status pesanan.\n\nTerima kasih!");
+                    $waUrl = "https://wa.me/{$cleanPhone}?text={$waText}";
+                @endphp
+                <div class="mb-10 rounded-[2.5rem] border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-slate-900/90 to-slate-950 p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden" x-data="{ copied: false }">
+                    <div class="absolute -right-10 -top-10 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-800/80">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-amber-500/20 border border-amber-500/30 rounded-2xl text-amber-400">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">Kredensial Akun Pelanggan Baru</span>
+                                <h3 class="text-2xl font-black text-white mt-0.5">{{ $cred['name'] }} <span class="text-slate-400 font-mono text-sm font-normal">({{ $cred['code'] }})</span></h3>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button @click="navigator.clipboard.writeText('ID: {{ $cred['code'] }}\nEmail: {{ $cred['username'] }}\nPassword: {{ $cred['password'] }}\nPortal: {{ url('/login') }}'); copied = true; setTimeout(() => copied = false, 2500)"
+                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold rounded-xl border border-slate-700 transition-all">
+                                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                                <span x-text="copied ? '✓ Kredensial Disalin!' : 'Salin Kredensial'"></span>
+                            </button>
+
+                            @if(!empty($cleanPhone))
+                                <a href="{{ $waUrl }}" target="_blank"
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                                    Kirim via WhatsApp
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-500">ID Pelanggan</span>
+                            <div class="text-base font-black text-amber-400 font-mono mt-1 select-all">{{ $cred['code'] }}</div>
+                        </div>
+                        <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-500">Email Login</span>
+                            <div class="text-base font-bold text-white mt-1 select-all">{{ $cred['username'] }}</div>
+                        </div>
+                        <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-500">Password Default</span>
+                            <div class="text-base font-black text-emerald-400 font-mono mt-1 select-all">{{ $cred['password'] }}</div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <div class="hidden md:block bg-slate-900/80 backdrop-blur-md rounded-[2.5rem] shadow-2xl border border-slate-800 overflow-hidden relative mb-10">
                 <div class="absolute -left-20 -top-20 w-72 h-72 bg-sky-500/5 rounded-full blur-3xl pointer-events-none"></div>
 

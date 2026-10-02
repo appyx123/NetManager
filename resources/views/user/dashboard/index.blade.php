@@ -42,8 +42,16 @@
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                             </div>
                             <div>
-                                <h4 class="text-white font-bold text-lg">Peringatan Pembayaran</h4>
-                                <p class="text-sm text-rose-300/90 mt-1">Anda memiliki <strong class="text-white">{{ $unpaidCount }} tagihan</strong> sebesar <strong class="text-white">Rp {{ number_format($totalUnpaid, 0, ',', '.') }}</strong> yang belum dibayar. Segera lakukan pembayaran agar layanan internet Anda tidak terputus.</p>
+                                <h4 class="text-white font-bold text-lg">
+                                    {{ ($customer->is_isolated || (isset($subscription) && $subscription->status === 'isolated')) ? 'Akses Internet Terisolir (Menunggu Pembayaran)' : 'Peringatan Tagihan Pembayaran' }}
+                                </h4>
+                                <p class="text-sm text-rose-300/90 mt-1">
+                                    @if($customer->is_isolated || (isset($subscription) && $subscription->status === 'isolated'))
+                                        Instalasi perangkat di lokasi Anda telah selesai. Koneksi internet saat ini ditahan sementara hingga tagihan perdana sebesar <strong class="text-white">Rp {{ number_format($totalUnpaid, 0, ',', '.') }}</strong> dilunasi. Segera lakukan pembayaran agar internet otomatis aktif.
+                                    @else
+                                        Anda memiliki <strong class="text-white">{{ $unpaidCount }} tagihan</strong> sebesar <strong class="text-white">Rp {{ number_format($totalUnpaid, 0, ',', '.') }}</strong> yang belum dibayar. Segera lakukan pembayaran agar layanan internet Anda tidak terputus.
+                                    @endif
+                                </p>
                             </div>
                         </div>
                         <a href="{{ route('client.billing.index') }}" class="px-6 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl shadow-lg shadow-rose-600/30 transition-all duration-200 whitespace-nowrap text-sm">
@@ -83,23 +91,41 @@
                 </div>
             </div>
 
+            @if(!isset($subscription))
+                <div class="mb-8">
+                    <div class="bg-sky-500/10 border-l-4 border-sky-500 p-5 rounded-r-2xl border border-sky-500/20 backdrop-blur-md shadow-lg flex items-start gap-4">
+                        <div class="p-2.5 bg-sky-500/20 rounded-xl text-sky-400 shrink-0 border border-sky-500/30">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold text-lg">Pemasangan Sedang Dijadwalkan</h4>
+                            <p class="text-sm text-sky-200/90 mt-1">Akun portal Anda telah aktif. Tim teknisi kami sedang mempersiapkan instalasi kabel optik dan perangkat ke alamat Anda. Tagihan perdana akan otomatis diterbitkan di portal ini setelah teknisi menyelesaikan pemasangan.</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             {{-- 4 Stat Metric Cards --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 
                 {{-- Card 1: Status Internet --}}
-                <div class="bg-slate-900/80 backdrop-blur-md rounded-2xl p-6 shadow-xl border {{ isset($subscription) && $subscription->status === 'active' ? 'border-emerald-500/30 hover:border-emerald-500/50' : 'border-rose-500/30 hover:border-rose-500/50' }} transition-all flex flex-col justify-between group">
+                @php
+                    $isOnline = isset($subscription) && $subscription->status === 'active';
+                    $isPending = !isset($subscription);
+                @endphp
+                <div class="bg-slate-900/80 backdrop-blur-md rounded-2xl p-6 shadow-xl border {{ $isOnline ? 'border-emerald-500/30 hover:border-emerald-500/50' : ($isPending ? 'border-amber-500/30 hover:border-amber-500/50' : 'border-rose-500/30 hover:border-rose-500/50') }} transition-all flex flex-col justify-between group">
                     <div class="flex justify-between items-start mb-4">
-                        <div class="p-3 {{ isset($subscription) && $subscription->status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20' }} rounded-xl">
+                        <div class="p-3 {{ $isOnline ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : ($isPending ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20') }} rounded-xl">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
-                        <span class="px-2.5 py-1 text-[11px] font-black rounded-lg {{ isset($subscription) && $subscription->status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20' }} uppercase tracking-wider">
-                            {{ isset($subscription) && $subscription->status === 'active' ? 'Koneksi Aktif' : 'Terisolir' }}
+                        <span class="px-2.5 py-1 text-[11px] font-black rounded-lg {{ $isOnline ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : ($isPending ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20') }} uppercase tracking-wider">
+                            {{ $isOnline ? 'Koneksi Aktif' : ($isPending ? 'Menunggu Pasang' : 'Terisolir') }}
                         </span>
                     </div>
                     <div>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Status Internet</p>
-                        <h3 class="text-2xl font-black {{ isset($subscription) && $subscription->status === 'active' ? 'text-emerald-400' : 'text-rose-400' }} mt-1">
-                            {{ isset($subscription) && $subscription->status === 'active' ? 'Online' : 'Offline' }}
+                        <h3 class="text-2xl font-black {{ $isOnline ? 'text-emerald-400' : ($isPending ? 'text-amber-400' : 'text-rose-400') }} mt-1">
+                            {{ $isOnline ? 'Online' : ($isPending ? 'Menunggu Pasang' : 'Terisolir') }}
                         </h3>
                     </div>
                 </div>
@@ -110,12 +136,12 @@
                         <div class="p-3 bg-sky-500/10 text-sky-400 rounded-xl border border-sky-500/20">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                         </div>
-                        <span class="px-2.5 py-1 text-[11px] font-bold text-sky-400 bg-sky-500/10 rounded-lg border border-sky-500/20 uppercase">{{ $subscription->package->speed_mbps ?? 0 }} Mbps</span>
+                        <span class="px-2.5 py-1 text-[11px] font-bold text-sky-400 bg-sky-500/10 rounded-lg border border-sky-500/20 uppercase">{{ $subscription->package->speed_mbps ?? ($customer->lead->package->speed_mbps ?? 0) }} Mbps</span>
                     </div>
                     <div>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Paket Saat Ini</p>
-                        <h3 class="text-xl font-black text-white mt-1 truncate" title="{{ $subscription->package->name ?? 'Belum ada paket' }}">
-                            {{ $subscription->package->name ?? 'Belum ada paket' }}
+                        <h3 class="text-xl font-black text-white mt-1 truncate" title="{{ $subscription->package->name ?? ($customer->lead->package->name ?? 'Belum ada paket') }}">
+                            {{ $subscription->package->name ?? ($customer->lead->package->name ?? 'Belum ada paket') }}
                         </h3>
                     </div>
                 </div>

@@ -194,7 +194,7 @@ class TicketController extends Controller
                     ]);
                 }
 
-                // Buat atau dapatkan Subscription untuk customer ini
+                // Buat atau dapatkan Subscription untuk customer ini (Model: Pasang Dulu, Baru Bayar)
                 $subscription = Subscription::firstOrCreate(
                     ['customer_id' => $customer->id],
                     [
@@ -204,7 +204,7 @@ class TicketController extends Controller
                         'pppoe_password'    => $password,
                         'installation_date' => now()->toDateString(),
                         'billing_due_date'  => now()->addDays(7)->toDateString(),
-                        'status'            => 'active',
+                        'status'            => 'isolated',
                     ]
                 );
 
@@ -219,6 +219,17 @@ class TicketController extends Controller
                 if ($subscription->pppoe_password !== $password) {
                     $subscriptionUpdates['pppoe_password'] = $password;
                 }
+
+                // Tahan akses (Isolasi Awal): Jika belum ada invoice yang lunas, pastikan status tetap terisolir
+                $hasPaidInvoice = Invoice::where('subscription_id', $subscription->id)
+                    ->where('status', 'paid')
+                    ->exists();
+
+                if (!$hasPaidInvoice) {
+                    $subscriptionUpdates['status'] = 'isolated';
+                    $customer->update(['is_isolated' => true]);
+                }
+
                 if (!empty($subscriptionUpdates)) {
                     $subscription->update($subscriptionUpdates);
                 }
@@ -258,6 +269,11 @@ class TicketController extends Controller
             try {
                 $networkService = app(NetworkService::class);
                 $networkService->addCustomer($subscription, $ticket);
+
+                // Jika berstatus terisolir (menunggu pembayaran perdana), pastikan profile/status isolir diterapkan di router
+                if ($subscription->status === 'isolated') {
+                    $networkService->disableCustomer($subscription);
+                }
             } catch (Throwable $e) {
                 Log::error("MikroTik Provisioning Exception pada Tiket #{$ticket->id}: " . $e->getMessage(), [
                     'ticket_id'       => $ticket->id,

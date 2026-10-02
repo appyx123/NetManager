@@ -102,6 +102,34 @@ class WhatsappService
     }
 
     /**
+     * FUNGSI OTOMATIS: Kirim Kredensial Akun Pelanggan Baru (Username & Password)
+     *
+     * @param string $customerName
+     * @param string $phone
+     * @param string $customerCode
+     * @param string $username
+     * @param string $password
+     * @return bool
+     */
+    public static function sendAccountCreated(string $customerName, string $phone, string $customerCode, string $username, string $password): bool
+    {
+        $formattedPhone = self::formatPhoneNumber($phone);
+        $loginUrl = url('/login');
+
+        $message = "Halo *{$customerName}*,\n\n";
+        $message .= "Terima kasih telah berlangganan layanan internet *NetManager* (PT. Mandiri Global Data).\n\n";
+        $message .= "Akun *Client Portal* Anda telah berhasil dibuat:\n";
+        $message .= "🆔 *ID Pelanggan:* {$customerCode}\n";
+        $message .= "📧 *Username/Email:* {$username}\n";
+        $message .= "🔑 *Password:* {$password}\n";
+        $message .= "🌐 *Link Portal:* {$loginUrl}\n\n";
+        $message .= "Tim teknisi kami sedang mempersiapkan jadwal instalasi perangkat ke lokasi Anda. Anda dapat login ke portal terlebih dahulu untuk memantau status pesanan dan melakukan pembayaran setelah pemasangan selesai.\n\n";
+        $message .= "Harap simpan informasi akun ini dengan baik. Terima kasih! 🙏";
+
+        return self::send($formattedPhone, $message);
+    }
+
+    /**
      * FUNGSI OTOMATIS: Kirim Pengingat Tagihan (Invoice Reminder)
      */
     public function sendInvoiceNotification(string $customerName, string $phone, string $invoiceNumber, $amount, string $dueDate): bool

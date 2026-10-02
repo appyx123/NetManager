@@ -159,14 +159,15 @@ class NetworkService
                 ?? $subscription->customer?->customer_code 
                 ?? 'Customer #' . $subscription->customer_id;
             $comment = "NetManager - {$customerName} (Ticket #{$ticket->id})";
+            $isDisabled = ($subscription->status === 'isolated' || ($subscription->customer && $subscription->customer->is_isolated)) ? 'yes' : 'no';
 
             if (!empty($existing) && isset($existing[0]['.id'])) {
-                // Secret sudah ada: update password, caller-id, profile, dan pastikan aktif
+                // Secret sudah ada: update password, caller-id, profile, dan sesuaikan status disabled
                 $setQuery = (new Query('/ppp/secret/set'))
                     ->equal('.id', $existing[0]['.id'])
                     ->equal('password', $password)
                     ->equal('service', 'pppoe')
-                    ->equal('disabled', 'no')
+                    ->equal('disabled', $isDisabled)
                     ->equal('comment', $comment);
 
                 if (!empty($macAddress)) {
@@ -181,14 +182,14 @@ class NetworkService
                 }
 
                 $client->query($setQuery)->read();
-                Log::info("MikroTik: PPPoE Secret {$username} sudah ada, berhasil diperbarui dan diaktifkan.");
+                Log::info("MikroTik: PPPoE Secret {$username} sudah ada, berhasil diperbarui (disabled={$isDisabled}).");
             } else {
-                // Secret belum ada: eksekusi /ppp/secret/add
+                // Secret belum ada: eksekusi /ppp/secret/add dengan status disabled dinamis
                 $addQuery = (new Query('/ppp/secret/add'))
                     ->equal('name', $username)
                     ->equal('password', $password)
                     ->equal('service', 'pppoe')
-                    ->equal('disabled', 'no')
+                    ->equal('disabled', $isDisabled)
                     ->equal('comment', $comment);
 
                 if (!empty($macAddress)) {
@@ -203,7 +204,7 @@ class NetworkService
                 }
 
                 $client->query($addQuery)->read();
-                Log::info("MikroTik: PPPoE Secret {$username} berhasil ditambahkan ke router (caller-id: " . ($macAddress ?? 'none') . ").");
+                Log::info("MikroTik: PPPoE Secret {$username} berhasil ditambahkan ke router (disabled={$isDisabled}, caller-id: " . ($macAddress ?? 'none') . ").");
             }
 
             return true;

@@ -62,6 +62,11 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+// Registrasi mandiri dinonaktifkan: akun pelanggan hanya dibuat melalui proses Marketing
+Route::match(['get', 'post'], '/register', function () {
+    return redirect()->route('login');
+});
+
 // Midtrans Payment Webhook Notification
 Route::post('/midtrans/notification', [MidtransWebhookController::class, 'handleNotification'])->name('midtrans.notification');
 

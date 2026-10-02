@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use App\Services\WhatsappService;
 
 class LeadController extends Controller
 {
@@ -315,9 +317,9 @@ class LeadController extends Controller
         }
 
         DB::transaction(function () use ($lead) {
-            // A. Buat Akun Login User
+            // A. Buat Akun Login User (Password default otomatis: 'password')
             $uniqueId = 'CUST-' . strtoupper(Str::random(5));
-            $password = Str::random(8);
+            $password = 'password';
 
             $user = User::create([
                 'name' => $lead->name,
@@ -327,7 +329,7 @@ class LeadController extends Controller
                 'is_active' => true,
             ]);
 
-            // B. Buat Data Customer
+            // B. Buat Data Customer (Default: is_isolated = true untuk model Pasang Dulu Baru Bayar)
             $customer = Customer::create([
                 'user_id' => $user->id,
                 'lead_id' => $lead->id,
@@ -335,6 +337,7 @@ class LeadController extends Controller
                 'phone_number' => $lead->phone,
                 'address_installation' => $lead->address_installation ?? $lead->address,
                 'coordinates' => $lead->coordinates,
+                'is_isolated' => true,
             ]);
 
             // C. Update Status Lead
@@ -352,12 +355,29 @@ class LeadController extends Controller
             ]);
 
             session()->flash('generated_credential', [
+                'name' => $lead->name,
+                'phone' => $lead->phone,
                 'username' => $user->email,
                 'password' => $password,
                 'code' => $uniqueId,
             ]);
+
+            // E. Otomatis Kirim Kredensial Login (Username & Password) ke WhatsApp Pelanggan
+            if (!empty($lead->phone)) {
+                try {
+                    WhatsappService::sendAccountCreated(
+                        $lead->name,
+                        $lead->phone,
+                        $uniqueId,
+                        $user->email,
+                        $password
+                    );
+                } catch (\Throwable $e) {
+                    Log::error("Gagal mengirim WhatsApp kredensial akun pelanggan baru ({$uniqueId}): " . $e->getMessage());
+                }
+            }
         });
 
-        return redirect()->route('marketing.leads.index')->with('success', 'Konversi Berhasil! Akun Pelanggan & Tiket Instalasi (Jobdesk Teknisi) telah dibuat.');
+        return redirect()->route('marketing.leads.index')->with('success', 'Konversi Berhasil! Akun Pelanggan telah dibuat dan kredensial login otomatis dikirim ke WhatsApp.');
     }
 }
