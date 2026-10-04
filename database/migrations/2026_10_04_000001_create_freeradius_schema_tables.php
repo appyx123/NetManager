@@ -125,6 +125,18 @@ return new class extends Migration
                 $table->index('groupname');
             });
         }
+
+        // 8. radpostauth: Log hasil autentikasi (Access-Accept / Access-Reject)
+        if (!Schema::hasTable('radpostauth')) {
+            Schema::create('radpostauth', function (Blueprint $table) {
+                $table->id();
+                $table->string('username', 64)->default('');
+                $table->string('pass', 64)->default('');
+                $table->string('reply', 32)->default(''); // 'Access-Accept' atau 'Access-Reject'
+                $table->timestamp('authdate')->useCurrent();
+                $table->index('username');
+            });
+        }
     }
 
     /**
@@ -132,6 +144,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('radpostauth');
         Schema::dropIfExists('radgroupreply');
         Schema::dropIfExists('radgroupcheck');
         Schema::dropIfExists('radusergroup');
