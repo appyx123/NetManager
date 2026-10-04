@@ -36,6 +36,7 @@
         <x-toast />
 
         <!-- Guest Navigation Bar -->
+        @if (!request()->routeIs('login') && !request()->is('login'))
         <nav
             class="fixed w-full z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-md shadow-lg border-b border-slate-800">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -70,6 +71,7 @@
                 </div>
             </div>
         </nav>
+        @endif
 
         <div id="particles"></div>
         <div class="font-sans text-white antialiased relative z-10">
