@@ -13,15 +13,15 @@
      x-data="{ open: {} }">
     
     <div class="p-6 border-b border-slate-800/60 bg-slate-950/50 backdrop-blur-xl relative overflow-hidden">
-        <div class="absolute -left-4 -top-4 w-24 h-24 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="absolute -left-4 -top-4 w-24 h-24 bg-sky-500/10 rounded-full blur-2xl pointer-events-none"></div>
         
         <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group relative z-10">
-            <div class="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-[0_0_15px_rgba(99,102,241,0.4)] group-hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] transition-all duration-300">
+            <div class="p-2 bg-slate-900/90 rounded-xl border border-slate-700/80 shadow-[0_0_15px_rgba(2,132,199,0.15)] group-hover:border-sky-500/50 group-hover:shadow-[0_0_20px_rgba(2,132,199,0.3)] transition-all duration-300">
                 <x-application-mark class="w-6 h-6 text-white" />
             </div>
             <div class="flex-1">
                 <div class="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300 tracking-tight group-hover:to-white transition-all">Net Management</div>
-                <div class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-0.5">Professional ISP</div>
+                <div class="text-[10px] font-bold text-sky-400 uppercase tracking-widest mt-0.5">Professional ISP</div>
             </div>
         </a>
     </div>
