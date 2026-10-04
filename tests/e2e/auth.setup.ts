@@ -46,14 +46,14 @@ setup.describe('role authentication setup', () => {
     setup(`authenticate as seeded ${account.role}`, async ({ page }) => {
       await page.goto('/login');
       await page.getByLabel(/Alamat Email|Email Address/i).fill(account.email);
-      await page.getByLabel(/Kata Sandi|Password/i, { exact: false }).fill(testPassword);
+      await page.locator('input#password').fill(testPassword);
       await page.getByRole('button', { name: /^(Login|Sign In)$/i }).click();
 
       if (account.fallbackEmail) {
         const redirected = await page.waitForURL(account.dashboard, { timeout: 4000 }).catch(() => false);
         if (!redirected && page.url().includes('/login')) {
           await page.getByLabel(/Alamat Email|Email Address/i).fill(account.fallbackEmail);
-          await page.getByLabel(/Kata Sandi|Password/i, { exact: false }).fill(testPassword);
+          await page.locator('input#password').fill(testPassword);
           await page.getByRole('button', { name: /^(Login|Sign In)$/i }).click();
         }
       }

@@ -24,7 +24,7 @@ test.describe('authentication', () => {
   test('valid customer credentials redirect to the customer dashboard', async ({ page }) => {
     await page.goto('/login');
     await page.getByLabel(/Alamat Email|Email Address/i).fill(requiredEnv('E2E_CUSTOMER_EMAIL'));
-    await page.getByLabel(/Kata Sandi|Password/i, { exact: false }).fill(requiredEnv('E2E_TEST_PASSWORD'));
+    await page.locator('input#password').fill(requiredEnv('E2E_TEST_PASSWORD'));
     await page.getByRole('button', { name: /^(Login|Sign In)$/i }).click();
 
     await expect(page).toHaveURL(/\/client\/dashboard$/);
@@ -33,7 +33,7 @@ test.describe('authentication', () => {
   test('invalid password keeps the user on login', async ({ page }) => {
     await page.goto('/login');
     await page.getByLabel(/Alamat Email|Email Address/i).fill(requiredEnv('E2E_CUSTOMER_EMAIL'));
-    await page.getByLabel(/Kata Sandi|Password/i, { exact: false }).fill(`${requiredEnv('E2E_TEST_PASSWORD')}-invalid`);
+    await page.locator('input#password').fill(`${requiredEnv('E2E_TEST_PASSWORD')}-invalid`);
     await page.getByRole('button', { name: /^(Login|Sign In)$/i }).click();
 
     await expect(page).toHaveURL(/\/login$/);
@@ -43,7 +43,7 @@ test.describe('authentication', () => {
   test('inactive account is rejected with an activation message', async ({ page }) => {
     await page.goto('/login');
     await page.getByLabel(/Alamat Email|Email Address/i).fill(requiredEnv('E2E_INACTIVE_EMAIL'));
-    await page.getByLabel(/Kata Sandi|Password/i, { exact: false }).fill(requiredEnv('E2E_TEST_PASSWORD'));
+    await page.locator('input#password').fill(requiredEnv('E2E_TEST_PASSWORD'));
     await page.getByRole('button', { name: /^(Login|Sign In)$/i }).click();
 
     await expect(page).toHaveURL(/\/login$/);
