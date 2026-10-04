@@ -36,7 +36,7 @@
             {{-- Unpaid Invoice Warning Alert --}}
             @if($unpaidCount > 0)
                 <div class="mb-8">
-                    <div class="bg-rose-500/10 border-l-4 border-rose-500 p-5 rounded-r-2xl border border-rose-500/20 backdrop-blur-md shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div class="bg-rose-500/10 border border-rose-500/30 p-5 sm:p-6 rounded-2xl backdrop-blur-md shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div class="flex items-start">
                             <div class="p-2.5 bg-rose-500/20 rounded-xl mr-4 mt-0.5 text-rose-400 shrink-0 border border-rose-500/30">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -63,29 +63,30 @@
 
             {{-- Recent Complaints Section --}}
             <div class="mb-8">
-                <div class="bg-slate-900/80 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-slate-800">
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
-                            <h3 class="text-lg font-bold text-white tracking-wide">Pengaduan Terbaru</h3>
-                            <p class="text-sm text-slate-400">Pantau pengaduan yang Anda kirim ke tim teknisi.</p>
+                <div class="bg-slate-900/80 backdrop-blur-md rounded-2xl p-5 sm:p-6 shadow-xl border border-slate-800">
+                    <div class="flex items-start sm:items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-800/80">
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-base sm:text-lg font-bold text-white tracking-wide">Pengaduan Terbaru</h3>
+                            <p class="text-xs sm:text-sm text-slate-400 mt-0.5 leading-relaxed">Pantau pengaduan yang Anda kirim ke tim teknisi.</p>
                         </div>
-                        <a href="{{ route('client.complaints.index') }}" class="text-sm font-bold text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1">
-                            Lihat Semua &rarr;
+                        <a href="{{ route('client.complaints.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 rounded-xl text-xs font-bold shrink-0 whitespace-nowrap transition-all shadow-sm">
+                            <span>Lihat Semua</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                         </a>
                     </div>
-                    <div class="divide-y divide-slate-800/80">
+                    <div class="divide-y divide-slate-800/60">
                         @forelse($recentTickets as $ticket)
-                            <div class="flex items-center justify-between py-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-2 h-2 rounded-full {{ $ticket->status === 'closed' ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse' }}"></div>
-                                    <span class="font-semibold text-slate-200 text-sm">{{ $ticket->subject }}</span>
+                            <div class="flex items-center justify-between py-3 gap-3">
+                                <div class="flex items-center gap-3 min-w-0 flex-1">
+                                    <div class="w-2 h-2 rounded-full shrink-0 {{ $ticket->status === 'closed' ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse' }}"></div>
+                                    <span class="font-semibold text-slate-200 text-sm truncate">{{ $ticket->subject }}</span>
                                 </div>
-                                <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-md {{ $ticket->status === 'closed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20' }}">
+                                <span class="shrink-0 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg {{ $ticket->status === 'closed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20' }}">
                                     {{ $ticket->status }}
                                 </span>
                             </div>
                         @empty
-                            <p class="pt-3 text-sm text-slate-500">Belum ada pengaduan.</p>
+                            <p class="py-3 text-sm text-slate-500">Belum ada pengaduan.</p>
                         @endforelse
                     </div>
                 </div>
@@ -93,7 +94,7 @@
 
             @if(!isset($subscription))
                 <div class="mb-8">
-                    <div class="bg-sky-500/10 border-l-4 border-sky-500 p-5 rounded-r-2xl border border-sky-500/20 backdrop-blur-md shadow-lg flex items-start gap-4">
+                    <div class="bg-sky-500/10 border border-sky-500/30 p-5 sm:p-6 rounded-2xl backdrop-blur-md shadow-lg flex items-start gap-4">
                         <div class="p-2.5 bg-sky-500/20 rounded-xl text-sky-400 shrink-0 border border-sky-500/30">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
@@ -147,18 +148,33 @@
                 </div>
 
                 {{-- Card 3: Status Tagihan --}}
-                <div class="bg-slate-900/80 backdrop-blur-md rounded-2xl p-6 shadow-xl border {{ $unpaidCount > 0 ? 'border-amber-500/30 hover:border-amber-500/50' : 'border-slate-800 hover:border-slate-700' }} transition-all flex flex-col justify-between group">
+                @php
+                    $isBillUnpaid = $unpaidCount > 0 || !isset($subscription) || $subscription->status !== 'active';
+                @endphp
+                <div class="bg-slate-900/80 backdrop-blur-md rounded-2xl p-6 shadow-xl border {{ $isBillUnpaid ? 'border-amber-500/30 hover:border-amber-500/50' : 'border-slate-800 hover:border-slate-700' }} transition-all flex flex-col justify-between group">
                     <div class="flex justify-between items-start mb-4">
-                        <div class="p-3 {{ $unpaidCount > 0 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700' }} rounded-xl">
+                        <div class="p-3 {{ $isBillUnpaid ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' }} rounded-xl">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                         </div>
+                        @if($isBillUnpaid)
+                            <span class="px-2.5 py-1 text-[11px] font-black rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase tracking-wider">
+                                Belum Bayar
+                            </span>
+                        @else
+                            <span class="px-2.5 py-1 text-[11px] font-black rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
+                                Lunas
+                            </span>
+                        @endif
                     </div>
                     <div>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Status Tagihan</p>
-                        @if($unpaidCount > 0)
-                            <h3 class="text-2xl font-black text-amber-400 mt-1">{{ $unpaidCount }} Tunggakan</h3>
+                        @if($isBillUnpaid)
+                            <h3 class="text-2xl font-black text-amber-400 mt-1">Belum Lunas</h3>
+                            @if($unpaidCount > 0)
+                                <p class="text-xs text-slate-400 mt-1">Rp {{ number_format($totalUnpaid, 0, ',', '.') }}</p>
+                            @endif
                         @else
-                            <h3 class="text-2xl font-black text-white mt-1">Lunas Semua</h3>
+                            <h3 class="text-2xl font-black text-emerald-400 mt-1">Lunas Semua</h3>
                         @endif
                     </div>
                 </div>

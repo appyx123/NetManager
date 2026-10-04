@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\Ticket;
 use App\Models\Customer;
 use App\Models\Package;
+use App\Models\Subscription;
+use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -94,6 +96,7 @@ class LeadController extends Controller
                     'landmark' => $request->landmark,
                     'coordinates' => $request->coordinates,
                     'package_id' => $request->package_id,
+                    'installation_fee' => $request->filled('installation_fee') ? (float) preg_replace('/[^0-9]/', '', (string) $request->installation_fee) : 0,
                     'promo_code' => $request->promo_code,
                     'status' => 'prospek',
                     'source' => $request->source,
@@ -220,6 +223,7 @@ class LeadController extends Controller
                     'landmark' => $request->landmark,
                     'coordinates' => $request->coordinates,
                     'package_id' => $request->package_id,
+                    'installation_fee' => $request->filled('installation_fee') ? (float) preg_replace('/[^0-9]/', '', (string) $request->installation_fee) : 0,
                     'promo_code' => $request->promo_code,
                     'status' => $request->status ?? $lead->status, // Mengizinkan update status
                     'source' => $request->source,
@@ -352,6 +356,29 @@ class LeadController extends Controller
                 'description' => 'Instalasi pelanggan baru ' . $lead->name . '. Paket: ' . ($lead->package->name ?? '-') . '. Alamat: ' . ($lead->address_installation ?? $lead->address),
                 'connection_type' => 'fiber',
                 'notes' => $lead->notes_summary ?? null,
+            ]);
+
+            // E. Buat Subscription Awal (Status isolated: Menunggu Pembayaran & Selesai Pasang)
+            $package = $lead->package ?? ($lead->package_id ? Package::find($lead->package_id) : null);
+            $subscription = Subscription::create([
+                'customer_id'       => $customer->id,
+                'package_id'        => $lead->package_id,
+                'status'            => 'isolated',
+                'installation_date' => now()->toDateString(),
+                'billing_due_date'  => now()->addDays(7)->toDateString(),
+            ]);
+
+            // F. Buat Tagihan Perdana (Gabungan Biaya Paket + Biaya Instalasi)
+            $packagePrice = $package ? (float) $package->price : 0;
+            $installationFee = (float) ($lead->installation_fee ?? $package?->installation_fee ?? 0);
+            $initialAmount = $packagePrice + $installationFee;
+
+            Invoice::create([
+                'subscription_id' => $subscription->id,
+                'invoice_number'  => 'INV-' . strtoupper(Str::random(8)),
+                'amount'          => $initialAmount,
+                'status'          => 'unpaid',
+                'due_date'        => now()->addDays(7)->toDateString(),
             ]);
 
             session()->flash('generated_credential', [

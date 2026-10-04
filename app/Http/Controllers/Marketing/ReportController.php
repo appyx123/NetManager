@@ -110,18 +110,29 @@ class ReportController extends Controller
         }
         unset($trend);
 
-        // Daily activity breakdown (10 hari terakhir dari akhir periode)
+        // Daily activity breakdown (30 hari terakhir dari akhir periode)
         $dailyBreakdown = [];
         $endDate = $dateRange[1]->isFuture() ? now() : $dateRange[1];
-        for ($d = 0; $d < 10; $d++) {
+        $startDate = (clone $endDate)->subDays(29)->startOfDay();
+
+        $leadsByDate = (clone $baseLeads)
+            ->whereBetween('created_at', [$startDate, (clone $endDate)->endOfDay()])
+            ->selectRaw('DATE(created_at) as log_date, COUNT(*) as count')
+            ->groupBy('log_date')
+            ->pluck('count', 'log_date');
+
+        $convByDate = (clone $baseLeads)
+            ->where('status', 'aktif')
+            ->whereBetween('updated_at', [$startDate, (clone $endDate)->endOfDay()])
+            ->selectRaw('DATE(updated_at) as log_date, COUNT(*) as count')
+            ->groupBy('log_date')
+            ->pluck('count', 'log_date');
+
+        for ($d = 0; $d < 30; $d++) {
             $date = (clone $endDate)->subDays($d);
-            $leadsCount = (clone $baseLeads)
-                ->whereDate('created_at', $date)
-                ->count();
-            $convCount = (clone $baseLeads)
-                ->where('status', 'aktif')
-                ->whereDate('updated_at', $date)
-                ->count();
+            $dateStr = $date->format('Y-m-d');
+            $leadsCount = (int) ($leadsByDate[$dateStr] ?? 0);
+            $convCount = (int) ($convByDate[$dateStr] ?? 0);
             $rate = $leadsCount > 0 ? round(($convCount / $leadsCount) * 100, 1) : 0;
             $estRev = $convCount * 150000;
 

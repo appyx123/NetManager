@@ -132,8 +132,9 @@
                     confirmButtonText: 'Ya, Logout',
                     cancelButtonText: 'Batal',
                     customClass: {
-                        popup: 'border border-slate-700 rounded-2xl',
-                        cancelButton: 'border border-slate-700 hover:bg-slate-700 text-white transition-colors'
+                        popup: 'border border-slate-700 rounded-2xl shadow-2xl',
+                        confirmButton: 'font-bold px-5 py-2.5 rounded-xl',
+                        cancelButton: 'border border-slate-700 hover:bg-slate-700 text-white font-bold px-5 py-2.5 rounded-xl transition-colors'
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
@@ -143,6 +144,59 @@
                         } else if (source === 'header') {
                             document.getElementById('logout-form-header').submit();
                         }
+                    }
+                });
+            }
+
+            function confirmDelete(form, itemName) {
+                Swal.fire({
+                    title: 'Hapus Data?',
+                    html: `Data <strong>${itemName || ''}</strong> akan dihapus permanen dari sistem!`,
+                    icon: 'warning',
+                    background: '#0f172a',
+                    color: '#f8fafc',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e11d48',
+                    cancelButtonColor: '#1e293b',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        popup: 'border border-slate-700 rounded-2xl shadow-2xl',
+                        confirmButton: 'font-bold px-5 py-2.5 rounded-xl',
+                        cancelButton: 'border border-slate-700 hover:bg-slate-700 text-white font-bold px-5 py-2.5 rounded-xl transition-colors'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        if (typeof form === 'string') {
+                            const el = document.getElementById(form);
+                            if (el) el.submit();
+                        } else if (form && typeof form.submit === 'function') {
+                            form.submit();
+                        }
+                    }
+                });
+            }
+
+            function confirmConvert(form, itemName) {
+                Swal.fire({
+                    title: 'Konversi ke Pelanggan?',
+                    html: `Prospek <strong>${itemName || ''}</strong> akan dikonversi menjadi pelanggan aktif dan tiket instalasi akan otomatis dibuat.`,
+                    icon: 'question',
+                    background: '#0f172a',
+                    color: '#f8fafc',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0284c7',
+                    cancelButtonColor: '#1e293b',
+                    confirmButtonText: 'Ya, Konversi!',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        popup: 'border border-slate-700 rounded-2xl shadow-2xl',
+                        confirmButton: 'font-bold px-5 py-2.5 rounded-xl',
+                        cancelButton: 'border border-slate-700 hover:bg-slate-700 text-white font-bold px-5 py-2.5 rounded-xl transition-colors'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed && form && typeof form.submit === 'function') {
+                        form.submit();
                     }
                 });
             }

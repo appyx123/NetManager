@@ -220,8 +220,14 @@
                                 <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Biaya Pemasangan (Registration Fee)</label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none font-bold text-slate-500">Rp</div>
-                                    <input type="number" name="installation_fee" value="{{ old('installation_fee', $lead->installation_fee ?? 0) }}"
-                                        class="w-full pl-12 pr-5 py-4 bg-slate-800/50 border border-slate-700 text-emerald-400 rounded-2xl focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-bold">
+                                    <input type="text"
+                                        inputmode="numeric"
+                                        name="installation_fee"
+                                        id="installation_fee"
+                                        value="{{ old('installation_fee', $lead->installation_fee) ? number_format((float) preg_replace('/[^0-9]/', '', (string) old('installation_fee', $lead->installation_fee)), 0, ',', '.') : '' }}"
+                                        placeholder="0"
+                                        oninput="let v = this.value.replace(/\D/g, ''); this.value = v ? new Intl.NumberFormat('id-ID').format(v) : '';"
+                                        class="w-full pl-12 pr-5 py-4 bg-slate-800/50 border border-slate-700 text-emerald-400 placeholder-slate-600 rounded-2xl focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-bold">
                                 </div>
                             </div>
                         </div>

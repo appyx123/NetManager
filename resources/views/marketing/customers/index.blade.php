@@ -31,16 +31,11 @@
                     </div>
                     <div class="space-y-2">
                         <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Status Layanan</label>
-                        <div class="relative group">
-                            <select name="status" class="w-full px-5 py-4 bg-slate-800/50 border border-slate-700 text-white rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all appearance-none cursor-pointer font-bold">
-                                <option value="" class="bg-slate-900">Semua Status</option>
-                                <option value="aktif" class="bg-slate-900 text-emerald-400" @selected(request('status') === 'aktif')>Aktif</option>
-                                <option value="nonaktif" class="bg-slate-900 text-rose-400" @selected(request('status') === 'nonaktif')>Nonaktif (Terisolir)</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-5 flex items-center pointer-events-none text-slate-500">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
-                            </div>
-                        </div>
+                        <select name="status" class="w-full px-5 py-4 bg-slate-800/50 border border-slate-700 text-white rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all cursor-pointer font-bold">
+                            <option value="" class="bg-slate-900">Semua Status</option>
+                            <option value="aktif" class="bg-slate-900 text-emerald-400" @selected(request('status') === 'aktif')>Aktif</option>
+                            <option value="nonaktif" class="bg-slate-900 text-rose-400" @selected(request('status') === 'nonaktif')>Nonaktif (Terisolir)</option>
+                        </select>
                     </div>
                     <div class="flex gap-2">
                         <button type="submit" class="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:bg-indigo-500 hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 tracking-widest uppercase text-xs">

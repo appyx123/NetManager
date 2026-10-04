@@ -20,7 +20,7 @@
                                 <form action="{{ route('superadmin.master.destroyArea', $area->id) }}" method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-500 hover:text-red-400 text-sm font-medium transition" onclick="return confirm('Yakin ingin menghapus area ini?')">Hapus</button>
+                                    <button type="button" class="text-red-500 hover:text-red-400 text-sm font-medium transition" onclick="confirmDelete(this.closest('form'), 'Area {{ addslashes($area->name) }}')">Hapus</button>
                                 </form>
                             </div>
                         @empty

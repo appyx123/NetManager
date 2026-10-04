@@ -166,7 +166,7 @@
                             IT di berbagai Instansi Pemerintah maupun Swasta.
                         </p>
                         <blockquote
-                            class="border-l-4 border-amber-500 bg-slate-800 p-6 rounded-r-xl italic font-medium text-white my-6 shadow-sm">
+                            class="border border-amber-500/30 bg-slate-800/80 p-6 rounded-2xl italic font-medium text-white my-6 shadow-sm">
                             "Merencanakan solusi secara jelas dan memberikan teknologi terkini adalah komitmen kami."
                         </blockquote>
                     </div>

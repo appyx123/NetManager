@@ -240,16 +240,20 @@ class TicketController extends Controller
                     ->first();
 
                 if (!$existingUnpaidInvoice) {
-                    $package = $subscription->package ?? Package::find($subscription->package_id);
-                    $amount = $package ? $package->price : 0;
+                    $hasPaidInvoice = Invoice::where('subscription_id', $subscription->id)->where('status', 'paid')->exists();
+                    if (!$hasPaidInvoice) {
+                        $package = $subscription->package ?? Package::find($subscription->package_id);
+                        $installationFee = (float) ($customer->lead?->installation_fee ?? $package?->installation_fee ?? 0);
+                        $amount = ($package ? (float) $package->price : 0) + $installationFee;
 
-                    Invoice::create([
-                        'subscription_id' => $subscription->id,
-                        'invoice_number'  => 'INV-' . strtoupper(Str::random(8)),
-                        'amount'          => $amount,
-                        'status'          => 'unpaid',
-                        'due_date'        => now()->addDays(7)->toDateString(),
-                    ]);
+                        Invoice::create([
+                            'subscription_id' => $subscription->id,
+                            'invoice_number'  => 'INV-' . strtoupper(Str::random(8)),
+                            'amount'          => $amount,
+                            'status'          => 'unpaid',
+                            'due_date'        => now()->addDays(7)->toDateString(),
+                        ]);
+                    }
                 }
 
                 // Update status lead ke aktif jika ada

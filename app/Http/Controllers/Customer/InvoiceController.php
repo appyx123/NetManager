@@ -69,24 +69,45 @@ class InvoiceController extends Controller
             $customerUser = $invoice->subscription->customer->user ?? Auth::user();
             $customerProfile = $invoice->subscription->customer;
 
+            $package = $invoice->subscription->package;
+            $packagePrice = $package ? (int) $package->price : 0;
+            $totalAmount = (int) $invoice->amount;
+            $installationFee = $totalAmount > $packagePrice ? ($totalAmount - $packagePrice) : 0;
+
+            $itemDetails = [];
+            if ($packagePrice > 0 && $installationFee > 0) {
+                $itemDetails[] = [
+                    'id'       => 'PKG-' . ($package->id ?? 1),
+                    'price'    => $packagePrice,
+                    'quantity' => 1,
+                    'name'     => 'Paket: ' . ($package->name ?? 'Internet Service'),
+                ];
+                $itemDetails[] = [
+                    'id'       => 'FEE-INST',
+                    'price'    => $installationFee,
+                    'quantity' => 1,
+                    'name'     => 'Biaya Instalasi / Pasang Baru',
+                ];
+            } else {
+                $itemDetails[] = [
+                    'id'       => 'INV-' . $invoice->id,
+                    'price'    => $totalAmount,
+                    'quantity' => 1,
+                    'name'     => 'Langganan Internet: ' . ($package->name ?? 'Internet Service'),
+                ];
+            }
+
             $params = [
                 'transaction_details' => [
                     'order_id' => $invoice->invoice_number,
-                    'gross_amount' => (int) $invoice->amount,
+                    'gross_amount' => $totalAmount,
                 ],
                 'customer_details' => [
                     'first_name' => $customerProfile->name ?? $customerUser->name,
                     'email' => $customerUser->email,
                     'phone' => $customerProfile->phone_number ?? '',
                 ],
-                'item_details' => [
-                    [
-                        'id' => 'INV-' . $invoice->id,
-                        'price' => (int) $invoice->amount,
-                        'quantity' => 1,
-                        'name' => 'Langganan Internet: ' . ($invoice->subscription->package->name ?? 'Internet Service'),
-                    ]
-                ],
+                'item_details' => $itemDetails,
             ];
 
             try {

@@ -50,8 +50,8 @@
 
                     <form action="{{ route('superadmin.maintenance.clearCache') }}" method="POST">
                         @csrf
-                        <button type="submit" class="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-sm mb-2"
-                            onclick="return confirm('Hapus semua cache?')">
+                        <button type="button" class="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-sm mb-2"
+                            onclick="confirmDelete(this.closest('form'), 'seluruh cache sistem')">
                             Hapus Cache
                         </button>
                     </form>
@@ -86,8 +86,8 @@
                         <p class="text-sm text-slate-300 mb-4">Hapus file log yang sudah lama</p>
                         <form action="{{ route('superadmin.maintenance.clearLogs') }}" method="POST">
                             @csrf
-                            <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
-                                onclick="return confirm('Hapus log lama?')">
+                            <button type="button" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
+                                onclick="confirmDelete(this.closest('form'), 'berkas log sistem lama')">
                                 Bersihkan Log
                             </button>
                         </form>
@@ -109,8 +109,8 @@
                         <p class="text-sm text-slate-300 mb-4">Hapus semua cache aplikasi</p>
                         <form action="{{ route('superadmin.maintenance.clearCache') }}" method="POST">
                             @csrf
-                            <button type="submit" class="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-sm"
-                                onclick="return confirm('Hapus cache?')">
+                            <button type="button" class="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-sm"
+                                onclick="confirmDelete(this.closest('form'), 'seluruh cache aplikasi')">
                                 Clear Cache
                             </button>
                         </form>

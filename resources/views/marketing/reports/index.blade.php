@@ -23,8 +23,8 @@
                             <svg class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
 
-                        <div x-show="open" x-transition.origin.top.right x-cloak
-                            class="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 py-1.5 backdrop-blur-md">
+                        <div x-show="open" x-transition x-cloak
+                            class="absolute left-0 md:left-auto md:right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 py-1.5 backdrop-blur-md">
                             @foreach ($periodLabels as $key => $label)
                                 <a href="{{ route('marketing.reports.index', ['period' => $key]) }}"
                                     class="flex items-center justify-between px-4 py-2.5 text-xs font-semibold transition-colors {{ ($period ?? 'all') === $key ? 'bg-indigo-600/10 text-indigo-400 font-bold border-l-2 border-indigo-500' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
@@ -162,13 +162,14 @@
             </div>
 
             {{-- Daily Breakdown Table --}}
-            <div class="bg-slate-900/80 backdrop-blur-md rounded-[2.5rem] shadow-2xl border border-slate-800 overflow-hidden relative mb-12">
-                <div class="p-8 border-b border-slate-800/60 bg-gradient-to-r from-slate-900 to-transparent flex items-center justify-between">
+            <div class="bg-slate-900/80 backdrop-blur-md rounded-[2.5rem] shadow-2xl border border-slate-800 overflow-hidden relative mb-12"
+                 x-data="{ showAll: {{ request('history') === 'all' ? 'true' : 'false' }} }">
+                <div class="p-6 sm:p-8 border-b border-slate-800/60 bg-gradient-to-r from-slate-900 to-transparent flex items-center justify-between">
                     <div class="flex items-center gap-4">
                         <div class="p-2 bg-slate-800 rounded-xl text-indigo-400 border border-slate-700">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
-                        <h4 class="text-lg font-black text-white tracking-tight uppercase">Log Aktivitas 10 Hari Terakhir</h4>
+                        <h4 class="text-lg font-black text-white tracking-tight uppercase" x-text="showAll ? 'Log Aktivitas Seluruh Riwayat' : 'Log Aktivitas 10 Hari Terakhir'">Log Aktivitas 10 Hari Terakhir</h4>
                     </div>
                 </div>
 
@@ -185,8 +186,10 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-800/60 text-sm font-medium">
-                            @forelse ($dailyBreakdown as $row)
-                                <tr class="hover:bg-slate-800/40 transition-all duration-300 group">
+                            @forelse ($dailyBreakdown as $index => $row)
+                                <tr class="hover:bg-slate-800/40 transition-all duration-300 group"
+                                    x-show="showAll || {{ $index }} < 10"
+                                    x-cloak>
                                     <td class="px-8 py-6 text-white font-bold tracking-tight">
                                         {{ $row['date']->format('d M Y') }}
                                     </td>
@@ -211,9 +214,17 @@
                     </table>
                 </div>
 
-                <div class="px-8 py-6 bg-slate-900/50 border-t border-slate-800 flex items-center justify-between">
-                    <span class="text-[10px] text-slate-500 font-black uppercase tracking-widest">Showing last 10 audit logs</span>
-                    <button class="px-6 py-2 bg-slate-800 border border-slate-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-600 transition-all">View All History</button>
+                <div class="px-5 sm:px-8 py-4 sm:py-6 bg-slate-900/50 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <span class="text-[10px] text-slate-500 font-black uppercase tracking-widest text-center sm:text-left"
+                          x-text="showAll ? 'Menampilkan riwayat lengkap ({{ count($dailyBreakdown) }} hari)' : 'Showing last 10 audit logs'">
+                        Showing last 10 audit logs
+                    </span>
+                    <button type="button"
+                            @click="showAll = !showAll"
+                            class="px-6 py-2.5 bg-slate-800 hover:bg-indigo-600 border border-slate-700 hover:border-indigo-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer w-full sm:w-auto text-center"
+                            x-text="showAll ? 'Tampilkan 10 Hari' : 'View All History'">
+                        View All History
+                    </button>
                 </div>
             </div>
 

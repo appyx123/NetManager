@@ -9,157 +9,164 @@
                 </a>
             </div>
 
-            <div class="bg-slate-900/80 backdrop-blur-md shadow-2xl rounded-3xl border border-slate-800 overflow-hidden relative">
+            <div class="bg-slate-900/80 backdrop-blur-md shadow-2xl rounded-2xl border border-slate-800 overflow-hidden relative p-5 sm:p-8">
                 
-                @if($invoice->status === 'paid')
-                    <div class="absolute top-0 right-0 -mr-10 mt-6 transform rotate-45 bg-emerald-600/90 text-white font-black py-1 px-14 shadow-lg border-y border-emerald-400/50 uppercase tracking-widest text-xs z-10 text-center">
-                        LUNAS
-                    </div>
-                @else
-                    <div class="absolute top-0 right-0 -mr-10 mt-6 transform rotate-45 bg-rose-600/90 text-white font-black py-1 px-14 shadow-lg border-y border-rose-400/50 uppercase tracking-widest text-xs z-10 text-center">
-                        BELUM BAYAR
-                    </div>
-                @endif
-
-                <div class="p-8 md:p-12 relative z-0">
-                    <div class="absolute -left-20 -top-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-                    <div class="flex flex-col sm:flex-row justify-between items-start border-b border-slate-800/60 pb-8 mb-10 relative">
-                        <div class="mb-6 sm:mb-0">
-                            <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 tracking-tighter uppercase drop-shadow-sm">TAGIHAN</h1>
-                            <p class="text-indigo-300 mt-2 font-mono font-bold bg-indigo-500/10 inline-block px-3 py-1 rounded-lg border border-indigo-500/20 shadow-inner">#{{ $invoice->invoice_number }}</p>
+                {{-- Card Header: Title & Status Badge --}}
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-5 mb-5">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/20 shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         </div>
-                        <div class="text-left sm:text-right text-sm text-slate-400 space-y-2">
-                            <p><span class="font-bold text-slate-300">Tanggal Terbit:</span> <br class="sm:hidden">{{ $invoice->created_at->format('d F Y') }}</p>
-                            <p><span class="font-bold text-slate-300">Jatuh Tempo:</span> <br class="sm:hidden"><span class="{{ $invoice->due_date < now() && $invoice->status == 'unpaid' ? 'text-rose-400 font-bold bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20' : 'text-white font-medium' }}">{{ $invoice->due_date ? $invoice->due_date->format('d F Y') : '-' }}</span></p>
-                            @if($invoice->status === 'paid')
-                                <p class="text-emerald-400 font-bold mt-3 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 inline-block">Dibayar pada: {{ $invoice->paid_at ? $invoice->paid_at->format('d M Y, H:i') : '-' }}</p>
+                        <div class="min-w-0">
+                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Detail Tagihan</span>
+                            <h1 class="text-base sm:text-xl font-black text-white font-mono tracking-tight truncate">{{ $invoice->invoice_number }}</h1>
+                        </div>
+                    </div>
+                    <div class="shrink-0">
+                        @if($invoice->status === 'paid')
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider shadow-sm">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                Lunas
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-rose-500/10 text-rose-400 border border-rose-500/20 uppercase tracking-wider shadow-sm">
+                                <span class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>
+                                Belum Bayar
+                            </span>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Metadata Strip: Terbit, Jatuh Tempo, ID Pelanggan --}}
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 bg-slate-950/60 rounded-xl border border-slate-800/80 mb-5 text-xs">
+                    <div>
+                        <span class="text-slate-500 font-bold block uppercase tracking-wider text-[10px]">Tanggal Terbit</span>
+                        <span class="text-slate-200 font-semibold mt-0.5 block">{{ $invoice->created_at->format('d M Y') }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 font-bold block uppercase tracking-wider text-[10px]">Jatuh Tempo</span>
+                        <span class="font-semibold mt-0.5 block {{ $invoice->due_date < now() && $invoice->status == 'unpaid' ? 'text-rose-400 font-bold' : 'text-slate-200' }}">
+                            {{ $invoice->due_date ? $invoice->due_date->format('d M Y') : '-' }}
+                        </span>
+                    </div>
+                    <div class="col-span-2 sm:col-span-1">
+                        <span class="text-slate-500 font-bold block uppercase tracking-wider text-[10px]">ID Pelanggan</span>
+                        <span class="text-amber-400 font-mono font-bold mt-0.5 block">{{ $invoice->subscription->customer->customer_code ?? '-' }}</span>
+                    </div>
+                </div>
+
+                {{-- Bipartite Info: Ditagihkan & Info Layanan --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-5">
+                    <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 text-xs">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ditagihkan Kepada</p>
+                        <p class="text-sm font-bold text-white">{{ Auth::user()->name }}</p>
+                        <p class="text-slate-400 mt-1 leading-relaxed">{{ $invoice->subscription->customer->address_installation ?? 'Alamat instalasi' }}</p>
+                        <p class="text-indigo-400 font-semibold mt-1.5">{{ $invoice->subscription->customer->phone_number ?? '-' }}</p>
+                    </div>
+                    <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 text-xs flex flex-col justify-between">
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Layanan Internet</p>
+                            <p class="text-sm font-bold text-white">{{ $invoice->subscription->package->name ?? '-' }}</p>
+                            <p class="text-slate-400 mt-0.5">{{ $invoice->subscription->package->speed_mbps ?? '-' }} Mbps Kecepatan Tanpa Batas</p>
+                        </div>
+                        @if($invoice->status === 'paid' && $invoice->paid_at)
+                            <div class="mt-2.5 pt-2 border-t border-slate-700/50 text-[11px] text-emerald-400 font-semibold">
+                                ✓ Lunas pada {{ $invoice->paid_at->format('d M Y, H:i') }}
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Breakdown Table --}}
+                <div class="border border-slate-700/60 rounded-xl overflow-hidden mb-6 shadow-sm bg-slate-800/20 text-xs">
+                    <table class="min-w-full divide-y divide-slate-700/50">
+                        <thead class="bg-slate-800/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            <tr>
+                                <th class="px-4 py-2.5 text-left">Rincian Item</th>
+                                <th class="px-4 py-2.5 text-right">Nominal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700/30">
+                            <tr>
+                                <td class="px-4 py-3 text-slate-200">
+                                    <span class="font-semibold text-white">Paket {{ $invoice->subscription->package->name ?? 'Internet' }}</span>
+                                    <span class="text-[11px] text-slate-400 block mt-0.5">Biaya langganan internet</span>
+                                </td>
+                                <td class="px-4 py-3 text-white font-bold text-right whitespace-nowrap">
+                                    Rp {{ number_format($invoice->subscription->package->price ?? 0, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            @if($invoice->amount > ($invoice->subscription->package->price ?? 0))
+                                <tr>
+                                    <td class="px-4 py-3 text-slate-200">
+                                        <span class="font-semibold text-white">Biaya Pemasangan & Registrasi</span>
+                                        <span class="text-[11px] text-slate-400 block mt-0.5">Instalasi awal & penarikan kabel</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-white font-bold text-right whitespace-nowrap">
+                                        Rp {{ number_format($invoice->amount - ($invoice->subscription->package->price ?? 0), 0, ',', '.') }}
+                                    </td>
+                                </tr>
                             @endif
+                        </tbody>
+                        <tfoot class="bg-slate-950/80 border-t border-slate-700/80">
+                            <tr>
+                                <td class="px-4 py-3 font-bold text-slate-400 uppercase tracking-wider text-[11px]">Total Tagihan</td>
+                                <td class="px-4 py-3 text-right font-black text-lg text-amber-400 whitespace-nowrap">
+                                    Rp {{ number_format($invoice->amount, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                {{-- Action & Payment Section --}}
+                <div class="flex flex-col items-center">
+                    @if(session('info'))
+                        <div class="w-full max-w-md mb-3 px-3 py-2 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 font-semibold text-xs text-center">
+                            {{ session('info') }}
                         </div>
-                    </div>
+                    @endif
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12 relative">
-                        <div class="bg-slate-800/30 p-6 rounded-2xl border border-slate-700/50">
-                            <span class="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 mb-4">
-                                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                Ditagihkan Kepada
-                            </span>
-                            <h3 class="text-xl font-bold text-white">{{ Auth::user()->name }}</h3>
-                            <p class="text-slate-400 text-sm mt-2 leading-relaxed">{{ $invoice->subscription->customer->address_installation ?? 'Alamat instalasi belum tersedia' }}</p>
-                            <p class="text-indigo-300 text-sm font-bold mt-3">{{ $invoice->subscription->customer->phone_number ?? '-' }}</p>
+                    @if(session('error'))
+                        <div class="w-full max-w-md mb-3 px-3 py-2 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 font-semibold text-xs text-center">
+                            {{ session('error') }}
                         </div>
-                        <div class="bg-slate-800/30 p-6 rounded-2xl border border-slate-700/50 md:text-right flex flex-col md:items-end">
-                            <span class="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center md:flex-row-reverse gap-2 mb-4">
-                                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-                                Info Layanan
-                            </span>
-                            <p class="text-white font-bold mt-1 text-xl">{{ $invoice->subscription->package->name ?? '-' }}</p>
-                            <p class="text-slate-400 text-sm mt-1">Kecepatan Optimal Tanpa Batas</p>
-                            <div class="mt-auto pt-4 w-full md:w-auto">
-                                <p class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">ID Pelanggan</p>
-                                <p class="text-amber-400 font-mono font-bold bg-slate-950 px-3 py-1 rounded border border-slate-700 inline-block">{{ $invoice->subscription->customer->customer_code ?? '-' }}</p>
-                            </div>
-                        </div>
-                    </div>
+                    @endif
 
-                    <div class="border border-slate-700/60 rounded-2xl overflow-hidden mb-12 shadow-lg bg-slate-800/20">
-                        <table class="min-w-full divide-y divide-slate-700/50">
-                            <thead class="bg-slate-800/80">
-                                <tr>
-                                    <th class="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Deskripsi Layanan / Item</th>
-                                    <th class="px-6 py-4 text-right text-xs font-black text-slate-400 uppercase tracking-widest">Nominal</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-700/30">
-                                <tr class="hover:bg-slate-800/40 transition-colors">
-                                    <td class="px-6 py-5 text-sm text-slate-200 font-medium">Biaya Berlangganan Internet - <span class="text-indigo-300">{{ $invoice->subscription->package->name ?? '-' }}</span></td>
-                                    <td class="px-6 py-5 text-base text-white font-bold text-right">Rp {{ number_format($invoice->subscription->package->price ?? 0, 0, ',', '.') }}</td>
-                                </tr>
-                                @if($invoice->amount > ($invoice->subscription->package->price ?? 0))
-                                <tr class="hover:bg-slate-800/40 transition-colors">
-                                    <td class="px-6 py-5 text-sm text-slate-200 font-medium">Biaya Instalasi / Penyesuaian / Denda Keterlambatan</td>
-                                    <td class="px-6 py-5 text-base text-white font-bold text-right">Rp {{ number_format($invoice->amount - ($invoice->subscription->package->price ?? 0), 0, ',', '.') }}</td>
-                                </tr>
-                                @endif
-                            </tbody>
-                            <tfoot class="bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border-t-2 border-indigo-500/30">
-                                <tr>
-                                    <td class="px-6 py-6 text-right font-black text-indigo-300 uppercase tracking-widest text-sm">Total Tagihan Keseluruhan</td>
-                                    <td class="px-6 py-6 text-right font-black text-2xl text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 drop-shadow-md">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-
-                    <div class="flex flex-col items-center">
-
-                        {{-- Flash: Info (sudah lunas / notifikasi) --}}
-                        @if(session('info'))
-                            <div class="w-full max-w-md mb-4 px-4 py-3 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 font-semibold text-sm text-center">
-                                {{ session('info') }}
-                            </div>
-                        @endif
-
-                        {{-- Flash: Error --}}
-                        @if(session('error'))
-                            <div class="w-full max-w-md mb-4 px-4 py-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 font-semibold text-sm text-center">
-                                {{ session('error') }}
-                            </div>
-                        @endif
-
-                        {{-- Flash: Payment Info (instruksi pembayaran manual) --}}
-                        @if(session('payment_info'))
-                            @php $pi = session('payment_info'); @endphp
-                            <div class="w-full max-w-md mb-6 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl p-6 text-left">
-                                <h4 class="font-bold text-indigo-300 mb-3 text-center">Instruksi Pembayaran</h4>
-                                <div class="space-y-2 text-sm text-slate-300">
-                                    <p><span class="text-slate-500">No. Tagihan:</span> <strong class="font-mono">{{ $pi['invoice_number'] }}</strong></p>
-                                    <p><span class="text-slate-500">Jumlah:</span> <strong>Rp {{ number_format($pi['amount'], 0, ',', '.') }}</strong></p>
-                                    <p><span class="text-slate-500">Jatuh Tempo:</span> <strong>{{ \Carbon\Carbon::parse($pi['due_date'])->format('d F Y') }}</strong></p>
-                                </div>
-                                <p class="mt-4 text-xs text-slate-400 border-t border-slate-700 pt-3">Silakan transfer ke rekening yang tertera dalam perjanjian langganan Anda, lalu hubungi tim kami untuk konfirmasi pembayaran.</p>
-                            </div>
-                        @endif
-
-                        @if($invoice->status === 'unpaid')
-                            <div class="bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 mb-6 w-full max-w-md text-center">
-                                <p class="text-sm font-semibold text-rose-400">Silakan selesaikan pembayaran sebelum tanggal jatuh tempo agar layanan internet Anda tidak terputus.</p>
-                            </div>
-
+                    @if($invoice->status === 'unpaid')
+                        <div class="w-full max-w-md flex flex-col items-center gap-2.5">
                             @if($invoice->snap_token)
-                                <button type="button" id="pay-button" class="w-full sm:w-auto px-12 py-4 bg-indigo-600 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:bg-indigo-500 hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center text-lg cursor-pointer">
-                                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                                <button type="button" id="pay-button" class="w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-xl shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer active:scale-95">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                                     Bayar Tagihan Sekarang
                                 </button>
                             @else
-                                <form action="{{ route('client.billing.pay', $invoice) }}" method="POST" class="w-full sm:w-auto">
+                                <form action="{{ route('client.billing.pay', $invoice) }}" method="POST" class="w-full">
                                     @csrf
-                                    <button type="submit" id="pay-button" class="w-full sm:w-auto px-12 py-4 bg-indigo-600 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:bg-indigo-500 hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center text-lg cursor-pointer">
-                                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                                    <button type="submit" id="pay-button" class="w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-xl shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer active:scale-95">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                                         Bayar Tagihan Sekarang
                                     </button>
                                 </form>
                             @endif
 
-                            <form id="check-status-form" action="{{ route('client.billing.checkStatus', $invoice) }}" method="POST" class="mt-4">
+                            <form id="check-status-form" action="{{ route('client.billing.checkStatus', $invoice) }}" method="POST" class="w-full">
                                 @csrf
-                                <button type="submit" class="text-sm text-indigo-400 hover:text-indigo-300 font-semibold flex items-center justify-center gap-2 transition-colors py-1.5 px-4 rounded-lg bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                <button type="submit" class="w-full text-xs text-slate-400 hover:text-white font-semibold flex items-center justify-center gap-2 transition-colors py-2 px-4 rounded-xl bg-slate-800/80 border border-slate-700/80 hover:bg-slate-800">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                                     Sudah bayar? Cek & Sinkronkan Status
                                 </button>
                             </form>
-                        @else
-                            <div class="w-full bg-emerald-500/10 border-2 border-dashed border-emerald-500/30 rounded-2xl p-8 flex flex-col items-center justify-center relative overflow-hidden group">
-                                <div class="absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors"></div>
-                                <div class="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(16,185,129,0.5)] relative z-10">
-                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                                </div>
-                                <h3 class="text-2xl font-black text-emerald-400 tracking-wider relative z-10">LUNAS</h3>
-                                <p class="text-slate-400 text-sm mt-2 relative z-10 text-center">Terima kasih atas pembayaran Anda. Layanan internet Anda aktif dan siap digunakan.</p>
+                        </div>
+                    @else
+                        <div class="w-full max-w-md bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5 text-center">
+                            <div class="w-10 h-10 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-500/30">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                             </div>
-                        @endif
-                    </div>
-
+                            <h3 class="text-base font-black text-emerald-400">Tagihan Telah Lunas</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Terima kasih, pembayaran telah berhasil diverifikasi.</p>
+                        </div>
+                    @endif
                 </div>
             </div>
 

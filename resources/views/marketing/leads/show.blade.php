@@ -319,10 +319,10 @@
 
                     @if ($lead->status !== 'converted' && $lead->status !== 'aktif')
                         <div class="p-6 bg-rose-500/5 border border-rose-500/20 rounded-[2rem] text-center">
-                            <form action="{{ route('marketing.leads.destroy', $lead->id) }}" method="POST" onsubmit="return confirm('Peringatan: Seluruh data, log, dan berkas digital prospek ini akan dihapus secara permanen dari sistem. Anda yakin ingin melanjutkan?');">
+                            <form action="{{ route('marketing.leads.destroy', $lead->id) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="flex items-center justify-center gap-2 w-full text-[10px] font-black text-rose-500 hover:text-rose-400 uppercase tracking-widest transition-colors py-2">
+                                <button type="button" onclick="confirmDelete(this.closest('form'), '{{ addslashes($lead->name) }}')" class="flex items-center justify-center gap-2 w-full text-[10px] font-black text-rose-500 hover:text-rose-400 uppercase tracking-widest transition-colors py-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     Hapus Prospek Permanen
                                 </button>

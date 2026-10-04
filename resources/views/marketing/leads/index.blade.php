@@ -165,15 +165,15 @@
                                                 <a href="{{ route('marketing.leads.edit', $lead->id) }}" class="p-2.5 bg-slate-800 text-amber-500/80 hover:text-white hover:bg-amber-600 rounded-xl transition-all border border-slate-700 shadow-sm" title="Edit Data">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                                 </a>
-                                                <form action="{{ route('marketing.leads.destroy', $lead->id) }}" method="POST" onsubmit="return confirm('Data prospek ini akan dihapus permanen. Lanjutkan?');" class="inline">
+                                                <form action="{{ route('marketing.leads.destroy', $lead->id) }}" method="POST" class="inline">
                                                     @csrf @method('DELETE')
-                                                    <button type="submit" class="p-2.5 bg-slate-800 text-rose-500/80 hover:text-white hover:bg-rose-600 rounded-xl transition-all border border-slate-700 shadow-sm" title="Hapus Data">
+                                                    <button type="button" onclick="confirmDelete(this.closest('form'), '{{ addslashes($lead->name) }}')" class="p-2.5 bg-slate-800 text-rose-500/80 hover:text-white hover:bg-rose-600 rounded-xl transition-all border border-slate-700 shadow-sm" title="Hapus Data">
                                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                                     </button>
                                                 </form>
-                                                <form action="{{ route('marketing.leads.convert', $lead->id) }}" method="POST" onsubmit="return confirm('Peringatan: Proses ini akan mengkonversi prospek menjadi pelanggan aktif dan membuat tiket instalasi untuk teknisi. Lanjutkan?');" class="inline">
+                                                <form action="{{ route('marketing.leads.convert', $lead->id) }}" method="POST" class="inline">
                                                     @csrf
-                                                    <button type="submit" class="p-2.5 bg-sky-500/10 text-sky-400 hover:text-white hover:bg-sky-500 rounded-xl transition-all border border-sky-500/30 shadow-sm" title="Konversi ke Pelanggan (Mulai Instalasi)">
+                                                    <button type="button" onclick="confirmConvert(this.closest('form'), '{{ addslashes($lead->name) }}')" class="p-2.5 bg-sky-500/10 text-sky-400 hover:text-white hover:bg-sky-500 rounded-xl transition-all border border-sky-500/30 shadow-sm" title="Konversi ke Pelanggan (Mulai Instalasi)">
                                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                                                     </button>
                                                 </form>
@@ -212,91 +212,99 @@
                 @endif
             </div>
 
-            <div class="md:hidden space-y-6">
+            <div class="md:hidden space-y-4">
                 @forelse($leads as $lead)
-                    <div class="bg-slate-900/80 backdrop-blur-md rounded-[2.5rem] border border-slate-800 overflow-hidden shadow-2xl relative">
-                        <div class="absolute top-6 right-6">
-                            @php
-                                $mobileStatusTheme = match ($lead->status) {
-                                    'prospek' => ['bg' => 'bg-blue-500/10', 'text' => 'text-blue-400', 'border' => 'border-blue-500/20'],
-                                    'survey' => ['bg' => 'bg-amber-500/10', 'text' => 'text-amber-400', 'border' => 'border-amber-500/20'],
-                                    'instalasi' => ['bg' => 'bg-indigo-500/10', 'text' => 'text-indigo-400', 'border' => 'border-indigo-500/20'],
-                                    'aktif', 'converted' => ['bg' => 'bg-emerald-500/10', 'text' => 'text-emerald-400', 'border' => 'border-emerald-500/20'],
-                                    'batal' => ['bg' => 'bg-rose-500/10', 'text' => 'text-rose-400', 'border' => 'border-rose-500/20'],
-                                    default => ['bg' => 'bg-slate-800', 'text' => 'text-slate-400', 'border' => 'border-slate-700'],
-                                };
-                            @endphp
-                            <span class="px-3 py-1.5 text-[9px] font-black rounded-lg uppercase tracking-widest border {{ $mobileStatusTheme['bg'] }} {{ $mobileStatusTheme['text'] }} {{ $mobileStatusTheme['border'] }}">
+                    @php
+                        $mobileStatusTheme = match ($lead->status) {
+                            'prospek' => ['bg' => 'bg-blue-500/10', 'text' => 'text-blue-400', 'border' => 'border-blue-500/20', 'dot' => 'bg-blue-500'],
+                            'survey' => ['bg' => 'bg-amber-500/10', 'text' => 'text-amber-400', 'border' => 'border-amber-500/20', 'dot' => 'bg-amber-500'],
+                            'instalasi' => ['bg' => 'bg-indigo-500/10', 'text' => 'text-indigo-400', 'border' => 'border-indigo-500/20', 'dot' => 'bg-indigo-500'],
+                            'aktif', 'converted' => ['bg' => 'bg-emerald-500/10', 'text' => 'text-emerald-400', 'border' => 'border-emerald-500/20', 'dot' => 'bg-emerald-500'],
+                            'batal' => ['bg' => 'bg-rose-500/10', 'text' => 'text-rose-400', 'border' => 'border-rose-500/20', 'dot' => 'bg-rose-500'],
+                            default => ['bg' => 'bg-slate-800', 'text' => 'text-slate-400', 'border' => 'border-slate-700', 'dot' => 'bg-slate-500'],
+                        };
+                    @endphp
+                    <div class="bg-slate-900/80 backdrop-blur-md rounded-2xl sm:rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
+                        {{-- Header Card: Flex layout to prevent badge collision --}}
+                        <div class="p-5 border-b border-slate-800/60 flex items-start justify-between gap-3">
+                            <div class="flex items-center gap-3.5 min-w-0 flex-1">
+                                <div class="w-12 h-12 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-400 border border-sky-500/20 font-black text-xl uppercase shrink-0 shadow-sm">
+                                    {{ substr($lead->name, 0, 1) }}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h4 class="text-base font-black text-white tracking-tight leading-snug break-words">{{ $lead->name }}</h4>
+                                    <span class="text-xs text-slate-500 font-bold font-mono tracking-wider block mt-0.5">{{ $lead->phone ?? '-' }}</span>
+                                </div>
+                            </div>
+                            <span class="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-black rounded-lg uppercase tracking-wider border {{ $mobileStatusTheme['bg'] }} {{ $mobileStatusTheme['text'] }} {{ $mobileStatusTheme['border'] }}">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $mobileStatusTheme['dot'] }}"></span>
                                 {{ $lead->status }}
                             </span>
                         </div>
 
-                        <div class="p-8 border-b border-slate-800/60 flex items-start gap-4">
-                            <div class="w-14 h-14 rounded-2xl bg-sky-500/10 flex items-center justify-center text-sky-400 border border-sky-500/20 font-black text-2xl uppercase shrink-0 shadow-sm">
-                                {{ substr($lead->name, 0, 1) }}
-                            </div>
-                            <div class="pt-1">
-                                <h4 class="text-lg font-black text-white tracking-tight leading-none mb-1.5">{{ $lead->name }}</h4>
-                                <span class="text-xs text-slate-500 font-bold font-mono tracking-widest">{{ $lead->phone ?? '-' }}</span>
-                            </div>
-                        </div>
-
-                        <div class="p-8 space-y-5">
+                        {{-- Details Section --}}
+                        <div class="p-5 space-y-3.5">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                                 </div>
-                                <div>
-                                    <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Minat Layanan</p>
-                                    <span class="text-white font-bold text-sm">{{ $lead->package->name ?? 'Belum Ditentukan' }}</span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest leading-none mb-1">Minat Layanan</p>
+                                    <span class="text-white font-bold text-sm block truncate">{{ $lead->package->name ?? 'Belum Ditentukan' }}</span>
                                 </div>
                             </div>
                             
                             <div class="flex items-start gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 shrink-0">
+                                <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 shrink-0 mt-0.5">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
                                 </div>
-                                <div>
-                                    <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Lokasi Pemasangan</p>
-                                    <span class="text-slate-300 font-medium text-sm leading-snug line-clamp-2">{{ $lead->address_installation }}</span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest leading-none mb-1">Lokasi Pemasangan</p>
+                                    <span class="text-slate-300 font-medium text-sm leading-snug line-clamp-2 break-words">{{ $lead->address_installation }}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="p-6 bg-slate-800/30 border-t border-slate-800/60">
-                            <div class="grid {{ $lead->status !== 'converted' && $lead->status !== 'aktif' ? 'grid-cols-4' : 'grid-cols-1' }} gap-3">
-                                <a href="{{ route('marketing.leads.show', $lead->id) }}" class="flex items-center justify-center py-4 bg-slate-800 border border-slate-700 rounded-2xl text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                </a>
-                                
-                                @if ($lead->status !== 'converted' && $lead->status !== 'aktif')
-                                    <a href="{{ route('marketing.leads.edit', $lead->id) }}" class="flex items-center justify-center py-4 bg-slate-800 border border-slate-700 rounded-2xl text-amber-500/80 hover:text-amber-400 hover:bg-slate-700 transition-colors">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        {{-- Action Buttons --}}
+                        <div class="p-4 bg-slate-800/30 border-t border-slate-800/60">
+                            @if ($lead->status !== 'converted' && $lead->status !== 'aktif')
+                                <div class="grid grid-cols-4 gap-2">
+                                    <a href="{{ route('marketing.leads.show', $lead->id) }}" class="flex items-center justify-center py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-slate-400 hover:text-white transition-colors" title="Lihat Detail">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                     </a>
-                                    <form action="{{ route('marketing.leads.destroy', $lead->id) }}" method="POST" onsubmit="return confirm('Hapus Permanen?');" class="flex">
+                                    <a href="{{ route('marketing.leads.edit', $lead->id) }}" class="flex items-center justify-center py-2.5 bg-slate-800 hover:bg-amber-600/20 border border-slate-700 hover:border-amber-500/50 rounded-xl text-amber-500/80 hover:text-amber-400 transition-colors" title="Edit Data">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </a>
+                                    <form action="{{ route('marketing.leads.destroy', $lead->id) }}" method="POST" class="flex">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="w-full flex items-center justify-center py-4 bg-slate-800 border border-slate-700 rounded-2xl text-rose-500/80 hover:text-rose-400 hover:bg-slate-700 transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        <button type="button" onclick="confirmDelete(this.closest('form'), '{{ addslashes($lead->name) }}')" class="w-full flex items-center justify-center py-2.5 bg-slate-800 hover:bg-rose-600/20 border border-slate-700 hover:border-rose-500/50 rounded-xl text-rose-500/80 hover:text-rose-400 transition-colors" title="Hapus Data">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </button>
                                     </form>
-                                    <form action="{{ route('marketing.leads.convert', $lead->id) }}" method="POST" onsubmit="return confirm('Konversi ke Pelanggan?');" class="flex">
+                                    <form action="{{ route('marketing.leads.convert', $lead->id) }}" method="POST" class="flex">
                                         @csrf
-                                        <button type="submit" class="w-full flex items-center justify-center py-4 bg-sky-500/10 border border-sky-500/30 rounded-2xl text-sky-400 hover:bg-sky-500 hover:text-white transition-all shadow-sm">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                                        <button type="button" onclick="confirmConvert(this.closest('form'), '{{ addslashes($lead->name) }}')" class="w-full flex items-center justify-center py-2.5 bg-sky-500/10 hover:bg-sky-500 border border-sky-500/30 rounded-xl text-sky-400 hover:text-white transition-all shadow-sm" title="Konversi ke Pelanggan">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                                         </button>
                                     </form>
-                                @else
-                                    <div class="col-span-1 flex items-center justify-center py-4 text-xs text-emerald-400 font-black tracking-widest uppercase bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                            @else
+                                <div class="flex items-center gap-2.5">
+                                    <a href="{{ route('marketing.leads.show', $lead->id) }}" class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-slate-300 hover:text-white font-bold text-xs uppercase tracking-wider transition-colors">
+                                        <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        Lihat Detail
+                                    </a>
+                                    <div class="inline-flex items-center gap-1.5 px-3 py-2.5 text-[11px] text-emerald-400 font-black tracking-wider uppercase bg-emerald-500/10 rounded-xl border border-emerald-500/20 shrink-0">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                                         Telah Dikonversi
                                     </div>
-                                @endif
-                            </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 @empty
-                    <div class="text-center py-16 bg-slate-900/80 backdrop-blur-md rounded-[2.5rem] border border-slate-800 shadow-xl">
-                        <p class="text-slate-500 font-medium">Belum ada data prospek.</p>
+                    <div class="text-center py-12 bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800 shadow-xl">
+                        <p class="text-slate-500 font-medium text-sm">Belum ada data prospek.</p>
                     </div>
                 @endforelse
             </div>
