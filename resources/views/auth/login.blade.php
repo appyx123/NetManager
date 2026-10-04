@@ -8,6 +8,10 @@
     </div>
 
     <x-authentication-card>
+        <div class="flex justify-center mb-6">
+            <x-authentication-card-logo />
+        </div>
+
         <div class="space-y-1 mb-6">
             <h2 class="text-3xl font-bold text-white text-center">Welcome Back</h2>
             <p class="text-center text-gray-400 text-sm">Sign in to your NetManager account</p>
