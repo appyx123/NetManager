@@ -21,7 +21,7 @@
   10. **Customer Activation, Fortify Guard & Complaint Detail View (RESOLVED):** Inactive user rejection was inconsistent between Fortify login and subsequent requests, customer complaints list had dead '#' links with no detail view, and database seeding lacked full realistic operations data. **Resolved:** Enforced `$user->is_active` validation in `FortifyServiceProvider` throwing an informative validation error message ("Akun Anda belum aktif. Silakan hubungi administrator untuk aktivasi."), verified by `tests/Feature/AuthenticationTest.php`; added `client.complaints.show` route (`/client/complaints/{ticket}`) and dark-themed `resources/views/client/complaints/show.blade.php` displaying assigned technician, status badge, issue description, and technician notes; overhauled `DatabaseSeeder.php` with complete realistic ISP workflow entities (roles, customer, active subscription, unpaid invoice, open repair ticket, prospect lead).
   11. **Codespaces 1-Click Environment & Repository Decluttering (RESOLVED):** Repository contained orphaned dead controllers (`Admin\UserController`, `TicketQCController`), unmigrated dummy photos in public storage, and complex local setup steps. **Resolved:** Purged dead controllers and orphaned routes; protected storage directories with `.gitignore`; automated 1-Click cloud developer environment in `.devcontainer` and `codespace.md` running on containerized MySQL 8 and Node 20 WhatsApp service.
   12. **Continuous Integration (CI) Workflow Hardening & Route Validation (RESOLVED):** GitHub Actions runner failed due to missing local MySQL service, uncommitted lockfile assertions, and route reflection errors. **Resolved:** Re-architected `.github/workflows/ci.yml` using isolated in-memory SQLite and file-backed session/cache/maintenance drivers; audited and committed explicit npm lockfiles; fully restored and verified Admin `CustomerController.php` with complete RouterOS PPPoE isolation & activation methods.
-  13. **MikroTik Automated PPPoE Secret Provisioning & Dynamic Profile Rate-Limit (RESOLVED):** Field installations previously required manual RouterOS configuration. **Resolved:** Implemented `NetworkService::addCustomer` with `/ppp/profile/add` auto-provisioning dynamic rate limits (`{$speed}M/{$speed}M`), `/ppp/secret/add` and `set` with physical MAC address binding (`caller-id`), and prioritized ticket router resolution (`$ticket->router_id`).
+  13. **FreeRADIUS Automated PPPoE Provisioning & Rate-Limit Migration (RESOLVED):** Field installations and customer provisioning migrated from direct MikroTik RouterOS secrets to FreeRADIUS (`radcheck`, `radreply`, `radacct`). **Resolved:** Implemented `NetworkService::addCustomer` with database inserts for `Cleartext-Password`, physical ONT MAC binding (`Calling-Station-Id`), and dynamic speed rate limit (`Mikrotik-Rate-Limit`). MikroTik acts purely as a RADIUS client with `/ppp/active/remove` session kicking on isolir/enable.
   14. **Customer Isolation & Activation Reverse Proxy Trust & 405 Remediation (RESOLVED):** Reverse proxies caused HTTP 405 Method Not Allowed errors when isolating or activating customers. **Resolved:** Added `trustProxies(at: '*')` in `bootstrap/app.php`, enforced HTTPS via `URL::forceScheme('https')` in `AppServiceProvider.php`, mapped routes with `Route::match(['get', 'post'], ...)`, and added GET redirect fallbacks to `admin.customers.show`.
   15. **Marketing Lead Form Validation & City Field (RESOLVED):** Lead creation encountered validation issues and lacked explicit administrative city input. **Resolved:** Added `city` input to `create.blade.php`, made `address_installation` and `city` nullable with fallback in `LeadController@store`, and enhanced reactive validation error display using `x-show="errorMessage"` with `x-cloak`.
   16. **Multi-Router Credentials, ODP Specifications & Subscription Binding (RESOLVED):** Network assets lacked independent credential storage for diverse Mikrotik routers and ODP capacity tracking. **Resolved:** Added encryption for router credentials, added port capacity and ODP specification columns, bound subscriptions permanently to specific routers, and updated NetworkService to authenticate dynamically with target routers.
@@ -197,7 +197,7 @@ The system recognizes five distinct user roles stored as enum/string in `users.r
 5. **Data Submission:** Depending on `ticket.type` (`survey`, `installation`, or `repair`), the technician submits cable length, ODP port, signal dBm, modem MAC/SN, and uploads photos of site equipment.
 6. **Completion & Automated Provisioning:** `TicketController@processUpdate` stores files in `storage/app/public/uploads/teknisi/`, sets status to `resolved`, stamps `completed_at = now()`, and invokes `finalizeInstallation($ticket)`:
    - Atomically generates `Subscription` (`status = 'active'`) and initial `Invoice` (`status = 'unpaid'`).
-   - Executes `NetworkService::addCustomer($subscription, $ticket)` via RouterOS socket port 8728 (`/ppp/secret/add`) binding `$ticket->device_mac` to `caller-id`.
+   - Executes `NetworkService::addCustomer($subscription, $ticket)` inserting PPPoE credentials and MAC binding into FreeRADIUS (`radcheck`, `radreply`).
    - Protects the database transaction with isolated `try/catch` and error logging so hardware or connectivity issues never block work order completion.
 
 ### Journey 3: Marketing Lead Conversion
@@ -395,7 +395,7 @@ flowchart TD
 
 - **Laravel Core:** Handles routing, Blade views, authentication sessions, and business transactions.
 - **Node.js Microservice (`whatsapp-service`):** Operates on port 3000 as a separate Node process running headless Chromium via Puppeteer to emulate a WhatsApp Web client session stored in `./.wwebjs_auth`.
-- **RouterOS Driver:** Direct TCP socket communication using `RouterOS\Client` over port 8728 to modify `/ppp/secret` and `/ip/firewall/address-list`.
+- **Radius & RouterOS Driver:** MySQL database acts as Single Source of Truth for FreeRADIUS (`radcheck`, `radreply`, `radacct`). Direct TCP socket communication using `RouterOS\Client` over port 8728 is retained strictly for kicking active sessions (`/ppp/active/remove`).
 - **Midtrans Integration:** Dual-mode: client-side Snap modal invoked via JavaScript token, and server-side webhook notification handling.
 
 ---
@@ -1080,17 +1080,15 @@ NetManagement is a comprehensive, production-hardened ISP management and billing
 
 ## 57. Automated PPPoE Provisioning & Dynamic Profile Rate-Limit (Commits e2c8bc9, f08bb82)
 
-### 1. MikroTik RouterOS Secret Provisioning (`NetworkService::addCustomer`)
+### 1. FreeRADIUS Database Provisioning (`NetworkService::addCustomer`)
 - **File:** `app/Services/NetworkService.php`
-- **Capability:** Added `addCustomer(Subscription $subscription, Ticket $ticket): bool` executing `/ppp/secret/add` and `/ppp/secret/set` using `evilfreelancer/routeros-api-php`.
+- **Capability:** Refactored `addCustomer(Subscription $subscription, Ticket $ticket): bool` inserting into FreeRADIUS database models (`RadCheck` and `RadReply`).
 - **Parameter Binding:**
-  - Resolves target router via `$ticket->router_id` or customer installation ticket, falling back to `.env` config.
-  - Inspects existing secrets via `/ppp/secret/print` to prevent duplicate secret collisions.
-  - Auto-provisions PPP Profile via `/ppp/profile/print` and `/ppp/profile/add` if not yet registered in MikroTik, dynamically setting `rate-limit` from `$subscription->package->speed_mbps` (e.g. `20M/20M`).
-  - Sets `name` (PPPoE username), `password`, `service=pppoe`, `disabled=no`, and structured ISP audit comment.
-  - Dynamically binds customer ONT physical MAC address (`device_mac`) to RouterOS parameter `caller-id`.
-  - Assigns package profile (`profile`) and remote IP (`remote-address`).
-- **Resilience:** Wrapped in isolated `try/catch (\Throwable $e)` block with `Log::error(...)` recording detailed context (ticket ID, subscription ID, username, MAC). Network timeouts or router hardware reboots never crash the application.
+  - Saves PPPoE credentials to `RadCheck` (`Cleartext-Password`, `op: ':=', value: password`).
+  - Dynamically binds customer ONT physical MAC address (`device_mac`) to `RadCheck` (`Calling-Station-Id`, `op: '=='`).
+  - Sets bandwidth limitation in `RadReply` (`Mikrotik-Rate-Limit`, `op: ':=', value: {$speed}M/{$speed}M`).
+  - Sets IP assignment in `RadReply` (`Framed-IP-Address`) and initial isolation (`Mikrotik-Address-List = ISOLIR`) if pending initial payment.
+- **Resilience:** Wrapped in isolated `try/catch (\Throwable $e)` block with `Log::error(...)`. Router kick failures or network timeouts never crash the application or prevent database state updates.
 
 ### 2. Technician Workflow Integration (`TicketController::finalizeInstallation`)
 - **File:** `app/Http/Controllers/Technician/TicketController.php`

@@ -24,15 +24,24 @@ class SyncPaidInvoiceHardwareJobTest extends TestCase
         config(['services.midtrans.server_key' => 'test-server-key']);
 
         $user = User::factory()->create(['role' => 'customer']);
-        $customer = Customer::create([
-            'user_id' => $user->id,
-            'customer_code' => 'CUST-TEST1',
-            'phone_number' => '081234567890',
-        ]);
         $package = Package::create([
             'name' => 'Test Pack 10M',
             'speed_mbps' => 10,
             'price' => 100000,
+        ]);
+        $lead = \App\Models\Lead::create([
+            'package_id' => $package->id,
+            'name' => 'Test Customer',
+            'phone' => '081234567890',
+            'address' => 'Jl. Test No. 1',
+            'status' => 'aktif',
+        ]);
+        $customer = Customer::create([
+            'user_id' => $user->id,
+            'lead_id' => $lead->id,
+            'customer_code' => 'CUST-TEST1',
+            'phone_number' => '081234567890',
+            'address_installation' => 'Jl. Test No. 1',
         ]);
         $subscription = Subscription::create([
             'customer_id' => $customer->id,

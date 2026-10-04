@@ -179,11 +179,11 @@ public function markAsPaid(Request $request, Invoice $invoice)
 }
 ```
 
-### 4.2. Verifikasi Eksekusi MikroTik (`NetworkService::enableCustomer` & `disableCustomer`)
+### 4.2. Verifikasi Eksekusi FreeRADIUS (`NetworkService::enableCustomer` & `disableCustomer`)
 Saat pemulihan layanan dipicu:
-1. **Enable PPPoE Secret:** Menjalankan query MikroTik API `/ppp/secret/set` dengan parameter `disabled=no` untuk akun pelanggan bersangkutan.
-2. **Bypass Firewall ISOLIR (Kompatibel ROS v6 & v7):** Menjalankan pencarian pada `/ip/firewall/address-list/print` dengan filter `list=ISOLIR`, membandingkan alamat IP murni tanpa akhiran subnet mask (`/32`), lalu mengeksekusi `/ip/firewall/address-list/remove` terhadap `.id` terkait. Ini menghilangkan bug ketidakcocokan sintaks/format address-list antara RouterOS v6 dan v7.
-3. **Resilience & Asynchronous Execution:** Pada pelunasan otomatis via Midtrans Webhook atau Customer Portal, operasi ini dieksekusi secara asinkron melalui antrean background `SyncPaidInvoiceHardwareJob`. Pada pelunasan manual admin, pemanggilan dibungkus blok `try-catch` independen sehingga kegagalan koneksi socket tidak menggagalkan mutasi invoice di database.
+1. **Sinkronisasi Database FreeRADIUS (`RadReply`):** Menghapus record `Mikrotik-Address-List = ISOLIR` pada tabel `radreply` untuk pelanggan terkait (atau menambahkan record tersebut saat isolir).
+2. **Kicking Sesi Aktif MikroTik (`/ppp/active/remove`):** Mengeksekusi API MikroTik port 8728 untuk mendepak sesi PPPoE aktif pelanggan. Hal ini memaksa perangkat ONT modem pelanggan melakukan autentikasi ulang ke server FreeRADIUS sehingga status izin internet normal langsung diterapkan.
+3. **Resilience & Asynchronous Execution:** Pada pelunasan otomatis via Midtrans Webhook atau Customer Portal, operasi ini dieksekusi secara asinkron melalui antrean background `SyncPaidInvoiceHardwareJob`. Pada pelunasan manual admin, pemanggilan dibungkus blok `try-catch` independen sehingga kegagalan koneksi router tidak menggagalkan mutasi invoice di database.
 
 ### 4.3. Verifikasi Gateway WhatsApp (`WhatsappService::sendPaymentSuccess`)
 1. **Normalisasi Nomor:** Mengonversi nomor awalan lokal `08xx` menjadi standar internasional `628xx` menggunakan ekspresi reguler.
@@ -300,20 +300,20 @@ public function activate(Request $request, Customer $customer)
 4. **Resilience & Fault Tolerance:**
    - Seluruh loop eksekusi router dibungkus blok `try-catch` dengan logging error khusus, sehingga kegagalan koneksi fisik (misal router mati) tidak menyebabkan UI crash / 500 error bagi Admin.
 
-### 5.3. Pendaftaran Akun PPPoE Otomatis Baru (`addCustomer`) & Auto-Provision Profil
-Modul `NetworkService` dilengkapi method `addCustomer(Subscription $subscription, Ticket $ticket)`:
-1. **Auto-Provisioning Profil PPP Dinamis (`/ppp/profile/add`):**
-   - Memeriksa ketersediaan profil paket pelanggan di MikroTik via `/ppp/profile/print`.
-   - Jika profil belum ada, otomatis membuat profil baru dengan menyetel atribut bandwidth `rate-limit` (misal `20M/20M`) berdasarkan `package->speed_mbps`.
-2. **Eksekusi `/ppp/secret/add` & `/ppp/secret/set`:**
-   - Mengecek keberadaan akun secret via `/ppp/secret/print`.
-   - Mengisi `name` (username PPPoE), `password`, `service=pppoe`, `profile`, dan `comment`.
-   - Mengikat MAC Address perangkat pelanggan (`caller-id`) dari input form instalasi teknisi (`$ticket->device_mac`).
-   - Mengatur remote address sesuai alokasi IP pelanggan (`$subscription->ip_address`).
-3. **Multi-Router Dispatcher:**
-   - Membaca `router_id` langsung dari tiket instalasi jika tersedia, mengarahkan koneksi API RouterOS ke IP router spesifik yang menangani area tersebut.
+### 5.3. Pendaftaran Akun FreeRADIUS Otomatis Baru (`addCustomer`)
+Modul `NetworkService` dilengkapi method `addCustomer(Subscription $subscription, Ticket $ticket)` yang terintegrasi langsung dengan database FreeRADIUS (MySQL sebagai Single Source of Truth):
+1. **Penyimpanan Kredensial & Binding Fisik (`radcheck`):**
+   - Menyimpan `Cleartext-Password` untuk autentikasi PPPoE pelanggan.
+   - Mengikat MAC Address perangkat pelanggan (`Calling-Station-Id`) dari data tiket instalasi (`$ticket->device_mac`).
+2. **Penyimpanan Parameter Jaringan (`radreply`):**
+   - Menyimpan batas kecepatan bandwidth dinamis (`Mikrotik-Rate-Limit`) berdasarkan `package->speed_mbps` (contoh: `20M/20M`).
+   - Menyimpan alokasi IP pelanggan (`Framed-IP-Address`).
+   - Menyimpan atribut isolir awal (`Mikrotik-Address-List = ISOLIR`) jika paket baru dalam status isolated menunggu pembayaran perdana.
+3. **Multi-Router Dispatcher & Kicking Sesi:**
+   - MikroTik berfungsi murni sebagai RADIUS Client (tidak ada secret/profile lokal).
+   - Penendangan sesi aktif menggunakan `/ppp/active/remove` diarahkan ke router terkait (`router_id`).
 4. **Resilience:**
-   - Dibungkus blok `try-catch (\Throwable $e)` mandiri dengan `Log::error(...)`, menjamin transaksi database sistem tetap konsisten meskipun router mengalami kegagalan socket.
+   - Dibungkus blok `try-catch (\Throwable $e)` mandiri dengan `Log::error(...)`, menjamin transaksi database sistem tetap konsisten meskipun router mengalami kegagalan socket saat pemutusan sesi.
 
 ### 5.4. Multi-Router Credentials, ODP Specifications & Modernized Billing Table (RESOLVED)
 1. **Multi-Router API Credentials & Enkripsi:**

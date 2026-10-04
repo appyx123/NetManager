@@ -247,16 +247,14 @@ Sesuai arsitektur *Customer Domain Lifecycle*, saat teknisi menyelesaikan tiket 
      `$amount = ($package ? (float) $package->price : 0) + $installationFee;`
      di mana `$installationFee = (float) ($customer->lead?->installation_fee ?? $package?->installation_fee ?? 0);`.
    - Mengubah status prospek pelanggan (`lead.status`) menjadi `'aktif'`.
-2. **Pendaftaran PPPoE Secret ke Router MikroTik & Penerapan Isolir Awal (`NetworkService::addCustomer`):**
-   - Dijalankan di luar transaksi DB untuk menjamin atomisitas data relational.
-   - Prioritasi target router: Membaca `$ticket->router_id` langsung dari tiket teknisi sebelum fallback ke tiket instalasi pelanggan atau default host.
-   - Auto-provisioning profil PPP: Mengecek `/ppp/profile/print`. Jika profil belum ada, otomatis membuat profil via `/ppp/profile/add` lengkap dengan parameter batas bandwidth `rate-limit: {$speed}M/{$speed}M` sesuai paket langganan.
-   - Mengeksekusi API MikroTik port 8728 (`RouterOS\Client`).
-   - Memeriksa ketersediaan secret (`/ppp/secret/print`), lalu mengeksekusi `/ppp/secret/add` atau `/ppp/secret/set`.
-   - Mengikat parameter teknis hasil input form teknisi: mengaitkan MAC address ONT (`device_mac`) ke parameter `caller-id`, mengaitkan profil paket, dan menetapkan remote IP.
-   - **Enforcement Isolasi Awal:** Jika langganan berstatus `'isolated'` (menunggu pembayaran perdana), sistem secara otomatis menerapkan pemutusan/isolir di router MikroTik via `$networkService->disableCustomer($subscription)`.
+2. **Pendaftaran Akun ke Database FreeRADIUS & Isolir Awal (`NetworkService::addCustomer`):**
+   - Dijalankan di luar transaksi DB utama untuk menjamin atomisitas data relational.
+   - Menyimpan akun PPPoE (`Cleartext-Password`) dan binding MAC address ONT (`Calling-Station-Id`) ke tabel `radcheck`.
+   - Menyimpan limitasi kecepatan (`Mikrotik-Rate-Limit`) dan penetapan IP (`Framed-IP-Address`) ke tabel `radreply`.
+   - **Enforcement Isolasi Awal:** Jika status awal langganan `'isolated'` (menunggu pembayaran perdana), sistem menyisipkan atribut `Mikrotik-Address-List = ISOLIR` pada `radreply`.
+   - MikroTik bertindak murni sebagai RADIUS Client tanpa menyimpan secret/profile lokal.
 3. **Resilience & Fault Tolerance:**
-   - Seluruh pemanggilan RouterOS dibungkus dalam blok `try-catch (\Throwable $e)` mandiri dengan pencatatan `Log::error(...)`.
+   - Seluruh pemanggilan database RADIUS dan pemutusan sesi MikroTik dibungkus dalam blok `try-catch (\Throwable $e)` mandiri dengan pencatatan `Log::error(...)`.
    - Kegagalan komunikasi fisik (router padam, kabel fiber putus, atau timeout API) tidak menyebabkan HTTP 500 dan tidak membatalkan penyimpanan tiket maupun data tagihan di database MySQL.
 
 ### 4.4. Riwayat Pekerjaan (`historyIndex`)
@@ -323,8 +321,8 @@ Pada [TechnicianDashboardController.php](file:///c:/Users/LENOVO/Documents/Rafli
 | **Photo Storage Cleanup** | Bersihkan foto lama di disk saat unggah revisi | **100% VERIFIED & HARDENED** | `Storage::disk('public')->delete(...)` di baris 136 |
 | **State Machine Automation** | Transisi `open` $\rightarrow$ `assigned` $\rightarrow$ `in_progress` $\rightarrow$ `resolved` | **100% VERIFIED** | `take()`, `processShow()`, `processUpdate()` |
 | **Post-Installation Billing Auto** | Penerbitan Subscription ('isolated') & Invoice perdana gabungan (paket + instalasi) | **100% VERIFIED** | `TicketController.php:finalizeInstallation()` |
-| **MikroTik PPPoE Auto-Provisioning** | Eksekusi `/ppp/secret/add` binding `caller-id`, router priority, & auto-profile rate-limit | **100% VERIFIED** | `NetworkService.php:addCustomer()` |
-| **Hardware Fault Tolerance** | Try-catch terisolasi agar error MikroTik tidak merusak DB | **100% VERIFIED** | `finalizeInstallation()` & `NetworkService::addCustomer()` |
+| **FreeRADIUS PPPoE Auto-Provisioning** | Simpan radcheck (`Cleartext-Password`, `Calling-Station-Id`) & radreply (`Mikrotik-Rate-Limit`) | **100% VERIFIED** | `NetworkService.php:addCustomer()` |
+| **Hardware Fault Tolerance** | Try-catch terisolasi agar error koneksi router tidak merusak DB | **100% VERIFIED** | `finalizeInstallation()` & `NetworkService::addCustomer()` |
 
 ### 6.2. Catatan Implementasi Enterprise-Grade (Hardened Status)
 
@@ -332,8 +330,8 @@ Pada [TechnicianDashboardController.php](file:///c:/Users/LENOVO/Documents/Rafli
    Method `TicketController::take` telah disempurnakan dengan `DB::transaction()` dan kueri `Ticket::where('id', $ticket->id)->lockForUpdate()->firstOrFail()`. Mekanisme ini mengunci baris data di level database mesin InnoDB/MySQL, menjamin transaksi bersifat serializable dan memblokir konkurensi ganda dari ratusan teknisi secara bersamaan.
 2. **Eliminasi Sampah File Foto (Storage Cleanup):**
    Method `TicketController::processUpdate` telah dilengkapi pembersihan otomatis file bukti sebelumnya via `Storage::disk('public')->delete($ticket->$field)` sebelum file baru disimpan. Kapasitas penyimpanan server ISP tetap efisien dan bebas dari tumpukan file usang (*zero orphaned assets*).
-3. **Otomasi Provisioning Lapangan Bebas Downtime (Fault-Tolerant PPPoE Provisioning):**
-   Penyelesaian instalasi oleh teknisi otomatis memicu registrasi akun PPPoE MikroTik dan pengikatan MAC Address perangkat ONT (`caller-id`). Operasi soket API router diisolasi di luar transaksi DB, sehingga jika router pelanggan di lapangan padam saat teknisi menekan tombol selesai, data tiket dan tagihan tetap tersimpan sempurna tanpa error 500.
+3. **Otomasi Provisioning Lapangan via FreeRADIUS (Single Source of Truth):**
+   Penyelesaian instalasi oleh teknisi otomatis memicu registrasi akun ke database FreeRADIUS (`radcheck` dan `radreply`) dengan pengikatan MAC Address ONT (`Calling-Station-Id`) dan limitasi kecepatan dinamis. MikroTik bertindak sebagai RADIUS Client dan hanya dihubungi untuk pemutusan sesi aktif (`/ppp/active/remove`). Operasi diisolasi di luar transaksi DB, sehingga jika router pelanggan di lapangan padam, data tiket dan tagihan tetap tersimpan sempurna tanpa error 500.
 
 ### Pernyataan Akhir Auditor
 Domain **Technician** pada NetManagement telah diaudit dan diperkuat dengan standar enterprise. Mekanisme bursa penugasan (*ticket claiming with row locking*), perlindungan hak akses Meja Kerja (*workspace isolation*), penangkapan parameter teknis jaringan, siklus hidup foto bukti lapangan, serta pembatasan hak hapus dinyatakan **100% Memenuhi Standar Operasional & Keamanan Produksi Tertinggi (Enterprise-Hardened & Fully Verified)**.
