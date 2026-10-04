@@ -86,6 +86,8 @@ class Lead extends Model
         'notes_summary',
         'notes_obstacle',
         'notes_special',
+        'odp_id',
+        'odp_port',
         'ktp_image_path',
         'house_image_path',
         'customer_image_path',
@@ -113,5 +115,15 @@ class Lead extends Model
     public function customerProfile()
     {
         return $this->hasOne(Customer::class, 'lead_id');
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class, 'lead_id');
+    }
+
+    public function odp()
+    {
+        return $this->belongsTo(NetworkAsset::class, 'odp_id');
     }
 }

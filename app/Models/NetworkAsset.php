@@ -28,14 +28,16 @@ class NetworkAsset extends Model
         'api_password',
         'api_port',
         'port_capacity',
+        'odp_available_ports',
         'coordinates',
     ];
 
     protected $casts = [
-        'is_active'     => 'boolean',
-        'api_password'  => 'encrypted',
-        'api_port'      => 'integer',
-        'port_capacity' => 'integer',
+        'is_active'           => 'boolean',
+        'api_password'        => 'encrypted',
+        'api_port'            => 'integer',
+        'port_capacity'       => 'integer',
+        'odp_available_ports' => 'integer',
     ];
 
     public function tickets()

@@ -185,12 +185,13 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     // ====================================================================
     // ZONE 2: MARKETING AREA
     // ====================================================================
-    Route::middleware(['role:marketing'])->prefix('marketing')->name('marketing.')->group(function () {
+    Route::middleware(['role:marketing,super_admin,admin'])->prefix('marketing')->name('marketing.')->group(function () {
         Route::get('/dashboard', [MarketingDashboardController::class, 'index'])->name('dashboard');
 
         // Mengelola Prospek
         Route::resource('leads', LeadController::class);
         Route::post('/leads/{lead}/convert', [LeadController::class, 'convert'])->name('leads.convert');
+        Route::post('/leads/{lead}/survey', [LeadController::class, 'requestSurvey'])->name('leads.survey');
 
         // Pelanggan Milik Marketing
         Route::get('/customers', [MarketingCustomerController::class, 'index'])->name('customers.index');

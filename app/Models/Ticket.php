@@ -55,7 +55,10 @@ class Ticket extends Model
         'device_condition',
 
         // --- 4. JARINGAN ---
+        'lead_id',
         'router_id',
+        'odp_id',
+        'odp_released',
         'port_interface',
         'vlan_id',
         'odp_port',
@@ -88,11 +91,16 @@ class Ticket extends Model
         'handover_date' => 'date',
         'completed_at' => 'datetime',
         'internet_active_confirmation' => 'boolean',
+        'odp_released' => 'boolean',
     ];
 
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+    public function lead()
+    {
+        return $this->belongsTo(Lead::class);
     }
     public function technician()
     {
@@ -101,5 +109,25 @@ class Ticket extends Model
     public function router()
     {
         return $this->belongsTo(NetworkAsset::class, 'router_id');
+    }
+    public function odp()
+    {
+        return $this->belongsTo(NetworkAsset::class, 'odp_id');
+    }
+
+    /**
+     * Mengembalikan kuota port ODP yang sebelumnya dipesan jika instalasi batal / gagal.
+     */
+    public function releaseOdpPort(): bool
+    {
+        if ($this->odp_id && !$this->odp_released) {
+            $odp = NetworkAsset::find($this->odp_id);
+            if ($odp) {
+                $odp->increment('odp_available_ports');
+            }
+            $this->update(['odp_released' => true]);
+            return true;
+        }
+        return false;
     }
 }

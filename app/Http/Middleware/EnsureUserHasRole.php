@@ -19,9 +19,11 @@ public function handle(Request $request, Closure $next, ...$roles): Response
 
         // TAMBAHAN: Kick paksa jika akun dinonaktifkan saat sedang login
         if (!$user->is_active) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+            Auth::guard('web')->logout();
+            if ($request->hasSession()) {
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
 
             return redirect()->route('login')->withErrors([
                 'email' => 'Akun Anda belum aktif. Silakan hubungi administrator untuk aktivasi.'

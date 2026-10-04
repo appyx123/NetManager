@@ -105,6 +105,11 @@ class TicketManagementController extends Controller
 
     public function destroy(Ticket $ticket)
     {
+        // Kembalikan kuota port ODP jika tiket instalasi belum tuntas dihapus
+        if ($ticket->type === 'installation' && $ticket->status !== 'resolved') {
+            $ticket->releaseOdpPort();
+        }
+
         $ticket->delete();
 
         return redirect()->route('admin.tickets.index')->with('success', 'Tiket berhasil dihapus');
@@ -117,6 +122,10 @@ class TicketManagementController extends Controller
         ]);
 
         $ticket->update($validated);
+
+        if ($validated['status'] === 'closed' && $ticket->type === 'installation' && $ticket->installation_status !== 'completed') {
+            $ticket->releaseOdpPort();
+        }
 
         return response()->json(['success' => true, 'message' => 'Status tiket diperbarui']);
     }

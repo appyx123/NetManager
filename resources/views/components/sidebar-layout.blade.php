@@ -177,26 +177,122 @@
                 });
             }
 
-            function confirmConvert(form, itemName) {
+            function confirmConvert(form, itemName, defaultOdpId = '', defaultOdpPort = '') {
+                const odps = window.netManagerOdps || [];
+                
+                let odpOptionsHtml = '<option value="">-- Pilih Titik ODP Target --</option>';
+                odps.forEach(odp => {
+                    const available = odp.odp_available_ports !== null && odp.odp_available_ports !== undefined ? odp.odp_available_ports : 0;
+                    const total = odp.port_capacity || 8;
+                    const isFull = available <= 0;
+                    const selected = (defaultOdpId && odp.id == defaultOdpId) ? 'selected' : '';
+                    const disabled = isFull ? 'disabled' : '';
+                    const label = `${odp.name} - Port Tersedia: ${available}/${total} ${isFull ? '(PENUH)' : ''}`;
+                    odpOptionsHtml += `<option value="${odp.id}" ${selected} ${disabled}>${label}</option>`;
+                });
+
                 Swal.fire({
-                    title: 'Konversi ke Pelanggan?',
-                    html: `Prospek <strong>${itemName || ''}</strong> akan dikonversi menjadi pelanggan aktif dan tiket instalasi akan otomatis dibuat.`,
+                    title: 'Konversi Menjadi Pelanggan',
+                    html: `
+                        <div class="text-left text-sm text-slate-300 space-y-3.5">
+                            <p>Prospek <strong>${itemName || ''}</strong> akan dikonversi menjadi pelanggan resmi dan tiket instalasi akan dibuat.</p>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Pilih Titik ODP Target <span class="text-rose-400">*</span></label>
+                                <select id="swal-odp-id" class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500">
+                                    ${odpOptionsHtml}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Rekomendasi Port ODP (Opsional)</label>
+                                <input type="text" id="swal-odp-port" value="${defaultOdpPort || ''}" placeholder="Contoh: Port 3" class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+                            </div>
+                        </div>
+                    `,
                     icon: 'question',
                     background: '#0f172a',
                     color: '#f8fafc',
                     showCancelButton: true,
                     confirmButtonColor: '#0284c7',
                     cancelButtonColor: '#1e293b',
-                    confirmButtonText: 'Ya, Konversi!',
+                    confirmButtonText: 'Konversi & Pesan Port',
                     cancelButtonText: 'Batal',
                     customClass: {
                         popup: 'border border-slate-700 rounded-2xl shadow-2xl',
-                        confirmButton: 'font-bold px-5 py-2.5 rounded-xl',
+                        confirmButton: 'font-bold px-5 py-2.5 rounded-xl text-white',
+                        cancelButton: 'border border-slate-700 hover:bg-slate-700 text-white font-bold px-5 py-2.5 rounded-xl transition-colors'
+                    },
+                    preConfirm: () => {
+                        const odpSelect = document.getElementById('swal-odp-id');
+                        const odpId = odpSelect ? odpSelect.value : '';
+                        if (!odpId) {
+                            Swal.showValidationMessage('Silakan pilih ODP target!');
+                            return false;
+                        }
+                        const selectedOpt = odpSelect.options[odpSelect.selectedIndex];
+                        if (selectedOpt && selectedOpt.disabled) {
+                            Swal.showValidationMessage('Kapasitas ODP target sudah penuh. Silakan pilih ODP lain atau lakukan ekspansi jaringan.');
+                            return false;
+                        }
+                        const odpPort = document.getElementById('swal-odp-port') ? document.getElementById('swal-odp-port').value : '';
+                        return { odpId, odpPort };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed && result.value) {
+                        if (typeof form === 'string') {
+                            form = document.getElementById(form);
+                        }
+                        if (form) {
+                            let hiddenOdp = form.querySelector('input[name="odp_id"]');
+                            if (!hiddenOdp) {
+                                hiddenOdp = document.createElement('input');
+                                hiddenOdp.type = 'hidden';
+                                hiddenOdp.name = 'odp_id';
+                                form.appendChild(hiddenOdp);
+                            }
+                            hiddenOdp.value = result.value.odpId;
+
+                            let hiddenPort = form.querySelector('input[name="odp_port"]');
+                            if (!hiddenPort) {
+                                hiddenPort = document.createElement('input');
+                                hiddenPort.type = 'hidden';
+                                hiddenPort.name = 'odp_port';
+                                form.appendChild(hiddenPort);
+                            }
+                            hiddenPort.value = result.value.odpPort;
+
+                            if (typeof form.submit === 'function') {
+                                form.submit();
+                            }
+                        }
+                    }
+                });
+            }
+
+            function confirmSurvey(form, itemName) {
+                Swal.fire({
+                    title: 'Kirim Permintaan Survey?',
+                    html: `Kirim tugas survey lapangan ke teknisi untuk memeriksa kelayakan lokasi dan port ODP calon pelanggan <strong>${itemName || ''}</strong>?<br><br><span class="text-xs text-amber-400 font-semibold">Catatan: Prospek tidak berubah menjadi customer dan tagihan belum diterbitkan pada tahap ini.</span>`,
+                    icon: 'info',
+                    background: '#0f172a',
+                    color: '#f8fafc',
+                    showCancelButton: true,
+                    confirmButtonColor: '#f59e0b',
+                    cancelButtonColor: '#1e293b',
+                    confirmButtonText: 'Ya, Kirim Survey!',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        popup: 'border border-slate-700 rounded-2xl shadow-2xl',
+                        confirmButton: 'font-bold px-5 py-2.5 rounded-xl text-white',
                         cancelButton: 'border border-slate-700 hover:bg-slate-700 text-white font-bold px-5 py-2.5 rounded-xl transition-colors'
                     }
                 }).then((result) => {
-                    if (result.isConfirmed && form && typeof form.submit === 'function') {
-                        form.submit();
+                    if (result.isConfirmed) {
+                        if (typeof form === 'string') {
+                            form = document.getElementById(form);
+                        }
+                        if (form && typeof form.submit === 'function') {
+                            form.submit();
+                        }
                     }
                 });
             }

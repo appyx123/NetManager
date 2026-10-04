@@ -7,6 +7,7 @@ use App\Models\Ticket;
 use App\Models\Subscription;
 use App\Models\Invoice;
 use App\Models\Package;
+use App\Models\NetworkAsset;
 use App\Services\NetworkService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -106,12 +107,13 @@ class TicketController extends Controller
             $ticket->update(['status' => 'in_progress']);
         }
 
-        $ticket->load(['customer', 'customer.user']);
+        $ticket->load(['customer', 'customer.user', 'lead', 'odp']);
+        $odps = NetworkAsset::where('type', 'ODP')->where('is_active', true)->orderBy('name')->get();
 
         // Arahkan ke form Blade yang tepat berdasarkan tipe tiket menggunakan struktur folder Anda
         return match ($ticket->type) {
-            'survey'       => view('technician.my-tasks.form-survey', compact('ticket')),
-            'installation' => view('technician.my-tasks.form-installation', compact('ticket')),
+            'survey'       => view('technician.my-tasks.form-survey', compact('ticket', 'odps')),
+            'installation' => view('technician.my-tasks.form-installation', compact('ticket', 'odps')),
             'repair'       => view('technician.my-tasks.form-repair', compact('ticket')),
             default        => redirect()->route('technician.process.index')->with('error', 'Tipe tugas tidak dikenal.'),
         };
@@ -125,11 +127,12 @@ class TicketController extends Controller
             'survey_status' => 'nullable|string|max:100',
             'survey_notes' => 'nullable|string',
             'location_obstacle' => 'nullable|string',
+            'odp_id' => 'nullable|exists:network_assets,id',
+            'odp_port' => 'nullable|string|max:50',
             'installation_status' => 'nullable|string|max:100',
             'cable_length' => 'nullable|numeric|min:0',
             'device_brand' => 'nullable|string|max:100',
             'device_mac' => 'nullable|string|max:50',
-            'odp_port' => 'nullable|string|max:50',
             'dbm_signal' => 'nullable|numeric',
             'device_condition' => 'nullable|string|max:100',
             'technical_notes' => 'nullable|string',
@@ -156,8 +159,23 @@ class TicketController extends Controller
             'completed_at' => now(),
         ]));
 
+        // Sinkronisasi rekomendasi ODP dari survey ke Lead
+        if ($ticket->type === 'survey' && $ticket->lead) {
+            $ticket->lead->update([
+                'odp_id' => $validated['odp_id'] ?? $ticket->odp_id,
+                'odp_port' => $validated['odp_port'] ?? $ticket->odp_port,
+                'survey_notes' => $validated['survey_notes'] ?? null,
+            ]);
+        }
+
+        // Penanganan tiket instalasi & pengembalian kuota ODP jika gagal/batal
         if ($ticket->type === 'installation') {
-            $this->finalizeInstallation($ticket);
+            $statusCheck = strtolower($validated['installation_status'] ?? '');
+            if (in_array($statusCheck, ['gagal', 'batal', 'failed', 'cancelled'])) {
+                $ticket->releaseOdpPort();
+            } else {
+                $this->finalizeInstallation($ticket);
+            }
         }
 
         return redirect()->route('technician.process.index')

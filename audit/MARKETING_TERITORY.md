@@ -381,7 +381,7 @@ Pada formulir tambah dan edit prospek ([marketing/leads/create.blade.php](file:/
   - Form create mengambil daftar paket aktif via `Package::where('is_active', true)->get()`.
   - Form edit mengunci data yang sudah dikonversi (`status === 'aktif'`).
   - Index memuat daftar prospek dengan paginasi `paginate(15)` dan eager loading paket.
-  - **SweetAlert2 Action Modals:** Seluruh konfirmasi popup native browser (`confirm(...)`) digantikan dengan modal gelap terpadu SweetAlert2 (`confirmConvert(leadId, leadName)` dan `confirmDelete(formId, itemName)`), menampilkan dialog profesional dengan ikon status, tombol batalkan, dan eksekusi aman.
+  - **SweetAlert2 Action Modals & Feasibility ODP Check:** Seluruh konfirmasi popup native browser (`confirm(...)`) digantikan dengan modal gelap terpadu SweetAlert2 (`confirmConvert`, `confirmSurvey`, `confirmDelete`). Modal konversi prospek mewajibkan pemilihan titik ODP target dengan validasi sisa kuota (`odp_available_ports > 0`) sebelum transaksi database dan otomatis melakukan pengurangan stok (`decrement`) port. Tersedia opsi fleksibel tombol "Kirim Permintaan Survey" yang menerbitkan tiket bertipe `survey` tanpa membuat user, customer, ataupun invoice.
 
 ### 5.5. Pembersihan Fitur Mocked: Eliminasi Modul Jadwal / Schedules (RESOLVED)
 - **Status Tindakan:** Dihapus total dari sistem aplikasi (*completely removed*).

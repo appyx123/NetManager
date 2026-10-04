@@ -10,6 +10,7 @@ use App\Models\Customer;
 use App\Models\Package;
 use App\Models\Subscription;
 use App\Models\Invoice;
+use App\Models\NetworkAsset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -28,13 +29,14 @@ class LeadController extends Controller
 
         // Admin/SuperAdmin lihat semua, Marketing lihat miliknya sendiri
         if (in_array($user->role, ['admin', 'super_admin'])) {
-            $leads = Lead::with('package')->orderBy('created_at', 'desc')->paginate(15);
+            $leads = Lead::with(['package', 'odp'])->orderBy('created_at', 'desc')->paginate(15);
         } else {
-            $leads = Lead::with('package')->where('marketing_id', $user->id)->orderBy('created_at', 'desc')->paginate(15);
+            $leads = Lead::with(['package', 'odp'])->where('marketing_id', $user->id)->orderBy('created_at', 'desc')->paginate(15);
         }
 
-        // PERUBAHAN PATH VIEW
-        return view('marketing.leads.index', compact('leads'));
+        $odps = NetworkAsset::where('type', 'ODP')->where('is_active', true)->orderBy('name')->get();
+
+        return view('marketing.leads.index', compact('leads', 'odps'));
     }
 
     // 2. CREATE: Form Input Baru
@@ -308,7 +310,31 @@ class LeadController extends Controller
         return redirect()->route('marketing.leads.index')->with('success', 'Data prospek dihapus permanen.');
     }
 
-    // 8. CONVERT: Jadi Pelanggan & Buat Tiket
+    // 8. SURVEY: Kirim Permintaan Survey Lapangan ke Teknisi
+    public function requestSurvey(Request $request, Lead $lead)
+    {
+        if ($lead->status === 'aktif') {
+            return back()->with('error', 'Prospek ini sudah menjadi pelanggan aktif.');
+        }
+
+        Ticket::create([
+            'lead_id' => $lead->id,
+            'customer_id' => null,
+            'technician_id' => null,
+            'type' => 'survey',
+            'status' => 'open',
+            'subject' => 'Survey Lokasi: ' . $lead->name,
+            'description' => 'Survey kelayakan jaringan dan rekomendasi port ODP untuk calon pelanggan ' . $lead->name . '. Paket: ' . ($lead->package->name ?? '-') . '. Alamat: ' . ($lead->address_installation ?? $lead->address),
+            'survey_date' => now()->toDateString(),
+            'notes' => $lead->notes_summary ?? null,
+        ]);
+
+        $lead->update(['status' => 'survey']);
+
+        return back()->with('success', 'Permintaan survey berhasil dikirim! Tiket survey telah dibuat untuk teknisi.');
+    }
+
+    // 9. CONVERT: Jadi Pelanggan & Buat Tiket Instalasi dengan Validasi ODP
     public function convert(Request $request, Lead $lead)
     {
         return $this->convertToCustomer($request, $lead);
@@ -320,91 +346,123 @@ class LeadController extends Controller
             return back()->with('error', 'Sudah menjadi pelanggan.');
         }
 
-        DB::transaction(function () use ($lead) {
-            // A. Buat Akun Login User (Password default otomatis: 'password')
-            $uniqueId = 'CUST-' . strtoupper(Str::random(5));
-            $password = 'password';
+        $request->validate([
+            'odp_id' => 'required|exists:network_assets,id',
+            'odp_port' => 'nullable|string|max:50',
+        ]);
 
-            $user = User::create([
-                'name' => $lead->name,
-                'email' => $lead->email ?? strtolower(str_replace(' ', '', $lead->name)) . rand(100, 999) . '@net.local',
-                'password' => Hash::make($password),
-                'role' => 'customer',
-                'is_active' => true,
-            ]);
+        $odp = NetworkAsset::findOrFail($request->odp_id);
 
-            // B. Buat Data Customer (Default: is_isolated = true untuk model Pasang Dulu Baru Bayar)
-            $customer = Customer::create([
-                'user_id' => $user->id,
-                'lead_id' => $lead->id,
-                'customer_code' => $uniqueId,
-                'phone_number' => $lead->phone,
-                'address_installation' => $lead->address_installation ?? $lead->address,
-                'coordinates' => $lead->coordinates,
-                'is_isolated' => true,
-            ]);
+        // Validasi ketersediaan port ODP (Hard constraint)
+        if ((int) $odp->odp_available_ports <= 0) {
+            return back()->with('error', 'Kapasitas ODP target sudah penuh. Silakan pilih ODP lain atau lakukan ekspansi jaringan.');
+        }
 
-            // C. Update Status Lead
-            $lead->update(['status' => 'aktif']);
-
-            // D. Buat Tiket Langsung Terhubung ke Customer (Bypass model InstallationForm yang usang)
-            $customer->tickets()->create([
-                'technician_id' => null, // Belum ada teknisi
-                'type' => 'installation',
-                'status' => 'open',
-                'subject' => 'Pasang Baru: ' . ($lead->package->name ?? 'Paket Kustom'),
-                'description' => 'Instalasi pelanggan baru ' . $lead->name . '. Paket: ' . ($lead->package->name ?? '-') . '. Alamat: ' . ($lead->address_installation ?? $lead->address),
-                'connection_type' => 'fiber',
-                'notes' => $lead->notes_summary ?? null,
-            ]);
-
-            // E. Buat Subscription Awal (Status isolated: Menunggu Pembayaran & Selesai Pasang)
-            $package = $lead->package ?? ($lead->package_id ? Package::find($lead->package_id) : null);
-            $subscription = Subscription::create([
-                'customer_id'       => $customer->id,
-                'package_id'        => $lead->package_id,
-                'status'            => 'isolated',
-                'installation_date' => now()->toDateString(),
-                'billing_due_date'  => now()->addDays(7)->toDateString(),
-            ]);
-
-            // F. Buat Tagihan Perdana (Gabungan Biaya Paket + Biaya Instalasi)
-            $packagePrice = $package ? (float) $package->price : 0;
-            $installationFee = (float) ($lead->installation_fee ?? $package?->installation_fee ?? 0);
-            $initialAmount = $packagePrice + $installationFee;
-
-            Invoice::create([
-                'subscription_id' => $subscription->id,
-                'invoice_number'  => 'INV-' . strtoupper(Str::random(8)),
-                'amount'          => $initialAmount,
-                'status'          => 'unpaid',
-                'due_date'        => now()->addDays(7)->toDateString(),
-            ]);
-
-            session()->flash('generated_credential', [
-                'name' => $lead->name,
-                'phone' => $lead->phone,
-                'username' => $user->email,
-                'password' => $password,
-                'code' => $uniqueId,
-            ]);
-
-            // E. Otomatis Kirim Kredensial Login (Username & Password) ke WhatsApp Pelanggan
-            if (!empty($lead->phone)) {
-                try {
-                    WhatsappService::sendAccountCreated(
-                        $lead->name,
-                        $lead->phone,
-                        $uniqueId,
-                        $user->email,
-                        $password
-                    );
-                } catch (\Throwable $e) {
-                    Log::error("Gagal mengirim WhatsApp kredensial akun pelanggan baru ({$uniqueId}): " . $e->getMessage());
+        try {
+            DB::transaction(function () use ($lead, $request, $odp) {
+                // Lock baris ODP untuk mencegah race condition konkurensi
+                $lockedOdp = NetworkAsset::where('id', $odp->id)->lockForUpdate()->firstOrFail();
+                if ((int) $lockedOdp->odp_available_ports <= 0) {
+                    throw new \Exception('Kapasitas ODP target sudah penuh. Silakan pilih ODP lain atau lakukan ekspansi jaringan.');
                 }
-            }
-        });
 
-        return redirect()->route('marketing.leads.index')->with('success', 'Konversi Berhasil! Akun Pelanggan telah dibuat dan kredensial login otomatis dikirim ke WhatsApp.');
+                // A. Buat Akun Login User (Password default otomatis: 'password')
+                $uniqueId = 'CUST-' . strtoupper(Str::random(5));
+                $password = 'password';
+
+                $user = User::create([
+                    'name' => $lead->name,
+                    'email' => $lead->email ?? strtolower(str_replace(' ', '', $lead->name)) . rand(100, 999) . '@net.local',
+                    'password' => Hash::make($password),
+                    'role' => 'customer',
+                    'is_active' => true,
+                ]);
+
+                // B. Buat Data Customer (Default: is_isolated = true untuk model Pasang Dulu Baru Bayar)
+                $customer = Customer::create([
+                    'user_id' => $user->id,
+                    'lead_id' => $lead->id,
+                    'customer_code' => $uniqueId,
+                    'phone_number' => $lead->phone,
+                    'address_installation' => $lead->address_installation ?? $lead->address,
+                    'coordinates' => $lead->coordinates,
+                    'is_isolated' => true,
+                ]);
+
+                // C. Update Status Lead dan Simpan Alokasi ODP
+                $lead->update([
+                    'status' => 'aktif',
+                    'odp_id' => $lockedOdp->id,
+                    'odp_port' => $request->odp_port ?? $lead->odp_port,
+                ]);
+
+                // D. Buat Tiket Langsung Terhubung ke Customer & ODP Target
+                $customer->tickets()->create([
+                    'lead_id' => $lead->id,
+                    'odp_id' => $lockedOdp->id,
+                    'odp_port' => $request->odp_port ?? $lead->odp_port,
+                    'technician_id' => null, // Belum ada teknisi
+                    'type' => 'installation',
+                    'status' => 'open',
+                    'subject' => 'Pasang Baru: ' . ($lead->package->name ?? 'Paket Kustom'),
+                    'description' => 'Instalasi pelanggan baru ' . $lead->name . ' (ODP: ' . $lockedOdp->name . '). Paket: ' . ($lead->package->name ?? '-') . '. Alamat: ' . ($lead->address_installation ?? $lead->address),
+                    'connection_type' => 'fiber',
+                    'notes' => $lead->notes_summary ?? null,
+                ]);
+
+                // E. Pengurangan Kuota Port Otomatis (Pemesanan port)
+                $lockedOdp->decrement('odp_available_ports');
+
+                // F. Buat Subscription Awal (Status isolated: Menunggu Pembayaran & Selesai Pasang)
+                $package = $lead->package ?? ($lead->package_id ? Package::find($lead->package_id) : null);
+                $subscription = Subscription::create([
+                    'customer_id'       => $customer->id,
+                    'package_id'        => $lead->package_id,
+                    'status'            => 'isolated',
+                    'installation_date' => now()->toDateString(),
+                    'billing_due_date'  => now()->addDays(7)->toDateString(),
+                ]);
+
+                // G. Buat Tagihan Perdana (Gabungan Biaya Paket + Biaya Instalasi)
+                $packagePrice = $package ? (float) $package->price : 0;
+                $installationFee = (float) ($lead->installation_fee ?? $package?->installation_fee ?? 0);
+                $initialAmount = $packagePrice + $installationFee;
+
+                Invoice::create([
+                    'subscription_id' => $subscription->id,
+                    'invoice_number'  => 'INV-' . strtoupper(Str::random(8)),
+                    'amount'          => $initialAmount,
+                    'status'          => 'unpaid',
+                    'due_date'        => now()->addDays(7)->toDateString(),
+                ]);
+
+                session()->flash('generated_credential', [
+                    'name' => $lead->name,
+                    'phone' => $lead->phone,
+                    'username' => $user->email,
+                    'password' => $password,
+                    'code' => $uniqueId,
+                ]);
+
+                // H. Otomatis Kirim Kredensial Login ke WhatsApp Pelanggan
+                if (!empty($lead->phone)) {
+                    try {
+                        WhatsappService::sendAccountCreated(
+                            $lead->name,
+                            $lead->phone,
+                            $uniqueId,
+                            $user->email,
+                            $password
+                        );
+                    } catch (\Throwable $e) {
+                        Log::error("Gagal mengirim WhatsApp kredensial akun pelanggan baru ({$uniqueId}): " . $e->getMessage());
+                    }
+                }
+            });
+        } catch (\Throwable $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('marketing.leads.index')->with('success', 'Konversi Berhasil! Akun Pelanggan telah dibuat dan kuota port ODP berhasil dipesan.');
     }
 }
