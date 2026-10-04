@@ -2,7 +2,7 @@
     <div class="min-h-screen bg-slate-950 py-10">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="mb-8">
-                <p class="text-xs font-black uppercase tracking-[0.2em] text-sky-400">Technician Portal</p>
+                <p class="text-xs font-black uppercase tracking-[0.2em] text-sky-400">Portal Teknisi</p>
                 <h1 class="mt-2 text-3xl font-black tracking-tight text-white">Bursa Tugas</h1>
                 <p class="mt-2 text-slate-400">Pilih tiket terbuka yang siap Anda kerjakan.</p>
             </div>

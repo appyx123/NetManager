@@ -4,9 +4,9 @@
             <div class="mb-8">
                 <a href="{{ route('admin.leads.index') }}" class="inline-flex items-center text-sm font-semibold text-slate-400 hover:text-white transition-colors mb-4 group">
                     <svg class="w-4 h-4 mr-1.5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Batal Edit
+                    Batal
                 </a>
-                <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">Edit Data Lead</h2>
+                <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">Ubah Data Prospek</h2>
             </div>
 
             <div class="bg-slate-900/80 backdrop-blur-md rounded-2xl shadow-xl border border-slate-800 p-6 sm:p-8">
@@ -118,7 +118,7 @@
                                 <label class="block text-sm font-bold text-slate-300 mb-2">Status Penjualan (Pipeline)</label>
                                 <select name="status" class="w-full px-4 py-3 bg-slate-800/50 text-slate-100 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all appearance-none cursor-pointer">
                                     <option value="prospek" @selected($lead->status === 'prospek' || $lead->status === 'prospect') class="bg-slate-800">Prospek</option>
-                                    <option value="survey" @selected($lead->status === 'survey') class="bg-slate-800">Survey Lokasi</option>
+                                    <option value="survey" @selected($lead->status === 'survey') class="bg-slate-800">Survei Lokasi</option>
                                     <option value="instalasi" @selected($lead->status === 'instalasi') class="bg-slate-800">Instalasi Fisik</option>
                                     <option value="aktif" @selected($lead->status === 'aktif' || $lead->status === 'converted') class="bg-slate-800">Aktif (Terpasang)</option>
                                     <option value="batal" @selected($lead->status === 'batal' || $lead->status === 'lost') class="bg-slate-800">Batal</option>
@@ -132,7 +132,7 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-bold text-slate-300 mb-2">Sumber Lead Asal</label>
+                                <label class="block text-sm font-bold text-slate-300 mb-2">Sumber Prospek</label>
                                 <select name="source" class="w-full px-4 py-3 bg-slate-800/50 text-slate-100 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all appearance-none cursor-pointer">
                                     <option value="online" @selected($lead->source === 'online') class="bg-slate-800">Online (Web/Sosmed)</option>
                                     <option value="offline" @selected($lead->source === 'offline') class="bg-slate-800">Offline (Brosur/Pameran)</option>
@@ -144,7 +144,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                             <div>
-                                <label class="block text-sm font-bold text-slate-300 mb-2">Rencana Tanggal Survey</label>
+                                <label class="block text-sm font-bold text-slate-300 mb-2">Rencana Tanggal Survei</label>
                                 <input type="date" name="survey_date" value="{{ $lead->survey_date }}"
                                     class="w-full px-4 py-3 bg-slate-800/50 text-slate-100 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all">
                             </div>

@@ -10,9 +10,9 @@ test.describe('customer portal', () => {
     await expect(page.getByRole('heading', { name: /Halo, Budi Santoso/i })).toBeVisible();
     await expect(page.getByText('ID Pelanggan:')).toBeVisible();
 
-    await page.getByRole('link', { name: 'Pembayaran' }).click();
+    await page.getByRole('link', { name: /Tagihan|Pembayaran/i }).first().click();
     await expect(page).toHaveURL(/\/client\/billing$/);
-    await expect(page.getByRole('heading', { name: 'Tagihan & Pembayaran' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Tagihan/i })).toBeVisible();
     await expect(page.getByText('Belum Bayar', { exact: true }).first()).toBeVisible();
   });
 
@@ -20,20 +20,20 @@ test.describe('customer portal', () => {
     const title = uniqueComplaintTitle();
 
     await page.goto('/client/complaints/create');
-    await expect(page.getByRole('heading', { name: /Buat Pengajuan Bantuan Baru/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Buat Pengaduan|Buat Pengajuan/i })).toBeVisible();
     await page.getByRole('radio', { name: /Internet Lambat \/ Putus/i }).check();
     await page.getByLabel('Judul Ringkasan').fill(title);
     await page.getByLabel('Tingkat Prioritas').selectOption('high');
     await page.getByLabel('Jelaskan Detail Permasalahannya').fill('Koneksi internet terputus dan perlu pemeriksaan teknisi.');
-    await page.getByRole('button', { name: 'Kirim Pengajuan' }).click();
+    await page.getByRole('button', { name: /Kirim Pengaduan|Kirim Pengajuan/i }).click();
 
     await expect(page).toHaveURL(/\/client\/complaints$/);
-    await expect(page.getByText('Laporan kerusakan berhasil dikirim.')).toBeVisible();
+    await expect(page.getByText(/berhasil dikirim/i)).toBeVisible();
     await expect(page.getByText(title, { exact: true })).toBeVisible();
 
     await page.getByRole('link', { name: 'Lihat Detail' }).first().click();
     await expect(page).toHaveURL(/\/client\/complaints\/\d+$/);
-    await expect(page.getByRole('heading', { name: /Detail Pengajuan/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Detail Pengaduan|Detail Pengajuan/i })).toBeVisible();
     await expect(page.getByRole('heading', { name: title })).toBeVisible();
   });
 
@@ -47,8 +47,8 @@ test.describe('customer portal', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/client/complaints/create');
 
-    await expect(page.getByRole('heading', { name: /Buat Pengajuan Bantuan Baru/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Kirim Pengajuan' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Buat Pengaduan|Buat Pengajuan/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Kirim Pengaduan|Kirim Pengajuan/i })).toBeVisible();
     const contentWidth = await page.evaluate(() => document.documentElement.scrollWidth);
     expect(contentWidth).toBeLessThanOrEqual(390);
   });

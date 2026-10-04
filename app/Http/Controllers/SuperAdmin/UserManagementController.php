@@ -83,7 +83,7 @@ class UserManagementController extends Controller
         $newPassword = 'temp' . rand(10000, 99999);
         $user->update(['password' => Hash::make($newPassword)]);
 
-        return redirect()->back()->with('success', "Password reset. Temporary password: $newPassword");
+        return redirect()->back()->with('success', "Kata sandi berhasil direset. Kata sandi sementara: $newPassword");
     }
 
     public function destroy(User $user)
@@ -103,6 +103,6 @@ class UserManagementController extends Controller
         }
 
         $user->delete();
-        return redirect()->route('superadmin.users.index')->with('success', 'User berhasil dihapus');
+        return redirect()->route('superadmin.users.index')->with('success', 'Pegawai berhasil dihapus.');
     }
 }

@@ -17,7 +17,7 @@
                     </div>
                 @else
                     <div class="absolute top-0 right-0 -mr-10 mt-6 transform rotate-45 bg-rose-600/90 text-white font-black py-1 px-14 shadow-lg border-y border-rose-400/50 uppercase tracking-widest text-xs z-10 text-center">
-                        UNPAID
+                        BELUM BAYAR
                     </div>
                 @endif
 
@@ -26,7 +26,7 @@
 
                     <div class="flex flex-col sm:flex-row justify-between items-start border-b border-slate-800/60 pb-8 mb-10 relative">
                         <div class="mb-6 sm:mb-0">
-                            <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 tracking-tighter uppercase drop-shadow-sm">INVOICE</h1>
+                            <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 tracking-tighter uppercase drop-shadow-sm">TAGIHAN</h1>
                             <p class="text-indigo-300 mt-2 font-mono font-bold bg-indigo-500/10 inline-block px-3 py-1 rounded-lg border border-indigo-500/20 shadow-inner">#{{ $invoice->invoice_number }}</p>
                         </div>
                         <div class="text-left sm:text-right text-sm text-slate-400 space-y-2">
@@ -113,7 +113,7 @@
                             <div class="w-full max-w-md mb-6 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl p-6 text-left">
                                 <h4 class="font-bold text-indigo-300 mb-3 text-center">Instruksi Pembayaran</h4>
                                 <div class="space-y-2 text-sm text-slate-300">
-                                    <p><span class="text-slate-500">No. Invoice:</span> <strong class="font-mono">{{ $pi['invoice_number'] }}</strong></p>
+                                    <p><span class="text-slate-500">No. Tagihan:</span> <strong class="font-mono">{{ $pi['invoice_number'] }}</strong></p>
                                     <p><span class="text-slate-500">Jumlah:</span> <strong>Rp {{ number_format($pi['amount'], 0, ',', '.') }}</strong></p>
                                     <p><span class="text-slate-500">Jatuh Tempo:</span> <strong>{{ \Carbon\Carbon::parse($pi['due_date'])->format('d F Y') }}</strong></p>
                                 </div>

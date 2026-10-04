@@ -10,13 +10,13 @@
                         </div>
                         <span class="text-[10px] font-black text-sky-500 uppercase tracking-[0.2em]">Sales Pipeline</span>
                     </div>
-                    <h1 class="text-4xl font-black text-white tracking-tighter">Daftar <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">Prospek (Leads)</span></h1>
+                    <h1 class="text-4xl font-black text-white tracking-tighter">Daftar <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">Prospek</span></h1>
                     <p class="text-slate-400 mt-2 font-medium">Kelola data calon pelanggan dan pantau siklus konversi penjualan Anda.</p>
                 </div>
                 <div class="flex-shrink-0">
                     <a href="{{ route('marketing.leads.create') }}" class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-sky-600 text-white text-xs font-black uppercase tracking-widest rounded-2xl shadow-[0_0_20px_rgba(2,132,199,0.3)] hover:bg-sky-500 hover:shadow-[0_0_30px_rgba(2,132,199,0.5)] transition-all duration-300 transform hover:-translate-y-1 w-full md:w-auto">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-                        Input Prospek Baru
+                        Tambah Prospek Baru
                     </a>
                 </div>
             </div>
@@ -99,7 +99,7 @@
                                 <th class="px-8 py-5">Identitas Prospek</th>
                                 <th class="px-6 py-5">Minat Layanan</th>
                                 <th class="px-6 py-5">Lokasi Pemasangan</th>
-                                <th class="px-6 py-5 text-center">Status Lead</th>
+                                <th class="px-6 py-5 text-center">Status Prospek</th>
                                 <th class="px-8 py-5 text-center">Manajemen</th>
                             </tr>
                         </thead>
@@ -162,7 +162,7 @@
                                             </a>
 
                                             @if ($lead->status !== 'converted' && $lead->status !== 'aktif')
-                                                <a href="{{ route('marketing.leads.edit', $lead->id) }}" class="p-2.5 bg-slate-800 text-amber-500/80 hover:text-white hover:bg-amber-600 rounded-xl transition-all border border-slate-700 shadow-sm" title="Edit Data">
+                                                <a href="{{ route('marketing.leads.edit', $lead->id) }}" class="p-2.5 bg-slate-800 text-amber-500/80 hover:text-white hover:bg-amber-600 rounded-xl transition-all border border-slate-700 shadow-sm" title="Ubah Data">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                                 </a>
                                                 <form action="{{ route('marketing.leads.destroy', $lead->id) }}" method="POST" onsubmit="return confirm('Data prospek ini akan dihapus permanen. Lanjutkan?');" class="inline">
@@ -173,7 +173,7 @@
                                                 </form>
                                                 <form action="{{ route('marketing.leads.convert', $lead->id) }}" method="POST" onsubmit="return confirm('Peringatan: Proses ini akan mengkonversi prospek menjadi pelanggan aktif dan membuat tiket instalasi untuk teknisi. Lanjutkan?');" class="inline">
                                                     @csrf
-                                                    <button type="submit" class="p-2.5 bg-sky-500/10 text-sky-400 hover:text-white hover:bg-sky-500 rounded-xl transition-all border border-sky-500/30 shadow-sm" title="Convert to Customer (Mulai Instalasi)">
+                                                    <button type="submit" class="p-2.5 bg-sky-500/10 text-sky-400 hover:text-white hover:bg-sky-500 rounded-xl transition-all border border-sky-500/30 shadow-sm" title="Konversi ke Pelanggan (Mulai Instalasi)">
                                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                                                     </button>
                                                 </form>
@@ -195,7 +195,7 @@
                                             </div>
                                             <div class="max-w-md mx-auto mt-2">
                                                 <h5 class="text-white font-bold text-lg tracking-tight">Belum Ada Prospek</h5>
-                                                <p class="text-slate-500 text-sm mt-1 leading-relaxed">Sistem belum memiliki data prospek pelanggan. Silakan klik tombol "Input Prospek Baru" untuk mulai mendata calon pelanggan.</p>
+                                                <p class="text-slate-500 text-sm mt-1 leading-relaxed">Sistem belum memiliki data prospek pelanggan. Silakan klik tombol "Tambah Prospek Baru" untuk mulai mendata calon pelanggan.</p>
                                             </div>
                                         </div>
                                     </td>

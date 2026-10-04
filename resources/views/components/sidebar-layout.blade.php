@@ -95,7 +95,7 @@
                                     <form id="logout-form-header" method="POST" action="{{ route('logout') }}">
                                         @csrf
                                         <x-dropdown-link href="#" onclick="event.preventDefault(); confirmLogout('header');" class="font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10">
-                                            {{ __('Keluar Sistem') }}
+                                            {{ __('Logout') }}
                                         </x-dropdown-link>
                                     </form>
                                 </x-slot>
@@ -121,15 +121,15 @@
         <script>
             function confirmLogout(source) {
                 Swal.fire({
-                    title: 'Keluar Sistem?',
-                    text: "Sesi Anda akan diakhiri dan harus login kembali.",
+                    title: 'Konfirmasi Logout',
+                    text: "Sesi Anda akan diakhiri dan Anda perlu login kembali.",
                     icon: 'warning',
                     background: '#0f172a',
                     color: '#f8fafc',
                     showCancelButton: true,
                     confirmButtonColor: '#e11d48',
                     cancelButtonColor: '#1e293b',
-                    confirmButtonText: 'Ya, Keluar!',
+                    confirmButtonText: 'Ya, Logout',
                     cancelButtonText: 'Batal',
                     customClass: {
                         popup: 'border border-slate-700 rounded-2xl',

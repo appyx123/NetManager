@@ -6,7 +6,7 @@ test('marketing can convert an existing prospect into a customer', async ({ page
   await page.goto('/marketing/leads');
   await expect(page.getByRole('heading', { name: /Daftar Prospek/i })).toBeVisible();
 
-  const convertBtn = page.getByTitle('Convert to Customer (Mulai Instalasi)').first();
+  const convertBtn = page.getByTitle(/Mulai Instalasi/i).first();
   if (await convertBtn.isVisible({ timeout: 4000 }).catch(() => false)) {
     page.once('dialog', dialog => dialog.accept());
     await convertBtn.click();

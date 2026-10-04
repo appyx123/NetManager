@@ -15,7 +15,7 @@
                     <div class="flex-shrink-0">
                         <a href="{{ route('marketing.leads.edit', $lead->id) }}" class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-amber-600 text-white text-xs font-black uppercase tracking-widest rounded-2xl shadow-[0_0_15px_rgba(217,119,6,0.3)] hover:bg-amber-500 hover:shadow-[0_0_25px_rgba(217,119,6,0.5)] transition-all duration-300 transform hover:-translate-y-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            Edit Data Prospek
+                            Ubah Data Prospek
                         </a>
                     </div>
                 @endif
@@ -198,7 +198,7 @@
                                     <div class="flex items-center justify-between pb-4 border-b border-slate-800/60">
                                         <div class="flex items-center gap-3">
                                             <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div>
-                                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Jadwal Survey</span>
+                                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Jadwal Survei</span>
                                         </div>
                                         <span class="font-bold text-white text-sm">{{ $lead->survey_date ? $lead->survey_date->format('d M Y') : 'Menunggu' }}</span>
                                     </div>
@@ -219,7 +219,7 @@
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-3">
                                             <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></div>
-                                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Sumber Leads</span>
+                                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Sumber Prospek</span>
                                         </div>
                                         <span class="font-bold text-white text-sm uppercase tracking-wide">{{ $lead->source ?? '-' }}</span>
                                     </div>

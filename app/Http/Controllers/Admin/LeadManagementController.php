@@ -79,7 +79,7 @@ class LeadManagementController extends Controller
 
         Lead::create($validated);
 
-        return redirect()->route('admin.leads.index')->with('success', 'Lead berhasil dibuat');
+        return redirect()->route('admin.leads.index')->with('success', 'Prospek berhasil dibuat.');
     }
 
     public function show(Lead $lead)
@@ -127,14 +127,14 @@ class LeadManagementController extends Controller
 
         $lead->update($validated);
 
-        return redirect()->route('admin.leads.show', $lead)->with('success', 'Lead berhasil diperbarui');
+        return redirect()->route('admin.leads.show', $lead)->with('success', 'Prospek berhasil diperbarui.');
     }
 
     public function destroy(Lead $lead)
     {
         $lead->delete();
 
-        return redirect()->route('admin.leads.index')->with('success', 'Lead berhasil dihapus');
+        return redirect()->route('admin.leads.index')->with('success', 'Prospek berhasil dihapus.');
     }
 
     public function updateStatus(Request $request, Lead $lead)

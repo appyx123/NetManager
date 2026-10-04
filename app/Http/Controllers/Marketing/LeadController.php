@@ -154,7 +154,7 @@ class LeadController extends Controller
         }
 
         if ($lead->status === 'aktif') {
-            return back()->with('error', 'Data yang sudah menjadi pelanggan tidak bisa diedit.');
+            return back()->with('error', 'Data yang sudah menjadi pelanggan tidak dapat diubah.');
         }
 
         $packages = Package::where('is_active', true)->get();
@@ -167,7 +167,7 @@ class LeadController extends Controller
     public function update(Request $request, Lead $lead)
     {
         if ($lead->status === 'aktif') {
-            return back()->with('error', 'Data terkunci (sudah convert).');
+            return back()->with('error', 'Data terkunci (sudah dikonversi menjadi pelanggan).');
         }
 
         $request->validate([

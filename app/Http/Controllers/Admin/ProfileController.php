@@ -43,13 +43,13 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         if (!Hash::check($validated['current_password'], $user->password)) {
-            return redirect()->back()->with('error', 'Password lama tidak sesuai');
+            return redirect()->back()->with('error', 'Kata sandi lama tidak sesuai.');
         }
 
         $user->update([
             'password' => Hash::make($validated['new_password']),
         ]);
 
-        return redirect()->back()->with('success', 'Password berhasil diubah');
+        return redirect()->back()->with('success', 'Kata sandi berhasil diubah.');
     }
 }

@@ -12,7 +12,7 @@
                         <div class="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
                             <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                         </div>
-                        <span class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">Customer Profile & Information</span>
+                        <span class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">Profil & Informasi Pelanggan</span>
                     </div>
                     <h1 class="text-4xl font-black text-white tracking-tighter">Profil <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-300">Pelanggan</span></h1>
                     <p class="text-slate-400 mt-2 font-medium text-sm">Informasi lengkap data langganan, kontak, dan riwayat penanganan pelanggan.</p>

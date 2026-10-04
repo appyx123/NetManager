@@ -18,7 +18,7 @@
                 <div class="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 border border-blue-500/20 hover:border-blue-500/50 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 group">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-bold text-blue-400/80 uppercase tracking-wider group-hover:text-blue-400 transition-colors">Total User</p>
+                            <p class="text-xs font-bold text-blue-400/80 uppercase tracking-wider group-hover:text-blue-400 transition-colors">Total Pengguna</p>
                             <h3 class="text-3xl font-black text-white mt-2">{{ $stats['total_users'] }}</h3>
                         </div>
                         <div class="p-3 bg-blue-500/10 rounded-xl group-hover:bg-blue-500/20 transition-colors border border-blue-500/10">
@@ -84,7 +84,7 @@
                                 <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
                             </svg>
                         </div>
-                        Distribusi User Berdasarkan Role
+                        Distribusi Pengguna Berdasarkan Role
                     </h3>
                     <div style="position: relative; height: 300px;">
                         <canvas id="userRoleChart"></canvas>
@@ -128,7 +128,7 @@
                                 <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
                             </svg>
                         </div>
-                        Pertumbuhan User (7 Hari)
+                        Pertumbuhan Pengguna (7 Hari)
                     </h3>
                     <div style="position: relative; height: 300px;">
                         <canvas id="userGrowthChart"></canvas>
@@ -191,7 +191,7 @@
                             <div class="p-3 bg-slate-800/40 rounded-xl border border-slate-800/80">
                                 <span class="text-xs text-slate-400 block mb-1 flex items-center gap-1.5">
                                     <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                                    Active Sessions
+                                    Sesi Aktif
                                 </span>
                                 <span class="text-sm font-bold text-slate-200">{{ $stats['active_sessions'] }} sesi</span>
                             </div>
@@ -285,7 +285,7 @@
                     <table class="w-full text-sm text-left">
                         <thead class="bg-slate-800/50 text-xs text-slate-400 uppercase tracking-wider font-semibold">
                             <tr>
-                                <th class="px-6 py-4">User</th>
+                                <th class="px-6 py-4">Pengguna</th>
                                 <th class="px-6 py-4">Aksi</th>
                                 <th class="px-6 py-4 text-right">Waktu</th>
                             </tr>
@@ -314,7 +314,7 @@
                                     <td colspan="3" class="px-6 py-12 text-center">
                                         <div class="flex flex-col items-center justify-center">
                                             <svg class="w-10 h-10 text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
-                                            <span class="text-slate-400 font-medium">Belum ada activity log terbaru.</span>
+                                            <span class="text-slate-400 font-medium">Belum ada log aktivitas terbaru.</span>
                                         </div>
                                     </td>
                                 </tr>
@@ -500,7 +500,7 @@
                     data: {
                         labels: @json($userGrowthChart['labels']),
                         datasets: [{
-                            label: 'User Baru',
+                            label: 'Pengguna Baru',
                             data: @json($userGrowthChart['data']),
                             backgroundColor: @json($userGrowthChart['backgroundColor']),
                             borderColor: 'transparent',
@@ -516,7 +516,7 @@
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        return ' User Baru: ' + context.raw + ' orang';
+                                        return ' Pengguna Baru: ' + context.raw + ' orang';
                                     }
                                 }
                             }

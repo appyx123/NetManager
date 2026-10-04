@@ -6,12 +6,12 @@
             <div class="mb-8">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h1 class="text-3xl sm:text-4xl font-black text-white">Pusat Pengajuan</h1>
-                        <p class="text-slate-400 mt-2">Laporkan masalah jaringan atau buat pengajuan baru</p>
+                        <h1 class="text-3xl sm:text-4xl font-black text-white">Pusat Pengaduan</h1>
+                        <p class="text-slate-400 mt-2">Laporkan masalah jaringan atau buat pengaduan baru</p>
                     </div>
                     <a href="{{ route('client.complaints.create') }}" dusk="create-complaint" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-900 font-bold rounded-lg hover:from-amber-400 hover:to-amber-500 shadow-lg transform hover:-translate-y-0.5 transition">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        Buat Pengajuan Baru
+                        Buat Pengaduan Baru
                     </a>
                 </div>
             </div>
@@ -63,8 +63,8 @@
                     <div class="w-24 h-24 bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg class="w-12 h-12 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
-                    <p class="text-slate-300 font-semibold text-lg">Belum ada pengajuan lainnya</p>
-                    <p class="text-slate-400 text-sm mt-2">Jika ada masalah, silakan buat pengajuan baru melalui tombol di atas</p>
+                    <p class="text-slate-300 font-semibold text-lg">Belum ada pengaduan lainnya</p>
+                    <p class="text-slate-400 text-sm mt-2">Jika ada masalah, silakan buat pengaduan baru melalui tombol di atas</p>
                 </div>
                 @endforelse
             </div>
@@ -83,7 +83,7 @@
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
                         <div>
-                            <p class="font-bold text-white">Lihat Pembayaran</p>
+                            <p class="font-bold text-white">Lihat Tagihan</p>
                             <p class="text-sm text-slate-400">Tagihan dan riwayat transaksi</p>
                         </div>
                     </div>

@@ -36,10 +36,10 @@
                             {{ __('Tiket Teknisi') }}
                         </x-nav-link>
                         <x-nav-link href="{{ route('admin.leads.index') }}" :active="request()->routeIs('admin.leads.*')">
-                            {{ __('Lead Marketing') }}
+                            {{ __('Prospek Marketing') }}
                         </x-nav-link>
                         <x-nav-link href="{{ route('admin.billing.index') }}" :active="request()->routeIs('admin.billing.*')">
-                            {{ __('Keuangan') }}
+                            {{ __('Tagihan') }}
                         </x-nav-link>
                         <x-nav-link href="{{ route('admin.routers.index') }}" :active="request()->routeIs('admin.routers.*')">
                             {{ __('Jaringan') }}
@@ -69,22 +69,22 @@
                             {{ __('Dashboard') }}
                         </x-nav-link>
                         <x-nav-link href="{{ route('technician.survey.index') }}" :active="request()->routeIs('technician.survey.*')">
-                            {{ __('Survey') }}
+                            {{ __('Survei') }}
                         </x-nav-link>
                         <x-nav-link href="{{ route('technician.installation.index') }}" :active="request()->routeIs('technician.installation.*')">
                             {{ __('Instalasi') }}
                         </x-nav-link>
                         <x-nav-link href="{{ route('technician.ticket.index') }}" :active="request()->routeIs('technician.ticket.*')">
-                            {{ __('Gangguan') }}
+                            {{ __('Tiket Gangguan') }}
                         </x-nav-link>
                     @endif
 
                     @if (Auth::user()->role === 'customer')
                         <x-nav-link href="{{ route('client.billing.index') }}" :active="request()->routeIs('client.billing.*')">
-                            {{ __('Pembayaran') }}
+                            {{ __('Tagihan') }}
                         </x-nav-link>
                         <x-nav-link href="{{ route('client.complaints.index') }}" :active="request()->routeIs('client.complaints.*')">
-                            {{ __('Pengajuan') }}
+                            {{ __('Pengaduan') }}
                         </x-nav-link>
                     @endif
 
@@ -149,16 +149,22 @@
                                             {{ Auth::user()->role == 'super_admin' ? 'bg-purple-600' : '' }}
                                             {{ Auth::user()->role == 'admin' ? 'bg-red-600' : '' }}
                                             {{ Auth::user()->role == 'marketing' ? 'bg-amber-600' : '' }}
-                                            {{ Auth::user()->role == 'technician' ? 'bg-amber-600' : '' }}
-                                            {{ Auth::user()->role == 'customer' ? 'bg-green-600' : '' }}
+                                            {{ Auth::user()->role == 'technician' ? 'bg-sky-600' : '' }}
+                                            {{ Auth::user()->role == 'customer' ? 'bg-emerald-600' : '' }}
                                         ">
-                                            {{ str_replace('_', ' ', Auth::user()->role) }}
+                                            @if (Auth::user()->role === 'technician')
+                                                Teknisi
+                                            @elseif (Auth::user()->role === 'customer')
+                                                Pelanggan
+                                            @else
+                                                {{ str_replace('_', ' ', Auth::user()->role) }}
+                                            @endif
                                         </span>
                                         {{ Auth::user()->name }}
                                         <svg class="ms-2 -me-0.5 size-4" xmlns="http://www.w3.org/2000/svg"
-                                            fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                             fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                                 d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                                         </svg>
                                     </button>
                                 </span>
@@ -167,12 +173,12 @@
 
                         <x-slot name="content">
                             <div class="block px-4 py-2 text-xs text-slate-400">
-                                {{ __('Manage Account') }}
+                                {{ __('Kelola Akun') }}
                             </div>
 
                             @if (Auth::user()->role !== 'customer')
                                 <x-dropdown-link href="{{ route('profile.show') }}">
-                                    {{ __('Profile Setting') }}
+                                    {{ __('Pengaturan Profil') }}
                                 </x-dropdown-link>
 
                                 @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
@@ -188,7 +194,7 @@
                                 @csrf
                                 <x-dropdown-link href="{{ route('logout') }}" @click.prevent="$root.submit();"
                                     class="text-red-500 font-semibold">
-                                    {{ __('Log Out') }}
+                                    {{ __('Logout') }}
                                 </x-dropdown-link>
                             </form>
                         </x-slot>
@@ -225,13 +231,13 @@
                     {{ __('Super Panel') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link href="{{ route('superadmin.users.index') }}" :active="request()->routeIs('superadmin.users.*')">
-                    {{ __('Kelola Pegawai & Role') }}
+                    {{ __('Kelola Pegawai & Hak Akses') }}
                 </x-responsive-nav-link>
                 <div class="border-t border-slate-700 my-2"></div>
             @endif
 
             @if (in_array(Auth::user()->role, ['admin', 'super_admin']))
-                <div class="block px-4 py-2 text-xs font-bold text-red-400 bg-red-900/40 uppercase">Admin Operasional</div>
+                <div class="block px-4 py-2 text-xs font-bold text-red-400 bg-red-900/40 uppercase">Operasional Admin</div>
                 <x-responsive-nav-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')">
                     {{ __('Dashboard Admin') }}
                 </x-responsive-nav-link>
@@ -239,7 +245,7 @@
                     {{ __('Kelola Pelanggan & Paket') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link href="{{ route('admin.billing.index') }}" :active="request()->routeIs('admin.billing.*')">
-                    {{ __('Keuangan & Tagihan') }}
+                    {{ __('Tagihan') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link href="{{ route('admin.routers.index') }}" :active="request()->routeIs('admin.routers.*')">
                     {{ __('Manajemen Jaringan') }}
@@ -272,7 +278,7 @@
                     {{ __('Dashboard') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link href="{{ route('technician.survey.index') }}" :active="request()->routeIs('technician.survey.*')">
-                    {{ __('Tugas Survey') }}
+                    {{ __('Tugas Survei') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link href="{{ route('technician.installation.index') }}" :active="request()->routeIs('technician.installation.*')">
                     {{ __('Tugas Instalasi') }}
@@ -287,10 +293,10 @@
 
             @if (Auth::user()->role === 'customer')
                 <x-responsive-nav-link href="{{ route('client.billing.index') }}" :active="request()->routeIs('client.billing.*')">
-                    {{ __('💳 Pembayaran') }}
+                    {{ __('💳 Tagihan') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link href="{{ route('client.complaints.index') }}" :active="request()->routeIs('client.complaints.*')">
-                    {{ __('📝 Pengajuan') }}
+                    {{ __('📝 Pengaduan') }}
                 </x-responsive-nav-link>
             @endif
 
@@ -308,14 +314,22 @@
                     <div class="font-bold text-base text-white">{{ Auth::user()->name }}</div>
                     <div class="font-medium text-sm text-slate-400">{{ Auth::user()->email }}</div>
                     <span
-                        class="inline-block mt-1 px-2 py-0.5 text-xs font-bold text-white bg-amber-600 rounded uppercase tracking-widest">{{ str_replace('_', ' ', Auth::user()->role) }}</span>
+                        class="inline-block mt-1 px-2 py-0.5 text-xs font-bold text-white bg-amber-600 rounded uppercase tracking-widest">
+                        @if (Auth::user()->role === 'technician')
+                            Teknisi
+                        @elseif (Auth::user()->role === 'customer')
+                            Pelanggan
+                        @else
+                            {{ str_replace('_', ' ', Auth::user()->role) }}
+                        @endif
+                    </span>
                 </div>
             </div>
 
             <div class="mt-3 space-y-1">
                 @if (Auth::user()->role !== 'customer')
                     <x-responsive-nav-link href="{{ route('profile.show') }}" :active="request()->routeIs('profile.show')">
-                        {{ __('Profile Settings') }}
+                        {{ __('Pengaturan Profil') }}
                     </x-responsive-nav-link>
 
                     @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
@@ -329,7 +343,7 @@
                     @csrf
                     <x-responsive-nav-link href="{{ route('logout') }}" @click.prevent="$root.submit();"
                         class="text-red-500">
-                        {{ __('Log Out') }}
+                        {{ __('Logout') }}
                     </x-responsive-nav-link>
                 </form>
             </div>

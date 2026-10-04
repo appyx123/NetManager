@@ -13,13 +13,13 @@
         </x-slot>
 
         <div class="space-y-2 mb-6">
-            <h2 class="text-3xl font-bold text-white text-center">Reset Your Password</h2>
-            <p class="text-center text-gray-400 text-sm">We'll send you a reset link via email</p>
+            <h2 class="text-3xl font-bold text-white text-center">Reset Kata Sandi</h2>
+            <p class="text-center text-gray-400 text-sm">Tautan reset akan dikirimkan melalui email</p>
         </div>
 
         <div class="p-4 rounded-lg bg-blue-500/10 border border-blue-400/20 mb-6">
             <p class="text-sm text-blue-200">
-                {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link to get back on track.') }}
+                Lupa kata sandi Anda? Masukkan alamat email yang terdaftar dan kami akan mengirimkan tautan reset kata sandi akun Anda.
             </p>
         </div>
 
@@ -35,14 +35,14 @@
             @csrf
 
             <div class="space-y-2">
-                <x-label for="email" value="{{ __('Email Address') }}" class="text-gray-200 font-medium text-sm" />
+                <x-label for="email" value="Alamat Email" class="text-gray-200 font-medium text-sm" />
                 <x-input 
                     id="email" 
                     class="block w-full px-4 py-3 rounded-lg bg-gray-900/50 border border-yellow-500/20 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30 focus:bg-gray-900/80 transition duration-300 shadow-lg shadow-yellow-500/5" 
                     type="email" 
                     name="email" 
                     :value="old('email')" 
-                    placeholder="your@email.com"
+                    placeholder="email@anda.com"
                     required 
                     autofocus 
                     autocomplete="username" 
@@ -50,14 +50,14 @@
             </div>
 
             <x-button class="w-full mt-6 py-3 px-4 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold rounded-lg shadow-lg hover:shadow-2xl hover:shadow-yellow-400/50 transform hover:scale-105 transition-all duration-200 active:scale-95">
-                {{ __('Send Reset Link') }}
+                Kirim Tautan Reset
             </x-button>
         </form>
 
         <!-- Back to Login -->
         <div class="mt-6 text-center border-t border-gray-800 pt-6">
             <a href="{{ route('login') }}" class="text-yellow-400 hover:text-yellow-300 font-semibold text-sm transition duration-200">
-                Back to Sign In
+                Kembali ke Halaman Login
             </a>
         </div>
     </x-authentication-card>

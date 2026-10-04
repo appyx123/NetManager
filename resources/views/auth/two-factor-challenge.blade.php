@@ -6,11 +6,11 @@
 
         <div x-data="{ recovery: false }">
             <div class="mb-4 text-sm text-slate-300" x-show="! recovery">
-                {{ __('Please confirm access to your account by entering the authentication code provided by your authenticator application.') }}
+                Silakan konfirmasi akses ke akun Anda dengan memasukkan kode otentikasi dari aplikasi autentikator Anda.
             </div>
 
             <div class="mb-4 text-sm text-slate-300" x-cloak x-show="recovery">
-                {{ __('Please confirm access to your account by entering one of your emergency recovery codes.') }}
+                Silakan konfirmasi akses ke akun Anda dengan memasukkan salah satu kode pemulihan darurat Anda.
             </div>
 
             <x-validation-errors class="mb-4" />
@@ -19,12 +19,12 @@
                 @csrf
 
                 <div class="mt-4" x-show="! recovery">
-                    <x-label for="code" value="{{ __('Code') }}" />
+                    <x-label for="code" value="Kode Otentikasi" />
                     <x-input id="code" class="block mt-1 w-full" type="text" inputmode="numeric" name="code" autofocus x-ref="code" autocomplete="one-time-code" />
                 </div>
 
                 <div class="mt-4" x-cloak x-show="recovery">
-                    <x-label for="recovery_code" value="{{ __('Recovery Code') }}" />
+                    <x-label for="recovery_code" value="Kode Pemulihan" />
                     <x-input id="recovery_code" class="block mt-1 w-full" type="text" name="recovery_code" x-ref="recovery_code" autocomplete="one-time-code" />
                 </div>
 
@@ -35,7 +35,7 @@
                                         recovery = true;
                                         $nextTick(() => { $refs.recovery_code.focus() })
                                     ">
-                        {{ __('Use a recovery code') }}
+                        Gunakan kode pemulihan
                     </button>
 
                     <button type="button" class="text-sm text-slate-300 hover:text-white underline cursor-pointer"
@@ -45,11 +45,11 @@
                                         recovery = false;
                                         $nextTick(() => { $refs.code.focus() })
                                     ">
-                        {{ __('Use an authentication code') }}
+                        Gunakan kode otentikasi
                     </button>
 
                     <x-button class="ms-4">
-                        {{ __('Log in') }}
+                        Login
                     </x-button>
                 </div>
             </form>

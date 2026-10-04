@@ -31,7 +31,13 @@
                 z-index: 5;
                 pointer-events: none;
                 transform: translate3d(0, 0, 0);
-                will-change: transform;
+                backface-visibility: hidden;
+            }
+
+            #particles canvas {
+                display: block;
+                width: 100% !important;
+                height: 100% !important;
             }
 
             [x-cloak] {
@@ -103,28 +109,31 @@
         
         <script>
             const isMobile = window.innerWidth < 768;
+
             tsParticles.load("particles", {
                 fpsLimit: 60,
-                detectRetina: !isMobile,
+                fullScreen: {
+                    enable: false,
+                },
                 particles: {
                     color: {
-                        value: "#FBBF24",
+                        value: ["#F59E0B", "#FCD34D", "#FFFFFF"],
                     },
                     links: {
-                        color: "#F59E0B",
-                        distance: isMobile ? 100 : 130,
+                        color: "#FCD34D",
+                        distance: isMobile ? 120 : 150,
                         enable: true,
-                        opacity: isMobile ? 0.45 : 0.55,
+                        opacity: 0.5,
                         width: 1.2,
                     },
                     move: {
                         direction: "none",
                         enable: true,
                         outModes: {
-                            default: "bounce",
+                            default: "out",
                         },
                         random: false,
-                        speed: isMobile ? 1.0 : 1.2,
+                        speed: isMobile ? 1.0 : 1.3,
                         straight: false,
                     },
                     number: {
@@ -132,10 +141,14 @@
                             enable: true,
                             area: 800,
                         },
-                        value: isMobile ? 24 : 45,
+                        value: isMobile ? 30 : 55,
+                        limit: isMobile ? 35 : 65,
                     },
                     opacity: {
-                        value: 0.8,
+                        value: {
+                            min: 0.4,
+                            max: 0.85,
+                        },
                     },
                     shape: {
                         type: "circle",
@@ -143,10 +156,11 @@
                     size: {
                         value: {
                             min: 2,
-                            max: isMobile ? 3 : 3.5,
+                            max: isMobile ? 3.5 : 4.5,
                         },
                     },
                 },
+                detectRetina: true,
             });
         </script>
     </body>

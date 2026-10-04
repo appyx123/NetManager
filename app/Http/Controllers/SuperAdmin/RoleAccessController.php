@@ -36,7 +36,7 @@ class RoleAccessController extends Controller
             ]);
         }
 
-        return redirect()->back()->with('success', 'Permission berhasil diperbarui');
+        return redirect()->back()->with('success', 'Hak akses berhasil diperbarui.');
     }
 
     private function getAvailablePermissions()

@@ -18,23 +18,23 @@ test.describe('authentication', () => {
     await expect(page.getByText('NetManager').first()).toBeVisible();
     await page.getByRole('link', { name: /log\s*in|masuk/i }).first().click();
     await expect(page).toHaveURL(/\/login$/);
-    await expect(page.getByRole('heading', { name: 'Welcome Back' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Welcome Back|Selamat Datang/i })).toBeVisible();
   });
 
   test('valid customer credentials redirect to the customer dashboard', async ({ page }) => {
     await page.goto('/login');
-    await page.getByLabel('Email Address').fill(requiredEnv('E2E_CUSTOMER_EMAIL'));
-    await page.getByLabel('Password', { exact: true }).fill(requiredEnv('E2E_TEST_PASSWORD'));
-    await page.getByRole('button', { name: 'Sign In' }).click();
+    await page.getByLabel(/Alamat Email|Email Address/i).fill(requiredEnv('E2E_CUSTOMER_EMAIL'));
+    await page.getByLabel(/Kata Sandi|Password/i, { exact: false }).fill(requiredEnv('E2E_TEST_PASSWORD'));
+    await page.getByRole('button', { name: /^(Login|Sign In)$/i }).click();
 
     await expect(page).toHaveURL(/\/client\/dashboard$/);
   });
 
   test('invalid password keeps the user on login', async ({ page }) => {
     await page.goto('/login');
-    await page.getByLabel('Email Address').fill(requiredEnv('E2E_CUSTOMER_EMAIL'));
-    await page.getByLabel('Password', { exact: true }).fill(`${requiredEnv('E2E_TEST_PASSWORD')}-invalid`);
-    await page.getByRole('button', { name: 'Sign In' }).click();
+    await page.getByLabel(/Alamat Email|Email Address/i).fill(requiredEnv('E2E_CUSTOMER_EMAIL'));
+    await page.getByLabel(/Kata Sandi|Password/i, { exact: false }).fill(`${requiredEnv('E2E_TEST_PASSWORD')}-invalid`);
+    await page.getByRole('button', { name: /^(Login|Sign In)$/i }).click();
 
     await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByRole('alert')).toContainText(/email atau password/i);
@@ -42,9 +42,9 @@ test.describe('authentication', () => {
 
   test('inactive account is rejected with an activation message', async ({ page }) => {
     await page.goto('/login');
-    await page.getByLabel('Email Address').fill(requiredEnv('E2E_INACTIVE_EMAIL'));
-    await page.getByLabel('Password', { exact: true }).fill(requiredEnv('E2E_TEST_PASSWORD'));
-    await page.getByRole('button', { name: 'Sign In' }).click();
+    await page.getByLabel(/Alamat Email|Email Address/i).fill(requiredEnv('E2E_INACTIVE_EMAIL'));
+    await page.getByLabel(/Kata Sandi|Password/i, { exact: false }).fill(requiredEnv('E2E_TEST_PASSWORD'));
+    await page.getByRole('button', { name: /^(Login|Sign In)$/i }).click();
 
     await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByRole('alert')).toContainText(/belum aktif.*administrator/i);

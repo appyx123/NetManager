@@ -8,8 +8,8 @@
                         <svg class="w-4 h-4 mr-1.5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                         Kembali ke Detail Prospek
                     </a>
-                    <h1 class="text-4xl font-black text-white tracking-tighter">Edit <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">Data Prospek</span></h1>
-                    <p class="text-slate-400 mt-2 font-medium">Update parameter informasi untuk: <span class="text-amber-400 font-bold underline decoration-amber-500/30 underline-offset-4">{{ $lead->name }}</span></p>
+                    <h1 class="text-4xl font-black text-white tracking-tighter">Ubah <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">Data Prospek</span></h1>
+                    <p class="text-slate-400 mt-2 font-medium">Perbarui parameter informasi untuk: <span class="text-amber-400 font-bold underline decoration-amber-500/30 underline-offset-4">{{ $lead->name }}</span></p>
                 </div>
             </div>
 
@@ -236,24 +236,24 @@
                 <div class="bg-slate-900/80 backdrop-blur-md rounded-[2.5rem] shadow-2xl border border-slate-800 overflow-hidden">
                     <div class="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-2">
-                            <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Update Status Lead <span class="text-rose-500">*</span></label>
+                            <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Perbarui Status Prospek <span class="text-rose-500">*</span></label>
                             <select name="status" required class="w-full px-5 py-4 bg-slate-800/50 border border-slate-700 text-white rounded-2xl focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 font-bold uppercase text-xs tracking-widest">
-                                <option value="prospek" @selected(old('status', $lead->status) == 'prospek')>Prospect</option>
-                                <option value="survey" @selected(old('status', $lead->status) == 'survey')>Ready to Survey</option>
-                                <option value="instalasi" @selected(old('status', $lead->status) == 'instalasi')>Queued for Installation</option>
-                                <option value="aktif" @selected(old('status', $lead->status) == 'aktif')>Active Account</option>
-                                <option value="batal" @selected(old('status', $lead->status) == 'batal')>Cancelled / Lost</option>
+                                <option value="prospek" @selected(old('status', $lead->status) == 'prospek')>Prospek</option>
+                                <option value="survey" @selected(old('status', $lead->status) == 'survey')>Siap Disurvei</option>
+                                <option value="instalasi" @selected(old('status', $lead->status) == 'instalasi')>Antrean Instalasi</option>
+                                <option value="aktif" @selected(old('status', $lead->status) == 'aktif')>Akun Aktif</option>
+                                <option value="batal" @selected(old('status', $lead->status) == 'batal')>Batal</option>
                             </select>
                         </div>
                         <div class="space-y-2">
                             <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Ubah Sumber Perolehan <span class="text-rose-500">*</span></label>
                             <select name="source" required class="w-full px-5 py-4 bg-slate-800/50 border border-slate-700 text-white rounded-2xl focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 font-bold uppercase text-xs tracking-widest">
-                                <option value="iklan" @selected(old('source', $lead->source) == 'iklan')>Advertising (FB/IG/G-Ads)</option>
-                                <option value="referensi" @selected(old('source', $lead->source) == 'referensi')>Customer Reference</option>
-                                <option value="sosial_media" @selected(old('source', $lead->source) == 'sosial_media')>Organic Social Media</option>
-                                <option value="walk_in" @selected(old('source', $lead->source) == 'walk_in')>Walk-in / Visit</option>
-                                <option value="telepon" @selected(old('source', $lead->source) == 'telepon')>Phone Inquiry</option>
-                                <option value="lainnya" @selected(old('source', $lead->source) == 'lainnya')>Other Channels</option>
+                                <option value="iklan" @selected(old('source', $lead->source) == 'iklan')>Iklan Digital (FB/IG/Google Ads)</option>
+                                <option value="referensi" @selected(old('source', $lead->source) == 'referensi')>Referensi Pelanggan</option>
+                                <option value="sosial_media" @selected(old('source', $lead->source) == 'sosial_media')>Media Sosial Organik</option>
+                                <option value="walk_in" @selected(old('source', $lead->source) == 'walk_in')>Kunjungan Langsung (Walk-in)</option>
+                                <option value="telepon" @selected(old('source', $lead->source) == 'telepon')>Panggilan Telepon</option>
+                                <option value="lainnya" @selected(old('source', $lead->source) == 'lainnya')>Kanal Lainnya</option>
                             </select>
                         </div>
                     </div>
@@ -264,7 +264,7 @@
                         <div class="p-2.5 bg-sky-500 rounded-2xl shadow-[0_0_20px_rgba(14,165,233,0.3)] text-slate-950">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         </div>
-                        <h2 class="text-xl font-black text-white tracking-tight uppercase">Update Penjadwalan</h2>
+                        <h2 class="text-xl font-black text-white tracking-tight uppercase">Perbarui Penjadwalan</h2>
                     </div>
                     <div class="p-10 space-y-8">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -274,7 +274,7 @@
                                     class="w-full px-5 py-4 bg-slate-800/50 border border-slate-700 text-white rounded-2xl focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all font-medium">
                             </div>
                             <div class="space-y-2">
-                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Jadwal Survey</label>
+                                <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Jadwal Survei</label>
                                 <input type="date" name="survey_date" value="{{ old('survey_date', $lead->survey_date?->format('Y-m-d')) }}"
                                     class="w-full px-5 py-4 bg-slate-800/50 border border-slate-700 text-white rounded-2xl focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-all font-medium">
                             </div>

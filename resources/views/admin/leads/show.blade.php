@@ -7,7 +7,7 @@
                     <svg class="w-4 h-4 mr-1.5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     Kembali ke Pipeline
                 </a>
-                <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">Detail Lead Prospek</h2>
+                <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">Detail Prospek</h2>
             </div>
 
             <div class="bg-slate-900/80 backdrop-blur-md rounded-2xl shadow-xl border border-slate-800 p-8">
@@ -27,7 +27,7 @@
                     };
                     $statusText = match($lead->status) {
                         'prospek', 'prospect' => 'Prospek',
-                        'survey' => 'Survey',
+                        'survey' => 'Survei',
                         'instalasi' => 'Instalasi',
                         'aktif', 'converted' => 'Aktif (Berhasil)',
                         'batal', 'lost' => 'Batal (Gagal)',
@@ -94,7 +94,7 @@
                                 <p class="text-slate-200 font-medium">{{ $lead->marketing->name ?? '-' }}</p>
                             </div>
                             <div>
-                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Sumber Leads</h3>
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Sumber Prospek</h3>
                                 <p class="text-slate-200 font-medium capitalize">{{ str_replace('_', ' ', $lead->source ?? '-') }}</p>
                             </div>
                         </div>
@@ -132,13 +132,13 @@
 
                 <div class="flex flex-col sm:flex-row gap-4 mt-8 pt-8 border-t border-slate-800/60">
                     <a href="{{ route('admin.leads.edit', $lead) }}" class="px-8 py-3 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-500 shadow-[0_0_15px_rgba(217,119,6,0.3)] hover:shadow-[0_0_20px_rgba(217,119,6,0.5)] transition-all duration-200 text-center">
-                        Edit Data Lead
+                        Ubah Data Prospek
                     </a>
                     <form id="delete-form-{{ $lead->id }}" action="{{ route('admin.leads.destroy', $lead) }}" method="POST" class="inline">
                         @csrf
                         @method('DELETE')
                         <button type="button" onclick="confirmDelete({{ $lead->id }})" class="w-full px-8 py-3 bg-slate-800 text-rose-400 font-bold rounded-xl border border-rose-500/30 hover:bg-rose-500/10 transition-all text-center">
-                            Hapus Lead Permanen
+                            Hapus Prospek Permanen
                         </button>
                     </form>
                 </div>
@@ -150,7 +150,7 @@
     <script>
         function confirmDelete(leadId) {
             Swal.fire({
-                title: 'Hapus Lead?',
+                title: 'Hapus Prospek?',
                 text: "Semua riwayat prospek dan catatan marketing akan hilang!",
                 icon: 'error', background: '#0f172a', color: '#f8fafc',
                 showCancelButton: true, confirmButtonColor: '#e11d48', cancelButtonColor: '#1e293b',

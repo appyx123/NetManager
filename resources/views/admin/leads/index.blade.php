@@ -4,12 +4,12 @@
             
             <div class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">Manajemen Lead Marketing</h2>
+                    <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">Manajemen Prospek Marketing</h2>
                     <p class="text-slate-400 mt-2 font-medium">Kelola semua prospek dan saluran penjualan (Sales Pipeline)</p>
                 </div>
                 <a href="{{ route('admin.leads.create') }}" class="inline-flex items-center px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold rounded-xl shadow-[0_0_15px_rgba(217,119,6,0.3)] hover:shadow-[0_0_20px_rgba(217,119,6,0.5)] transform hover:-translate-y-0.5 transition-all duration-200 border border-amber-500/50">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    Buat Lead Baru
+                    Tambah Prospek Baru
                 </a>
             </div>
 
@@ -22,7 +22,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Status Lead</label>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Status Prospek</label>
                         <select name="status" class="w-full px-4 py-2.5 bg-slate-800/50 text-slate-200 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all appearance-none cursor-pointer">
                             <option value="" class="bg-slate-800">Semua Status</option>
                             <option value="prospect" @selected(request('status') === 'prospect') class="bg-slate-800">Prospek</option>
@@ -88,7 +88,7 @@
                                     };
                                     $statusText = match($lead->status) {
                                         'prospek', 'prospect' => 'Prospek',
-                                        'survey' => 'Survey',
+                                        'survey' => 'Survei',
                                         'instalasi' => 'Instalasi',
                                         'aktif', 'converted' => 'Aktif',
                                         'batal', 'lost' => 'Batal',
@@ -142,7 +142,7 @@
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-end gap-2 font-semibold">
                                             <a href="{{ route('admin.leads.show', $lead) }}" class="text-sky-400 hover:text-sky-300 transition-colors bg-sky-400/10 hover:bg-sky-400/20 px-3 py-1.5 rounded-lg border border-sky-400/20">Detail</a>
-                                            <a href="{{ route('admin.leads.edit', $lead) }}" class="text-amber-400 hover:text-amber-300 transition-colors bg-amber-400/10 hover:bg-amber-400/20 px-3 py-1.5 rounded-lg border border-amber-400/20">Edit</a>
+                                            <a href="{{ route('admin.leads.edit', $lead) }}" class="text-amber-400 hover:text-amber-300 transition-colors bg-amber-400/10 hover:bg-amber-400/20 px-3 py-1.5 rounded-lg border border-amber-400/20">Ubah</a>
                                             
                                             <form id="delete-form-{{ $lead->id }}" action="{{ route('admin.leads.destroy', $lead) }}" method="POST" class="inline">
                                                 @csrf
@@ -159,7 +159,7 @@
                                             <div class="w-16 h-16 mb-4 bg-slate-800/50 border border-slate-700/50 rounded-full flex items-center justify-center">
                                                 <svg class="w-8 h-8 text-amber-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                                             </div>
-                                            <p class="font-bold text-slate-300">Belum Ada Data Lead</p>
+                                            <p class="font-bold text-slate-300">Belum Ada Data Prospek</p>
                                             <p class="text-sm mt-1">Saluran prospek Anda masih kosong saat ini.</p>
                                         </div>
                                     </td>
@@ -191,7 +191,7 @@
 
         function confirmDelete(leadId) {
             Swal.fire({
-                title: 'Hapus Lead?',
+                title: 'Hapus Prospek?',
                 text: "Data prospek pelanggan ini akan dihapus permanen!",
                 icon: 'error', background: '#0f172a', color: '#f8fafc',
                 showCancelButton: true, confirmButtonColor: '#e11d48', cancelButtonColor: '#1e293b',

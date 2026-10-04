@@ -45,9 +45,9 @@
                     @elseif (Auth::user()->role === 'marketing')
                         <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase">Marketing</span>
                     @elseif (Auth::user()->role === 'technician')
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest bg-sky-500/10 text-sky-400 border border-sky-500/20 uppercase">Technician</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest bg-sky-500/10 text-sky-400 border border-sky-500/20 uppercase">Teknisi</span>
                     @else
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">Customer</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">Pelanggan</span>
                     @endif
                 </div>
             </div>
@@ -72,7 +72,7 @@
                     </x-sidebar-link>
                     
                     <x-sidebar-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')" icon="monitor">
-                        {{ __('Admin Dashboard') }}
+                        {{ __('Dashboard Admin') }}
                     </x-sidebar-link>
                 </div>
             </div>
@@ -81,7 +81,7 @@
         @if (in_array(Auth::user()->role, ['admin', 'super_admin']))
             <div class="mb-8">
                 <div class="flex items-center gap-2 px-2 text-[10px] font-black text-rose-500 uppercase tracking-widest mb-3">
-                    <span class="w-2 h-2 rounded-full bg-rose-500"></span> Operations
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span> Operasional
                 </div>
                 
                 <div class="space-y-1">
@@ -98,11 +98,11 @@
                     </x-sidebar-link>
                     
                     <x-sidebar-link href="{{ route('admin.leads.index') }}" :active="request()->routeIs('admin.leads.*')" icon="target">
-                        {{ __('Lead Marketing') }}
+                        {{ __('Prospek Marketing') }}
                     </x-sidebar-link>
                     
                     <x-sidebar-link href="{{ route('admin.billing.index') }}" :active="request()->routeIs('admin.billing.*')" icon="wallet">
-                        {{ __('Keuangan') }}
+                        {{ __('Tagihan') }}
                     </x-sidebar-link>
                     
                     <x-sidebar-link href="{{ route('admin.routers.index') }}" :active="request()->routeIs('admin.routers.*')" icon="server">
@@ -145,7 +145,7 @@
         @if (Auth::user()->role === 'technician')
             <div class="mb-8">
                 <div class="flex items-center gap-2 px-2 text-[10px] font-black text-sky-500 uppercase tracking-widest mb-3">
-                    <span class="w-2 h-2 rounded-full bg-sky-500"></span> Technician
+                    <span class="w-2 h-2 rounded-full bg-sky-500"></span> Teknisi
                 </div>
 
                 <div class="space-y-1">
@@ -171,7 +171,7 @@
         @if (Auth::user()->role === 'customer')
             <div class="mb-8">
                 <div class="flex items-center gap-2 px-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-3">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Customer
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Pelanggan
                 </div>
                 
                 <div class="space-y-1">
@@ -180,11 +180,11 @@
                     </x-sidebar-link>
 
                     <x-sidebar-link href="{{ route('client.billing.index') }}" :active="request()->routeIs('client.billing.*')" icon="wallet">
-                        {{ __('Pembayaran') }}
+                        {{ __('Tagihan') }}
                     </x-sidebar-link>
                     
                     <x-sidebar-link href="{{ route('client.complaints.index') }}" :active="request()->routeIs('client.complaints.*')" icon="chat">
-                        {{ __('Pengajuan') }}
+                        {{ __('Pengaduan') }}
                     </x-sidebar-link>
                 </div>
             </div>
@@ -200,7 +200,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                {{ __('Keluar Sistem') }}
+                {{ __('Logout') }}
             </button>
         </form>
     </div>

@@ -5,9 +5,9 @@
             <div class="mb-8">
                 <a href="{{ route('client.complaints.index') }}" class="inline-flex items-center text-sm font-semibold text-slate-400 hover:text-white transition-colors mb-4 group">
                     <svg class="w-4 h-4 mr-1.5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Kembali ke Daftar Pengajuan
+                    Kembali ke Daftar Pengaduan
                 </a>
-                <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">Buat Pengajuan Bantuan Baru</h2>
+                <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">Buat Pengaduan Bantuan Baru</h2>
                 <p class="text-slate-400 mt-2 font-medium">Silakan detailkan masalah atau permintaan Anda agar teknisi kami dapat segera menangani.</p>
             </div>
 
@@ -24,7 +24,7 @@
                                 <div>
     <label class="block text-sm font-bold text-slate-300 mb-3 flex items-center gap-2">
         <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-        Kategori Pengajuan <span class="text-rose-500">*</span>
+        Kategori Pengaduan <span class="text-rose-500">*</span>
     </label>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         
@@ -106,7 +106,7 @@
                                     <button type="submit" 
                                         class="flex-1 px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center text-lg">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                                        Kirim Pengajuan
+                                        Kirim Pengaduan
                                     </button>
                                 </div>
                             </form>
@@ -124,7 +124,7 @@
                         </svg>
                     </div>
                     
-                    <h3 class="font-black text-sky-400 text-lg mb-2 relative z-10">Tips Pengajuan</h3>
+                    <h3 class="font-black text-sky-400 text-lg mb-2 relative z-10">Tips Pengaduan</h3>
                     <p class="text-sky-100/70 text-sm leading-relaxed relative z-10">
                         Sertakan foto lampu indikator pada Router/Modem Anda. Hal ini sangat membantu teknisi kami mendiagnosa masalah jaringan Anda dari jarak jauh dengan lebih cepat.
                     </p>

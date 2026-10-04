@@ -6,7 +6,7 @@
                     <svg class="w-4 h-4 mr-1.5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     Batal
                 </a>
-                <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">Input Lead Baru</h2>
+                <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">Tambah Prospek Baru</h2>
             </div>
 
             <div class="bg-slate-900/80 backdrop-blur-md rounded-2xl shadow-xl border border-slate-800 p-6 sm:p-8">
@@ -122,7 +122,7 @@
                                 <select name="status" class="w-full px-4 py-3 bg-slate-800/50 text-slate-100 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all appearance-none cursor-pointer">
                                     <option value="prospect" class="bg-slate-800">Prospek Masuk</option>
                                     <option value="contacted" class="bg-slate-800">Sudah Dihubungi</option>
-                                    <option value="qualified" class="bg-slate-800">Qualified Lead</option>
+                                    <option value="qualified" class="bg-slate-800">Prospek Terkualifikasi</option>
                                 </select>
                             </div>
 
@@ -133,7 +133,7 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-bold text-slate-300 mb-2">Sumber Lead (Darimana?)</label>
+                                <label class="block text-sm font-bold text-slate-300 mb-2">Sumber Prospek</label>
                                 <select name="source" class="w-full px-4 py-3 bg-slate-800/50 text-slate-100 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all appearance-none cursor-pointer">
                                     <option value="" disabled selected class="bg-slate-800 text-slate-500">Pilih Channel</option>
                                     <option value="online" class="bg-slate-800">Online (Ads/Sosmed)</option>
@@ -146,7 +146,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                             <div>
-                                <label class="block text-sm font-bold text-slate-300 mb-2">Rencana Tanggal Survey Lapangan</label>
+                                <label class="block text-sm font-bold text-slate-300 mb-2">Rencana Tanggal Survei Lapangan</label>
                                 <input type="date" name="survey_date"
                                     class="w-full px-4 py-3 bg-slate-800/50 text-slate-100 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all text-slate-400">
                             </div>
@@ -178,7 +178,7 @@
 
                     <div class="flex flex-col sm:flex-row gap-4 pt-6 mt-4">
                         <button type="submit" class="px-8 py-3 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-500 shadow-[0_0_15px_rgba(217,119,6,0.3)] hover:shadow-[0_0_20px_rgba(217,119,6,0.5)] transition-all duration-200">
-                            Masukkan Prospek ke Pipeline
+                            Simpan Prospek ke Pipeline
                         </button>
                         <a href="{{ route('admin.leads.index') }}" class="px-8 py-3 bg-slate-800 text-slate-300 font-bold rounded-xl border border-slate-700 hover:bg-slate-700 hover:text-white transition-all text-center">
                             Batal

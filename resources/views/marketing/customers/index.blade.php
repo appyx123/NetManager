@@ -8,7 +8,7 @@
                         <div class="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
                             <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                         </div>
-                        <span class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">Customer Database</span>
+                        <span class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">Basis Data Pelanggan</span>
                     </div>
                     <h1 class="text-4xl font-black text-white tracking-tighter">Pelanggan <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-300">Saya</span></h1>
                     <p class="text-slate-400 mt-2 font-medium">Kelola data pelanggan yang telah sukses dikonversi dari prospek awal.</p>
@@ -200,7 +200,7 @@
 
             <div class="mt-8 text-center hidden md:block">
                 <p class="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">
-                    NetManagement &bull; Customer Database
+                    NetManagement &bull; Basis Data Pelanggan
                 </p>
             </div>
 

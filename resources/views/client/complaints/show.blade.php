@@ -4,10 +4,10 @@
             <div class="mb-8">
                 <a href="{{ route('client.complaints.index') }}" class="inline-flex items-center text-sm font-semibold text-slate-400 hover:text-white transition-colors mb-4 group">
                     <svg class="w-4 h-4 mr-1.5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Kembali ke Daftar Pengajuan
+                    Kembali ke Daftar Pengaduan
                 </a>
                 <div class="flex items-center gap-3">
-                    <h1 class="text-3xl font-black text-white">Detail Pengajuan</h1>
+                    <h1 class="text-3xl font-black text-white">Detail Pengaduan</h1>
                     <span class="text-slate-400 font-mono">#{{ $ticket->id }}</span>
                 </div>
             </div>

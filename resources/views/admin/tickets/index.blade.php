@@ -117,7 +117,7 @@
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-end gap-2 font-semibold">
                                             <a href="{{ route('admin.tickets.show', $ticket) }}" class="text-sky-400 hover:text-sky-300 transition-colors bg-sky-400/10 hover:bg-sky-400/20 px-3 py-1.5 rounded-lg border border-sky-400/20">Detail</a>
-                                            <a href="{{ route('admin.tickets.edit', $ticket) }}" class="text-amber-400 hover:text-amber-300 transition-colors bg-amber-400/10 hover:bg-amber-400/20 px-3 py-1.5 rounded-lg border border-amber-400/20">Edit</a>
+                                            <a href="{{ route('admin.tickets.edit', $ticket) }}" class="text-amber-400 hover:text-amber-300 transition-colors bg-amber-400/10 hover:bg-amber-400/20 px-3 py-1.5 rounded-lg border border-amber-400/20">Ubah</a>
                                             
                                             <form id="delete-form-{{ $ticket->id }}" action="{{ route('admin.tickets.destroy', $ticket) }}" method="POST" class="inline">
                                                 @csrf

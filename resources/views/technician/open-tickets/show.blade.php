@@ -42,7 +42,7 @@
                 @if($ticket->status === 'open')
                     <form method="POST" action="{{ route('technician.ticket.take', $ticket) }}" class="mt-8">
                         @csrf
-                        <button type="submit" class="w-full rounded-xl bg-sky-500 px-5 py-3.5 font-bold text-white transition hover:bg-sky-400 shadow-lg shadow-sky-500/20">Klaim / Ambil Tugas</button>
+                        <button type="submit" class="w-full rounded-xl bg-sky-500 px-5 py-3.5 font-bold text-white transition hover:bg-sky-400 shadow-lg shadow-sky-500/20">Ambil Tugas</button>
                     </form>
                 @elseif(in_array($ticket->status, ['assigned', 'in_progress']) && $ticket->technician_id === auth()->id())
                     <div class="mt-8">

@@ -38,8 +38,18 @@
                                     </td>
                                     <td class="px-6 py-4 text-slate-400 group-hover:text-slate-300 transition-colors">{{ $user->email }}</td>
                                     <td class="px-6 py-4">
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 capitalize">
-                                            {{ str_replace('_', ' ', $user->role) }}
+                                        @php
+                                            $roleLabel = match($user->role) {
+                                                'technician' => 'Teknisi',
+                                                'customer' => 'Pelanggan',
+                                                'admin' => 'Admin',
+                                                'superadmin' => 'Super Admin',
+                                                'marketing' => 'Marketing',
+                                                default => ucwords(str_replace('_', ' ', $user->role))
+                                            };
+                                        @endphp
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                            {{ $roleLabel }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">
@@ -57,11 +67,11 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-end gap-3 font-semibold">
-                                            <a href="{{ route('superadmin.users.edit', $user) }}" class="text-amber-400 hover:text-amber-300 transition-colors bg-amber-400/10 hover:bg-amber-400/20 px-3 py-1.5 rounded-lg border border-amber-400/20">Edit</a>
+                                            <a href="{{ route('superadmin.users.edit', $user) }}" class="text-amber-400 hover:text-amber-300 transition-colors bg-amber-400/10 hover:bg-amber-400/20 px-3 py-1.5 rounded-lg border border-amber-400/20">Ubah</a>
                                             
                                             <form id="reset-form-{{ $user->id }}" action="{{ route('superadmin.users.resetPassword', $user) }}" method="POST" class="inline">
                                                 @csrf
-                                                <button type="button" onclick="confirmReset({{ $user->id }})" class="text-purple-400 hover:text-purple-300 transition-colors bg-purple-400/10 hover:bg-purple-400/20 px-3 py-1.5 rounded-lg border border-purple-400/20">Reset PW</button>
+                                                <button type="button" onclick="confirmReset({{ $user->id }})" class="text-purple-400 hover:text-purple-300 transition-colors bg-purple-400/10 hover:bg-purple-400/20 px-3 py-1.5 rounded-lg border border-purple-400/20">Reset Sandi</button>
                                             </form>
                                             
                                             <form id="delete-form-{{ $user->id }}" action="{{ route('superadmin.users.destroy', $user) }}" method="POST" class="inline">
@@ -101,13 +111,13 @@
         // Notifikasi Pop-up (Toast) saat Berhasil Tambah/Edit User
         @if(session('success'))
             // Deteksi apakah ini pesan Reset Password
-            @if(Str::contains(session('success'), 'Temporary password:'))
+            @if(Str::contains(session('success'), 'Kata sandi sementara:') || Str::contains(session('success'), 'Temporary password:'))
                 Swal.fire({
-                    title: 'Berhasil Reset Password!',
+                    title: 'Berhasil Reset Kata Sandi!',
                     html: `
-                        <p class="text-slate-300 text-sm mb-4">Harap salin dan berikan password sementara ini kepada pegawai bersangkutan. Password ini tidak akan ditampilkan lagi.</p>
+                        <p class="text-slate-300 text-sm mb-4">Harap salin dan berikan kata sandi sementara ini kepada pegawai bersangkutan. Kata sandi ini tidak akan ditampilkan lagi.</p>
                         <div class="bg-slate-950 p-5 rounded-xl border border-slate-700 shadow-inner">
-                            <span class="text-3xl font-mono font-bold text-emerald-400 tracking-widest select-all">{{ explode('Temporary password: ', session('success'))[1] }}</span>
+                            <span class="text-3xl font-mono font-bold text-emerald-400 tracking-widest select-all">{{ explode(':', session('success'))[1] ?? '' }}</span>
                         </div>
                     `,
                     icon: 'success',
@@ -146,8 +156,8 @@
         // Pop-up Konfirmasi Reset Password
         function confirmReset(userId) {
             Swal.fire({
-                title: 'Reset Password?',
-                text: "Password akun ini akan dikembalikan ke default.",
+                title: 'Reset Kata Sandi?',
+                text: "Kata sandi akun ini akan dikembalikan ke default.",
                 icon: 'warning',
                 background: '#0f172a', 
                 color: '#f8fafc',      
@@ -170,8 +180,8 @@
         // Pop-up Konfirmasi Hapus Data
         function confirmDelete(userId) {
             Swal.fire({
-                title: 'Hapus User?',
-                text: "Data staf yang dihapus tidak dapat dikembalikan!",
+                title: 'Hapus Pegawai?',
+                text: "Data pegawai yang dihapus tidak dapat dikembalikan!",
                 icon: 'error',
                 background: '#0f172a',
                 color: '#f8fafc',

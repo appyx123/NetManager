@@ -13,8 +13,8 @@
         </x-slot>
 
         <div class="space-y-2 mb-6">
-            <h2 class="text-3xl font-bold text-white text-center">Create New Password</h2>
-            <p class="text-center text-gray-400 text-sm">Enter your email and a new password</p>
+            <h2 class="text-3xl font-bold text-white text-center">Buat Kata Sandi Baru</h2>
+            <p class="text-center text-gray-400 text-sm">Masukkan email dan kata sandi baru Anda</p>
         </div>
 
         <x-validation-errors class="mb-4" />
@@ -25,14 +25,14 @@
             <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
             <div class="space-y-2">
-                <x-label for="email" value="{{ __('Email Address') }}" class="text-gray-200 font-medium text-sm" />
+                <x-label for="email" value="Alamat Email" class="text-gray-200 font-medium text-sm" />
                 <x-input 
                     id="email" 
                     class="block w-full px-4 py-3 rounded-lg bg-gray-900/50 border border-yellow-500/20 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30 focus:bg-gray-900/80 transition duration-300 shadow-lg shadow-yellow-500/5" 
                     type="email" 
                     name="email" 
                     :value="old('email', $request->email)" 
-                    placeholder="your@email.com"
+                    placeholder="email@anda.com"
                     required 
                     autofocus 
                     autocomplete="username" 
@@ -40,7 +40,7 @@
             </div>
 
             <div class="space-y-2">
-                <x-label for="password" value="{{ __('New Password') }}" class="text-gray-200 font-medium text-sm" />
+                <x-label for="password" value="Kata Sandi Baru" class="text-gray-200 font-medium text-sm" />
                 <x-input 
                     id="password" 
                     class="block w-full px-4 py-3 rounded-lg bg-gray-900/50 border border-yellow-500/20 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30 focus:bg-gray-900/80 transition duration-300 shadow-lg shadow-yellow-500/5" 
@@ -53,7 +53,7 @@
             </div>
 
             <div class="space-y-2">
-                <x-label for="password_confirmation" value="{{ __('Confirm Password') }}" class="text-gray-200 font-medium text-sm" />
+                <x-label for="password_confirmation" value="Konfirmasi Kata Sandi" class="text-gray-200 font-medium text-sm" />
                 <x-input 
                     id="password_confirmation" 
                     class="block w-full px-4 py-3 rounded-lg bg-gray-900/50 border border-yellow-500/20 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30 focus:bg-gray-900/80 transition duration-300 shadow-lg shadow-yellow-500/5" 
@@ -66,14 +66,14 @@
             </div>
 
             <x-button class="w-full mt-6 py-3 px-4 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold rounded-lg shadow-lg hover:shadow-2xl hover:shadow-yellow-400/50 transform hover:scale-105 transition-all duration-200 active:scale-95">
-                {{ __('Reset Password') }}
+                Simpan Kata Sandi Baru
             </x-button>
         </form>
 
         <!-- Back to Login -->
         <div class="mt-6 text-center border-t border-gray-800 pt-6">
             <a href="{{ route('login') }}" class="text-yellow-400 hover:text-yellow-300 font-semibold text-sm transition duration-200">
-                Back to Sign In
+                Kembali ke Halaman Login
             </a>
         </div>
     </x-authentication-card>

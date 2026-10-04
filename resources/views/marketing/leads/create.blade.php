@@ -8,8 +8,8 @@
                         <svg class="w-4 h-4 mr-1.5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                         Kembali ke Pipeline
                     </a>
-                    <h1 class="text-4xl font-black text-white tracking-tighter">Entry <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">Prospek Baru</span></h1>
-                    <p class="text-slate-400 mt-2 font-medium">Lengkapi parameter data calon pelanggan untuk inisiasi proses survey.</p>
+                    <h1 class="text-4xl font-black text-white tracking-tighter">Tambah <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">Prospek Baru</span></h1>
+                    <p class="text-slate-400 mt-2 font-medium">Lengkapi parameter data calon pelanggan untuk inisiasi proses survei.</p>
                 </div>
             </div>
 
@@ -327,18 +327,18 @@
                             <div class="space-y-2">
                                 <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Inisiasi Status <span class="text-rose-500">*</span></label>
                                 <select name="status" required class="w-full px-5 py-4 bg-slate-800/50 border border-slate-700 text-white rounded-2xl focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 font-bold">
-                                    <option value="prospek" @selected(old('status', 'prospek') == 'prospek')>New Prospect</option>
-                                    <option value="survey" @selected(old('status') == 'survey')>Ready to Survey</option>
+                                    <option value="prospek" @selected(old('status', 'prospek') == 'prospek')>Prospek Baru</option>
+                                    <option value="survey" @selected(old('status') == 'survey')>Siap Disurvei</option>
                                 </select>
                             </div>
                             <div class="space-y-2">
-                                <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Lead Source <span class="text-rose-500">*</span></label>
+                                <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Sumber Prospek <span class="text-rose-500">*</span></label>
                                 <select name="source" required class="w-full px-5 py-4 bg-slate-800/50 border border-slate-700 text-white rounded-2xl focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 font-bold">
                                     <option value="" class="bg-slate-900">-- Pilih Sumber --</option>
-                                    <option value="iklan" class="bg-slate-900">Digital Ads (FB/IG/Google)</option>
-                                    <option value="referensi" class="bg-slate-900">Referensi Teman</option>
-                                    <option value="sosial_media" class="bg-slate-900">Organic Social Media</option>
-                                    <option value="walk_in" class="bg-slate-900">Walk-in Customer</option>
+                                    <option value="iklan" class="bg-slate-900">Iklan Digital (FB/IG/Google)</option>
+                                    <option value="referensi" class="bg-slate-900">Referensi Teman / Pelanggan</option>
+                                    <option value="sosial_media" class="bg-slate-900">Media Sosial Organik</option>
+                                    <option value="walk_in" class="bg-slate-900">Kunjungan Langsung (Walk-in)</option>
                                 </select>
                             </div>
                         </div>

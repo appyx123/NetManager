@@ -24,7 +24,7 @@
                 <div class="p-8 md:p-12">
                     <div class="flex justify-between items-start border-b border-slate-800 pb-8 mb-8">
                         <div>
-                            <h1 class="text-3xl font-black text-amber-400 tracking-tighter uppercase">INVOICE</h1>
+                            <h1 class="text-3xl font-black text-amber-400 tracking-tighter uppercase">TAGIHAN</h1>
                             <p class="text-slate-400 mt-1 font-mono font-bold">#{{ $invoice->invoice_number }}</p>
                         </div>
                         <div class="text-right text-sm text-slate-400 space-y-1">
@@ -87,7 +87,7 @@
 
                     <div class="border-t border-dashed border-slate-700 pt-8 mt-8 flex flex-col items-center gap-4">
                         @if($invoice->status === 'unpaid')
-                            <p class="text-sm text-slate-400 mb-2 text-center">Invoice ini belum dibayar. Anda dapat menandainya sebagai lunas secara manual di sini.</p>
+                            <p class="text-sm text-slate-400 mb-2 text-center">Tagihan ini belum dibayar. Anda dapat menandainya sebagai lunas secara manual di sini.</p>
                             
                             <form action="{{ route('admin.billing.markAsPaid', $invoice) }}" method="POST" class="w-full sm:w-auto">
                                 @csrf

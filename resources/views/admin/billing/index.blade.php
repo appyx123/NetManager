@@ -5,7 +5,7 @@
             <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">Manajemen Tagihan</h2>
-                    <p class="text-slate-400 mt-2 font-medium">Pantau arus kas, verifikasi pelunasan pelanggan, dan kelola invoice ISP Anda.</p>
+                    <p class="text-slate-400 mt-2 font-medium">Pantau arus kas, verifikasi pelunasan pelanggan, dan kelola tagihan ISP Anda.</p>
                 </div>
             </div>
 
@@ -41,14 +41,14 @@
                         Rp {{ number_format($stats['unpaid_total'] ?? 0, 0, ',', '.') }}
                     </p>
                     <div class="mt-3 text-xs font-medium text-slate-400">
-                        <span>Tertagih pada {{ $stats['unpaid_count'] ?? 0 }} Invoice Pelanggan</span>
+                        <span>Tertagih pada {{ $stats['unpaid_count'] ?? 0 }} Tagihan Pelanggan</span>
                     </div>
                 </div>
 
                 <div class="bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-800 p-6 shadow-xl relative overflow-hidden group hover:border-slate-700 transition-all">
                     <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-sky-500/10 rounded-full blur-xl pointer-events-none"></div>
                     <div class="flex items-center justify-between">
-                        <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Volume Invoice</span>
+                        <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Volume Tagihan</span>
                         <span class="p-2.5 bg-sky-500/10 text-sky-400 rounded-xl border border-sky-500/20 shadow-sm">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
                         </span>
@@ -73,7 +73,7 @@
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <svg class="h-5 w-5 text-slate-500 group-focus-within:text-amber-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
-                    <input type="text" name="search" placeholder="Cari No. Invoice, Nama, atau Kode Pelanggan..." 
+                    <input type="text" name="search" placeholder="Cari No. Tagihan, Nama, atau Kode Pelanggan..." 
                         class="w-full pl-11 pr-28 py-3 bg-slate-900/80 backdrop-blur-sm text-slate-100 border border-slate-700/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all shadow-lg placeholder-slate-500 text-sm"
                         value="{{ request('search') }}">
                     <button type="submit" class="absolute inset-y-1.5 right-1.5 px-5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all">
@@ -108,7 +108,7 @@
                     <table class="w-full text-left border-collapse">
                         <thead class="bg-slate-800/50 text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-700/50">
                             <tr>
-                                <th class="px-6 py-4">No. Invoice</th>
+                                <th class="px-6 py-4">No. Tagihan</th>
                                 <th class="px-6 py-4">Pelanggan</th>
                                 <th class="px-6 py-4">Total Tagihan</th>
                                 <th class="px-6 py-4">Jatuh Tempo</th>
@@ -198,7 +198,7 @@
                                                 <svg class="w-8 h-8 text-amber-500/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                             </div>
                                             <p class="font-bold text-slate-300">Tidak Ada Data Tagihan</p>
-                                            <p class="text-xs text-slate-500 mt-1">Belum ada invoice yang sesuai dengan kriteria filter pencarian.</p>
+                                            <p class="text-xs text-slate-500 mt-1">Belum ada tagihan yang sesuai dengan kriteria filter pencarian.</p>
                                         </div>
                                     </td>
                                 </tr>

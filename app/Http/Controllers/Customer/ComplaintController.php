@@ -50,7 +50,7 @@ class ComplaintController extends Controller
         ]);
 
         return redirect()->route('client.complaints.index')
-            ->with('success', 'Laporan kerusakan berhasil dikirim.');
+            ->with('success', 'Pengaduan berhasil dikirim.');
     }
 
     private function customer(): Customer

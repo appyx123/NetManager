@@ -108,7 +108,7 @@
 
                 <div class="flex flex-col sm:flex-row gap-4 mt-8 pt-8 border-t border-slate-800/60">
                     <a href="{{ route('admin.tickets.edit', $ticket) }}" class="px-8 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-500 shadow-[0_0_15px_rgba(147,51,234,0.3)] hover:shadow-[0_0_20px_rgba(147,51,234,0.5)] transition-all duration-200 text-center">
-                        Edit Tiket Ini
+                        Ubah Tiket Ini
                     </a>
                     <form id="delete-form-{{ $ticket->id }}" action="{{ route('admin.tickets.destroy', $ticket) }}" method="POST" class="inline">
                         @csrf

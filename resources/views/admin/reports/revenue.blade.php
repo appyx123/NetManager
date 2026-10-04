@@ -41,12 +41,12 @@
                     <p class="text-slate-400 text-sm mt-2">{{ $fromDate }} s/d {{ $toDate }}</p>
                 </div>
                 <div class="md:col-span-1 bg-slate-900/60 rounded-2xl border border-slate-800 p-6">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Jumlah Invoice Lunas</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Jumlah Tagihan Lunas</p>
                     <h3 class="text-3xl font-black text-white">{{ $revenue->count() }}</h3>
                     <p class="text-slate-400 text-sm mt-2">Total transaksi dalam periode ini</p>
                 </div>
                 <div class="md:col-span-1 bg-slate-900/60 rounded-2xl border border-slate-800 p-6">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Rata-rata per Invoice</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Rata-rata per Tagihan</p>
                     <h3 class="text-3xl font-black text-white">Rp {{ $revenue->count() > 0 ? number_format($totalRevenue / $revenue->count(), 0, ',', '.') : 0 }}</h3>
                     <p class="text-slate-400 text-sm mt-2">Nilai rata-rata transaksi lunas</p>
                 </div>
@@ -61,7 +61,7 @@
                     <table class="w-full text-left text-sm">
                         <thead class="bg-slate-800/50 text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-700/50">
                             <tr>
-                                <th class="px-6 py-4">No. Invoice</th>
+                                <th class="px-6 py-4">No. Tagihan</th>
                                 <th class="px-6 py-4">Paket Layanan</th>
                                 <th class="px-6 py-4">Nominal</th>
                                 <th class="px-6 py-4">Tanggal Bayar</th>

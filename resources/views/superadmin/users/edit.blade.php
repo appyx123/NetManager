@@ -7,7 +7,7 @@
                     <svg class="w-4 h-4 mr-1.5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     Kembali
                 </a>
-                <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">Edit User</h2>
+                <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">Ubah Data Pegawai</h2>
             </div>
 
             <div class="bg-slate-900/80 backdrop-blur-md rounded-2xl shadow-xl border border-slate-800 p-5 sm:p-8">
@@ -33,7 +33,17 @@
                             <select name="role" required
                                 class="w-full px-4 py-3 bg-slate-800/50 text-slate-100 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all appearance-none cursor-pointer">
                                 @foreach ($roles as $role)
-                                    <option value="{{ $role }}" @selected($user->role === $role) class="bg-slate-800">{{ ucfirst(str_replace('_', ' ', $role)) }}</option>
+                                    @php
+                                        $roleLabel = match($role) {
+                                            'technician' => 'Teknisi',
+                                            'customer' => 'Pelanggan',
+                                            'admin' => 'Admin',
+                                            'superadmin' => 'Super Admin',
+                                            'marketing' => 'Marketing',
+                                            default => ucwords(str_replace('_', ' ', $role))
+                                        };
+                                    @endphp
+                                    <option value="{{ $role }}" @selected($user->role === $role) class="bg-slate-800">{{ $roleLabel }}</option>
                                 @endforeach
                             </select>
                         </div>

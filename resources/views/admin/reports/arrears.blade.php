@@ -38,7 +38,7 @@
                     <div class="absolute -right-4 -bottom-4 text-slate-600/10 group-hover:text-slate-500/20 transition-colors">
                         <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
                     </div>
-                    <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Jumlah Invoice Menunggak</p>
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Jumlah Tagihan Menunggak</p>
                     <p class="text-3xl font-black text-white relative z-10">{{ $arrears->count() }} <span class="text-sm font-medium text-slate-500">Lembar</span></p>
                 </div>
                 
@@ -46,7 +46,7 @@
                     <div class="absolute -right-4 -bottom-4 text-amber-500/5 group-hover:text-amber-500/10 transition-colors">
                         <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg>
                     </div>
-                    <p class="text-amber-400/80 text-xs font-bold uppercase tracking-wider mb-2">Rata-Rata per Invoice</p>
+                    <p class="text-amber-400/80 text-xs font-bold uppercase tracking-wider mb-2">Rata-Rata per Tagihan</p>
                     <p class="text-3xl font-black text-amber-400 relative z-10">Rp {{ number_format($arrears->count() > 0 ? $totalArrears / $arrears->count() : 0, 0, ',', '.') }}</p>
                 </div>
             </div>
@@ -63,7 +63,7 @@
                     <table class="w-full text-left border-collapse">
                         <thead class="bg-slate-800/50 text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-700/50">
                             <tr>
-                                <th class="px-6 py-4">No. Invoice</th>
+                                <th class="px-6 py-4">No. Tagihan</th>
                                 <th class="px-6 py-4">Informasi Pelanggan</th>
                                 <th class="px-6 py-4">Total Tunggakan</th>
                                 <th class="px-6 py-4">Tgl. Jatuh Tempo</th>

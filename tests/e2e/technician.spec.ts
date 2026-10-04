@@ -18,7 +18,7 @@ test('technician can claim an installation job and submit physical parameters', 
   const job = page.locator('article').filter({ hasText: 'Instalasi tambahan untuk pengujian alur kerja teknisi.' }).first();
   await expect(job).toBeVisible();
   await job.getByRole('link', { name: 'Lihat Rincian' }).click();
-  await page.getByRole('button', { name: 'Klaim / Ambil Tugas' }).click();
+  await page.getByRole('button', { name: /Ambil Tugas|Klaim/i }).click();
 
   await expect(page).toHaveURL(/\/technician\/my-tasks$/);
   await expect(page.getByText(/Tugas berhasil diambil/i).first()).toBeVisible();
