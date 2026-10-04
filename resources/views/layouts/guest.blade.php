@@ -28,11 +28,25 @@
                 left: 0;
                 width: 100%;
                 height: 100%;
-                z-index: 1;
+                z-index: 5;
+                pointer-events: none;
+            }
+
+            .fade-in-up {
+                opacity: 0;
+                transform: translateY(20px);
+                animation: fadeInUp 0.8s ease-out forwards;
+            }
+
+            @keyframes fadeInUp {
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
         </style>
     </head>
-    <body class="bg-black">
+    <body class="bg-slate-950 text-slate-300 font-sans antialiased selection:bg-amber-500 selection:text-white">
         <x-global-banner />
         <x-toast />
 
@@ -83,91 +97,60 @@
         
         <script>
             tsParticles.load("particles", {
+                fpsLimit: 120,
+                interactivity: {
+                    events: {
+                        onClick: {
+                            enable: false,
+                        },
+                        onHover: {
+                            enable: false,
+                        },
+                        resize: true,
+                    },
+                },
                 particles: {
+                    color: {
+                        value: "#FCD34D",
+                    },
+                    links: {
+                        color: "#FCD34D",
+                        distance: 150,
+                        enable: true,
+                        opacity: 0.35,
+                        width: 1,
+                    },
+                    move: {
+                        direction: "none",
+                        enable: true,
+                        outModes: {
+                            default: "out",
+                        },
+                        random: false,
+                        speed: 1.5,
+                        straight: false,
+                    },
                     number: {
-                        value: 60,
                         density: {
                             enable: true,
-                            value_area: 800
-                        }
+                            area: 800,
+                        },
+                        value: 65,
                     },
-                    color: {
-                        value: ["#fbbf24", "#f59e0b", "#d97706", "#ffffff"]
+                    opacity: {
+                        value: 0.45
                     },
                     shape: {
                         type: "circle"
                     },
-                    opacity: {
-                        value: 0.5,
-                        random: true,
-                        anim: {
-                            enable: true,
-                            speed: 1,
-                            opacity_min: 0.1,
-                            sync: false
-                        }
-                    },
                     size: {
-                        value: 3,
-                        random: true,
-                        anim: {
-                            enable: true,
-                            speed: 2,
-                            size_min: 0.5,
-                            sync: false
+                        value: {
+                            min: 1,
+                            max: 2.5
                         }
                     },
-                    line_linked: {
-                        enable: true,
-                        distance: 150,
-                        color: "#fbbf24",
-                        opacity: 0.3,
-                        width: 1
-                    },
-                    move: {
-                        enable: true,
-                        speed: 2,
-                        direction: "none",
-                        random: false,
-                        straight: false,
-                        out_mode: "bounce",
-                        bounce: true,
-                        attract: {
-                            enable: false,
-                            rotateX: 600,
-                            rotateY: 1200
-                        }
-                    }
                 },
-                interactivity: {
-                    detect_on: "canvas",
-                    events: {
-                        onhover: {
-                            enable: true,
-                            mode: "grab"
-                        },
-                        onclick: {
-                            enable: true,
-                            mode: "push"
-                        },
-                        resize: true
-                    },
-                    modes: {
-                        grab: {
-                            distance: 200,
-                            line_linked: {
-                                opacity: 0.5
-                            }
-                        },
-                        push: {
-                            particles_nb: 4
-                        }
-                    }
-                },
-                retina_detect: true,
-                background: {
-                    color: "#000000"
-                }
+                detectRetina: true,
             });
         </script>
     </body>

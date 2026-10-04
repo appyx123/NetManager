@@ -5,7 +5,7 @@
         </div>
     @endif
 
-    <div class="w-full sm:max-w-md mt-6 px-6 sm:px-8 py-8 bg-gray-900/40 backdrop-blur-md border border-yellow-500/10 shadow-2xl shadow-yellow-500/10 overflow-hidden rounded-2xl">
+    <div class="w-full sm:max-w-md mt-6 px-6 sm:px-8 py-8 bg-slate-900/85 backdrop-blur-xl border border-slate-800/80 hover:border-amber-500/40 shadow-2xl shadow-black/80 hover:shadow-amber-500/10 transition-all duration-300 overflow-hidden rounded-2xl fade-in-up">
         {{ $slot }}
     </div>
 </div>
