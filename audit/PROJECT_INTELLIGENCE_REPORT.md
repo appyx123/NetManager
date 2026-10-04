@@ -1272,5 +1272,30 @@ NetManagement is a comprehensive, production-hardened ISP management and billing
 - **Controller Flash Messages:**
   - Standardized `with('success', ...)` and `with('error', ...)` across `SuperAdmin/UserManagementController.php`, `SuperAdmin/RoleAccessController.php`, `Admin/LeadManagementController.php`, `Marketing/LeadController.php`, `Customer/ComplaintController.php`, and `Admin/ProfileController.php`.
 - **E2E Playwright Test Suite Synchronization:**
-  - Updated `tests/e2e/auth.setup.ts`, `login.spec.ts`, `customer.spec.ts`, `marketing.spec.ts`, and `technician.spec.ts` locators to support standardized Indonesian labels (`Selamat Datang`, `Login`, `Alamat Email`, `Kata Sandi`, `Tagihan`, `Pengaduan`, `Ambil Tugas`).
-  - Resolved Playwright strict mode collision on login password field where loose regex `getByLabel(/Kata Sandi|Password/i)` matched both `<label for="password">Kata Sandi</label>` and the eye icon toggle `<button aria-label="Tampilkan kata sandi">`, by strictly anchoring to `page.locator('input#password')`.
+  - Standardized Indonesian labels across views and controllers.
+  - Subsequently decommissioned Playwright suite per user architectural decision (see Section 63).
+
+---
+
+## 63. Decommissioning of Playwright & TypeScript Overhead for Lean On-Premise / Private Server Deployment
+
+### 1. Context & Architectural Rationale
+- NetManager is deployed directly on dedicated private servers with manual release management and browser validation conducted directly by the administrator.
+- Playwright E2E browser automation required large headless browser binaries (~400MB+ Chromium/WebKit), external TypeScript build configuration (`tsconfig.json`), `@types/node`, and tight coupling between Blade UI labels and regex locators that introduced CI fragility.
+- Applying YAGNI (You Aren't Gonna Need It) and the Ponytail simplicity principle, all browser automation overhead was completely removed in favor of clean, native Laravel unit/feature testing (`php artisan test`) and rapid asset compilation.
+
+### 2. Pruned Files & Dependencies
+- **Deleted Test Suites & Configs:**
+  - `playwright.config.ts`
+  - `tsconfig.json`
+  - `tests/e2e/` (`admin.spec.ts`, `auth.setup.ts`, `customer.spec.ts`, `login.spec.ts`, `marketing.spec.ts`, `superadmin.spec.ts`, `technician.spec.ts`)
+  - `playwright/` (`playwright/.auth/`)
+  - `audit/PLAYWRIGHT_E2E_REPORT.md`
+- **Cleaned `package.json`:**
+  - Pruned devDependencies: `@playwright/test`, `@types/node`, `typescript`.
+  - Pruned scripts: `typecheck:e2e`, `test:e2e`, `test:e2e:ui`, `test:e2e:headed`, `test:e2e:report`.
+  - Retained clean standard stack: Tailwind CSS, PostCSS, Autoprefixer, Axios, Vite, Laravel Vite Plugin.
+- **Streamlined CI Pipeline (`.github/workflows/ci.yml`):**
+  - Removed browser installation, test execution, and artifact upload steps.
+  - CI execution now executes rapidly (~20 seconds) verifying composer, artisan routes/configs, database migrations, seeders, and Vite production builds.
+
