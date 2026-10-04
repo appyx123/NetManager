@@ -359,9 +359,10 @@ class SuperAdminDashboardController extends Controller
             } else {
                 $endpoint = $isProduction ? 'https://api.midtrans.com/v2' : 'https://api.sandbox.midtrans.com/v2';
                 $midStart = microtime(true);
-                $response = Http::timeout(1.5)
+                $response = Http::timeout(5.0)
+                    ->connectTimeout(3.0)
                     ->withBasicAuth($serverKey, '')
-                    ->get($endpoint . '/token/check');
+                    ->get($endpoint . '/netmanager-health-probe/status');
                 $midLatency = round((microtime(true) - $midStart) * 1000);
 
                 $modeLabel = $isProduction ? 'Production' : 'Sandbox';
@@ -371,7 +372,7 @@ class SuperAdminDashboardController extends Controller
                         'name' => 'Midtrans Payment Gateway',
                         'description' => "Autentikasi Gagal (Server Key Invalid) • {$midLatency}ms",
                         'status' => 'error',
-                        'badge' => 'INVALID KEY',
+                        'badge' => 'AUTH_ERROR',
                         'badge_color' => 'rose',
                         'is_healthy' => false,
                     ];
@@ -387,7 +388,7 @@ class SuperAdminDashboardController extends Controller
                 } else {
                     $services['midtrans'] = [
                         'name' => 'Midtrans Payment Gateway',
-                        'description' => "Server Midtrans Merespons {$response->status()}",
+                        'description' => "Server Midtrans Merespons {$response->status()} • {$midLatency}ms",
                         'status' => 'offline',
                         'badge' => 'DEGRADED',
                         'badge_color' => 'rose',
@@ -398,7 +399,7 @@ class SuperAdminDashboardController extends Controller
         } catch (\Throwable $e) {
             $services['midtrans'] = [
                 'name' => 'Midtrans Payment Gateway',
-                'description' => 'Koneksi ke Endpoint API Midtrans Timeout',
+                'description' => 'Koneksi ke Endpoint API Midtrans Timeout / DNS Gagal',
                 'status' => 'offline',
                 'badge' => 'UNREACHABLE',
                 'badge_color' => 'rose',

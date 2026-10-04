@@ -1299,3 +1299,24 @@ NetManagement is a comprehensive, production-hardened ISP management and billing
   - Removed browser installation, test execution, and artifact upload steps.
   - CI execution now executes rapidly (~20 seconds) verifying composer, artisan routes/configs, database migrations, seeders, and Vite production builds.
 
+---
+
+## 64. Midtrans Gateway Health Check Overhaul & DNS Resilience for On-Premise STB
+
+### 1. Root Cause Analysis
+- **Empirical Diagnostics on STB:**
+  - Midtrans API resolves through Alibaba Cloud WAF CNAME chains (`api.sandbox.midtrans.com` $\rightarrow$ `api.sandbox.midtrans.com.31tjp30rmups.e.aliyunwaf1.com` $\rightarrow$ `8.215.152.185`).
+  - STB DNS resolvers experienced intermittent UDP drops / timeouts (taking 2.0s–4.0s to resolve upstream).
+  - The previous health check timeout was set to an overly aggressive `1.5s`, causing false-positive `cURL error 28: Resolving timed out` / `UNREACHABLE` errors.
+  - The probe endpoint `/v2/token/check` was a non-existent route that returned generic 404s without validating authentication credentials.
+
+### 2. Implementation (`SuperAdminDashboardController.php`)
+- **Timeout Extension:** Increased request timeout to `5.0s` with explicit connection timeout of `3.0s` (`Http::timeout(5.0)->connectTimeout(3.0)`).
+- **Standardized Status Probe:** Switched probe endpoint to `/v2/netmanager-health-probe/status`.
+- **Granular Status Categorization:**
+  - `CONNECTED` (status `operational`, emerald badge): HTTP response `< 500` and not `401` (e.g. 404 order not found or 200). Confirms network connectivity, TLS handshake, and valid Server Key authentication.
+  - `AUTH_ERROR` (status `error`, rose badge): HTTP `401 Unauthorized`. Indicates API endpoint reached but Server Key was rejected.
+  - `DEGRADED` (status `offline`, rose badge): HTTP response `>= 500`. Midtrans upstream service error.
+  - `UNREACHABLE` (status `offline`, rose badge): Caught `\Throwable` (cURL timeout, DNS failure, connection refused).
+
+
