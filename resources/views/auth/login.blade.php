@@ -2,11 +2,13 @@
     <!-- Landing Page Style Background Overlay -->
     <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=2000&auto=format&fit=crop"
-            alt="Background Kota Metropolitan MGD" class="w-full h-full object-cover opacity-20">
-        <div class="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-950/85 to-slate-950"></div>
-        <!-- Ambient Animated Glows matching landing page amber & blue brand palette -->
-        <div class="absolute -top-32 -left-32 w-96 h-96 bg-blue-600/10 rounded-full filter blur-3xl animate-pulse"></div>
-        <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-amber-500/10 rounded-full filter blur-3xl animate-pulse" style="animation-duration: 4s;"></div>
+            alt="Background Kota Metropolitan MGD" class="w-full h-full object-cover object-top opacity-20">
+        <div class="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-950/75 to-slate-950"></div>
+        <!-- Ambient Glows using lightweight radial gradient with GPU acceleration -->
+        <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-60 animate-pulse pointer-events-none"
+             style="background: radial-gradient(circle, rgba(37,99,235,0.15) 0%, transparent 70%); will-change: opacity; transform: translateZ(0);"></div>
+        <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full opacity-60 animate-pulse pointer-events-none"
+             style="background: radial-gradient(circle, rgba(245,158,11,0.15) 0%, transparent 70%); animation-duration: 4s; will-change: opacity; transform: translateZ(0);"></div>
     </div>
 
     <x-authentication-card>
