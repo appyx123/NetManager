@@ -63,7 +63,7 @@
         <x-toast />
 
         <!-- Guest Navigation Bar -->
-        @if (!request()->routeIs('login') && !request()->is('login'))
+        @if (!request()->routeIs('login', 'password.*', 'two-factor.*', 'verification.*') && !request()->is('login', 'forgot-password', 'reset-password/*', 'two-factor-challenge', 'email/verify'))
         <nav
             class="fixed w-full z-50 transition-all duration-300 bg-slate-900/95 backdrop-blur-md shadow-lg border-b border-slate-800">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

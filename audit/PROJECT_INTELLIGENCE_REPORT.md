@@ -1187,16 +1187,16 @@ NetManagement is a comprehensive, production-hardened ISP management and billing
 
 ## 61. Auth Experience Modernization, Multi-Resolution Favicon & Mobile-Optimized Animation Polish
 
-### 1. Login Card Header & Logo Reorganization
-- **Files:** `resources/views/auth/login.blade.php`, `resources/views/components/authentication-card.blade.php`, `resources/views/layouts/guest.blade.php`
+### 1. Login & Auth Suite Card Header & Logo Reorganization
+- **Files:** `resources/views/auth/login.blade.php`, `resources/views/auth/forgot-password.blade.php`, `resources/views/auth/reset-password.blade.php`, `resources/views/auth/two-factor-challenge.blade.php`, `resources/views/components/authentication-card.blade.php`, `resources/views/layouts/guest.blade.php`
 - **Problems:**
-  - The login view previously displayed a floating company logo outside and above the login card container, creating an unbalanced layout.
-  - While navigating on the login page (`/login`), the full guest landing page header (`PT. MANDIRI GLOBAL DATA` + `Beranda`, `Tentang`, `Layanan`, `Mengapa Kami`, `Log in Portal`) was rendered fixed at the top, cluttering the screen and showing a redundant "Log in Portal" link.
-  - The card lacked an intuitive escape hatch for users to return to the public marketing homepage without browser back buttons.
+  - The login and forgot password views previously displayed a floating company logo outside and above the login card container, creating an unbalanced layout.
+  - While navigating on auth pages (`/login`, `/forgot-password`, etc.), the full guest landing page header (`PT. MANDIRI GLOBAL DATA` + `Beranda`, `Tentang`, `Layanan`, `Mengapa Kami`, `Log in Portal`) was rendered fixed at the top, cluttering the screen and showing a redundant "Log in Portal" link.
+  - The cards lacked an intuitive escape hatch for users to return to login or the homepage without browser back buttons.
 - **Resolution:**
-  - **Interior Logo Placement:** Embedded `<x-authentication-card-logo />` inside `<x-authentication-card>` centered directly above the "Welcome Back" greeting. Made `$logo` optional in `authentication-card.blade.php` (`@if (isset($logo) && trim((string)$logo) !== '')`) to cleanly support cards without top-slot margins.
-  - **Return to Homepage Action:** Added a dedicated 'Kembali ke Beranda' link with an SVG arrow icon at the base of the card, separated by a subtle border (`border-slate-800/80`) and linked directly to `route('home')` (`/`).
-  - **Conditional Guest Navbar Suppression:** Wrapped the fixed guest navigation bar in `resources/views/layouts/guest.blade.php` with `@if (!request()->routeIs('login') && !request()->is('login'))`, hiding the header exclusively on the login screen while preserving it for other guest contexts.
+  - **Interior Logo Placement:** Embedded `<x-authentication-card-logo />` inside `<x-authentication-card>` centered directly above headings across all auth templates (`login.blade.php`, `forgot-password.blade.php`, `reset-password.blade.php`, `two-factor-challenge.blade.php`). Made `$logo` optional in `authentication-card.blade.php` (`@if (isset($logo) && trim((string)$logo) !== '')`) to cleanly support cards without top-slot margins.
+  - **Consistent Slate & Amber Styling:** Aligned `forgot-password.blade.php` to use the city background overlay, ambient radial glows, Slate 900 card backdrop, amber gradient action button (`bg-gradient-to-r from-amber-400 to-amber-500`), and sleek 'Kembali ke Halaman Login' footer action link with SVG arrow icon.
+  - **Conditional Guest Navbar Suppression:** Wrapped the fixed guest navigation bar in `resources/views/layouts/guest.blade.php` with `@if (!request()->routeIs('login', 'password.*', 'two-factor.*', 'verification.*') && !request()->is('login', 'forgot-password', 'reset-password/*', 'two-factor-challenge', 'email/verify'))`, hiding the header cleanly on all auth screens while preserving it for public landing pages.
 
 ### 2. High-Fidelity Multi-Resolution Favicon Generation
 - **Files Generated / Modified:** `public/favicon.ico`, `resources/views/layouts/guest.blade.php`, `resources/views/components/sidebar-layout.blade.php`, `resources/views/welcome.blade.php`
