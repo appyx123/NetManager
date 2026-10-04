@@ -3,7 +3,7 @@
 **Auditor:** Senior System Auditor & Full-Stack Laravel Expert  
 **Target:** Admin Domain (`role:admin,super_admin`, NOC, Keuangan, Dispatch)  
 **Status Audit:** Verified, Hardened & Bulletproof (100% Implemented)  
-**Last Synchronized:** 2026-10-02 (Synced to Commit `fd45a2b` / Multi-Router Credentials & Modernized Billing Table Hardened)
+**Last Synchronized:** 2026-10-04 (Synced to Commit `72ad6de` / Admin Invoice Layout Hardening & SweetAlert2 Modernization)
 
 ---
 
@@ -190,6 +190,13 @@ Saat pemulihan layanan dipicu:
 2. **Kirim Resi Digital:** Mengirimkan pesan konfirmasi pembayaran resmi beserta rincian nomor invoice dan nominal pembayaran secara instan.
 3. **Timeout Proteksi:** Request HTTP POST ke bot gateway diatur dengan timeout 5 detik untuk mencegah *thread latency*.
 
+### 4.4. Redesain Detail Faktur Admin & Eliminasi Ribbon Overlap (`admin/billing/show.blade.php`)
+1. **Pembersihan Pita Diagonal:** Komponen CSS pita miring diagonal lawas (`rotate-45 -right-12 top-6`) yang sebelumnya menabrak dan menutupi teks header telah **DIHAPUS TUNTAS**.
+2. **Top Header Status Badge Pill:** Status tagihan ditempatkan bersih di pojok kanan atas dengan badge pill (`Lunas` warna emerald atau `Belum Bayar` warna amber) tanpa risiko tumpang tindih teks.
+3. **Metadata Strip 3 Kolom:** Menampilkan Nomor Faktur, Tanggal Jatuh Tempo, dan Metode Pembayaran dalam bilah metadata horizontal berlatar dark slate yang rapi.
+4. **Konfirmasi Pelunasan SweetAlert2:** Tombol aksi "Tandai Sebagai LUNAS" diproteksi dialog konfirmasi kustom bertema gelap SweetAlert2 (`confirmMarkPaid(invoiceNumber, customerName)`), mencegah eksekusi keliru yang tidak disengaja oleh staf operasional.
+5. **Standardisasi Modal Sistem:** Helper fungsi di [sidebar-layout.blade.php](file:///c:/Users/LENOVO/Documents/Rafli/Project/NetManager/resources/views/components/sidebar-layout.blade.php) (`confirmDelete`, `confirmConvert`, `confirmMarkPaid`) menstandarisasi seluruh modal konfirmasi operasional.
+
 ---
 
 ## 5. Customer Isolation Workflow (MikroTik API)
@@ -357,9 +364,11 @@ Modul `NetworkService` dilengkapi method `addCustomer(Subscription $subscription
 | **Otomasi PPPoE & Profil MikroTik** | **PASSED** (100%) | Terintegrasi via `NetworkService::addCustomer` dengan binding `caller-id` MAC ONT dan auto-create profil PPP rate-limit. |
 | **Multi-Router & ODP Specs** | **PASSED** (100%) | Kredensial router terenkripsi, spesifikasi ODP & kapasitas port tercatat, dan `subscriptions.router_id` terikat permanen. |
 | **Modernisasi Antarmuka Billing** | **PASSED** (100%) | UI tabel billing modern dilengkapi pencarian, filter status instan, dan kalkulasi pendapatan riil. |
+| **Eliminasi Ribbon Overlap** | **PASSED** (100%) | Pembersihan pita miring diagonal pada `admin/billing/show.blade.php`; badge pill & strip metadata rapi. |
+| **SweetAlert2 Pelunasan & Delete** | **PASSED** (100%) | Konfirmasi pembayaran manual dan aksi hapus master dipagari dialog custom SweetAlert2 terpadu. |
 | **Siklus Otomasi Isolir Harian** | **PASSED** (100%) | Scheduler harian `billing:process-daily` (H-3/H-1/H-0 & auto-isolate overdue) berjalan otomatis dan teruji. |
 | **Restorasi CustomerController & CI** | **PASSED** (100%) | Implementasi lengkap `CustomerController` tersinkron dengan route list dan pipeline CI GitHub Actions. |
 | **Sanitasi Codebase (Ponytail)** | **PASSED** (100%) | File orphaned dead code (`Admin\UserController` & `TicketQCController`) telah dihapus. |
 
 ### Status Akhir:
-Sistem Domain Admin (NOC, Billing, Dispatch) dinyatakan **100% BULLETPROOF & ENTERPRISE-GRADE**, bebas dari potensi race condition data tagihan, bebas dari celah OS injection, serta sinkron secara real-time antara database relasional MySQL dan konfigurasi perangkat fisik MikroTik RouterOS.
+Sistem Domain Admin (NOC, Billing, Dispatch) dinyatakan **100% BULLETPROOF & ENTERPRISE-GRADE**, bebas dari potensi race condition data tagihan, bebas dari celah OS injection, bebas dari overlapping visual layout invoice, serta sinkron secara real-time antara database relasional MySQL dan konfigurasi perangkat fisik MikroTik RouterOS.

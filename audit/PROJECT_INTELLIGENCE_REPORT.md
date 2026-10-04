@@ -30,6 +30,8 @@
   19. **Super Admin Dashboard Chart.js Synchronization & Icon Remediation (RESOLVED):** Super Admin dashboard charts failed to initialize due to missing Chart.js script, and multiple card icons had corrupted SVG paths. **Resolved:** Integrated Chart.js v4 UMD CDN, synchronized all 4 visual charts (User Roles, Subscription Status, 12-Month Revenue, 7-Day Growth) with localized Indonesian labels and palettes, and replaced broken paths with official Heroicons (`currency-dollar`, `chart-pie`, `check-circle`, `clipboard-list`).
   20. **Live Third-Party Connectivity, Router IP Auto-Sync & Server Hardware Telemetry (RESOLVED):** Third-party integrations were previously static or susceptible to false offline statuses due to seeder IP mismatches (`192.168.88.1` vs `.env` host `100.69.126.108`), and server health displayed misleading single-thread PHP limits (`128M`) with artificial score degradation. **Resolved:** Implemented live non-blocking socket checks to MikroTik API (`8728`) with automatic database IP synchronization; added live health checks for Node.js WhatsApp Bot (`GET /status`), Midtrans Payment Gateway, and Database PDO query latency; detected true physical Linux server RAM via `/proc/meminfo` (e.g. `1.2 GB / 4.0 GB`); and adjusted health scoring to accurately evaluate server hardware and database performance (95%–100% Optimal).
   21. **Auth Experience Modernization, Multi-Resolution Favicon & Mobile-Optimized Animation Polish (RESOLVED):** The login card featured an awkward floating logo above the card container, lacked a back-to-home navigation link, displayed redundant guest navigation headers on `/login`, lacked an official branded favicon icon, and the initial animation caused stuttering on mobile viewports due to heavy CSS blurs and unthrottled canvas calculations. **Resolved:** Repositioned the company logo (`<x-authentication-card-logo />`) inside the card directly above 'Welcome Back'; integrated a 'Kembali ke Beranda' return action routed to `route('home')`; suppressed the guest navigation bar on login routes; generated an undistorted multi-resolution `public/favicon.ico` from `LOGOMGD.png` (16x16 to 256x256) and linked across all guest/app layouts; harmonized the card design with the Slate & Amber landing page palette; and optimized canvas particles for mobile (`fpsLimit: 60`, adaptive 30-node throttling, hardware-accelerated transforms, zero-blur radial gradients) ensuring smooth 60 FPS mobile performance.
+  22. **Initial Customer Billing Lifecycle & Package + Installation Aggregation (RESOLVED):** Previously, new customers converted from marketing leads only had the recurring package price billed, or experienced issues where their dashboard falsely displayed that all bills were settled, or had no initial subscription/invoice created until a technician finalized installation. **Resolved:** Updated `LeadController::convertToCustomer` to create an initial `Subscription` (`status: isolated`) and combined `Invoice` (`package price + installation fee`). Added self-healing fallback in `CustomerDashboardController::index` ensuring customers always have a valid subscription and unpaid invoice with combined breakdown. Updated `Technician\TicketController::finalizeInstallation` to enforce initial invoice amount combining package price and lead installation fee. Updated `Customer\InvoiceController::pay` so Midtrans Snap `item_details` splits package subscription and installation fee.
+  23. **UI Modernization: Ribbon Overlap Elimination, Custom SweetAlert2 Modals, and Dot Number Formatting (RESOLVED):** Invoice show views (`user/billing/show.blade.php` and `admin/billing/show.blade.php`) previously suffered from overlapping diagonal CSS ribbons (`rotate-45`) that blocked text on mobile and desktop viewports, and various views used browser-native `confirm()` dialogs. In lead creation/edit, registration fees defaulted to '0' without digit grouping. **Resolved:** Completely eliminated diagonal ribbons in both customer and admin invoice detail views, replacing them with modern, non-overlapping header status badges (`Belum Bayar` / `Lunas`) and 3-column metadata strips. Replaced native `confirm()` across the system with custom dark-themed SweetAlert2 dialogs (`confirmDelete`, `confirmConvert`, `confirmMarkPaid`) in `sidebar-layout.blade.php`. Updated `marketing/leads/create.blade.php` and `edit.blade.php` with placeholder `0` and client-side Indonesian thousand dots formatting (`Intl.NumberFormat('id-ID')`) alongside backend numeric sanitization.
 
 ---
 
@@ -1318,5 +1320,45 @@ NetManagement is a comprehensive, production-hardened ISP management and billing
   - `AUTH_ERROR` (status `error`, rose badge): HTTP `401 Unauthorized`. Indicates API endpoint reached but Server Key was rejected.
   - `DEGRADED` (status `offline`, rose badge): HTTP response `>= 500`. Midtrans upstream service error.
   - `UNREACHABLE` (status `offline`, rose badge): Caught `\Throwable` (cURL timeout, DNS failure, connection refused).
+
+---
+
+## 65. Initial Customer Invoice Lifecycle, Ribbon Overlap Elimination & SweetAlert2 Modernization
+
+### 1. Problem Statement & Root Cause
+1. **Initial Invoice Omission & "Lunas Semua" False State:**
+   - When leads were converted to customers via `LeadController::convertToCustomer`, subscriptions and initial invoices were not immediately generated until a technician closed the installation ticket.
+   - When a customer logged in immediately after receiving their login credentials, their dashboard displayed "Lunas Semua" because no unpaid invoice existed in the database, even though they had not yet paid for their bandwidth plan or installation fee.
+   - The initial invoice only calculated the recurring package price without incorporating the installation/registration fee (`installation_fee`) from the marketing intake lead.
+2. **Diagonal Ribbon UI Overlap:**
+   - Both `user/billing/show.blade.php` and `admin/billing/show.blade.php` featured legacy diagonal CSS ribbons (`rotate-45 -right-12 top-6`) representing invoice payment status.
+   - On mobile viewports and standard desktop cards, this tilted ribbon overlapped invoice numbers, dates, and action buttons.
+3. **Browser Native `confirm()` Modals:**
+   - Destructive actions (lead conversion, customer delete, package delete, maintenance tasks) used default browser alert dialogs which clashed with the application's dark aesthetic and lacked mobile touch ergonomics.
+4. **Registration Fee Number Input:**
+   - Form inputs for registration fee defaulted to an unformatted `0`, forcing sales staff to backspace before entering amounts without thousand separators.
+
+### 2. Implementation & Key Architectural Updates (Commits `e11d981` & `72ad6de`)
+1. **Lead Conversion Transaction Enhancement (`LeadController.php`):**
+   - Wrapped `Subscription::create` (`status: isolated`) and `Invoice::create` (`status: unpaid`, `amount = package price + installation fee`) inside the atomic conversion transaction.
+   - Initialized WhatsApp dispatch via `WhatsappService::sendAccountCreated` automatically delivering login credentials.
+2. **Self-Healing Customer Dashboard Provisioning (`CustomerDashboardController.php`):**
+   - Added self-healing verification: if a customer profile exists but lacks a subscription or has 0 invoices, the controller automatically creates the initial subscription (`status: isolated`) and unpaid invoice (`amount = package price + installation fee`).
+   - Replaced false "Lunas Semua" card with an explicit amber/rose **"Belum Lunas"** notification, bill counter, and direct payment CTA button.
+3. **Technician Installation Finalization (`Technician\TicketController.php`):**
+   - Synchronized `finalizeInstallation`: enforces combined invoice amount `$amount = ($package ? (float) $package->price : 0) + $installationFee`.
+   - Maintains subscription status as `isolated` for the "Pasang Dulu Baru Bayar" workflow until an invoice is settled.
+4. **Midtrans Itemized Breakdown (`Customer\InvoiceController.php`):**
+   - `pay()` checks if total invoice amount exceeds package price. If so, `item_details` is split into two distinct items: Package Subscription and Installation Fee.
+5. **Invoice Detail UI Modernization:**
+   - Completely removed diagonal CSS ribbons (`rotate-45`) in both `user/billing/show.blade.php` and `admin/billing/show.blade.php`.
+   - Introduced a clean top-right status badge pill (`Belum Bayar` / `Lunas`) and 3-column metadata strip (Invoice Number, Due Date, Payment Method).
+   - Added a clear line-item breakdown table displaying both recurring plan fee and registration/installation fee.
+6. **Systemwide SweetAlert2 Integration:**
+   - Injected dark-themed SweetAlert2 dialogs (`confirmDelete`, `confirmConvert`, `confirmMarkPaid`) into `sidebar-layout.blade.php`.
+   - Protected "Tandai Sebagai LUNAS" in Admin Billing and Lead actions with custom dialogs.
+7. **Indonesian Thousand Separators (`Intl.NumberFormat('id-ID')`):**
+   - `marketing/leads/create.blade.php` and `edit.blade.php` utilize `placeholder="0"` and dynamic JavaScript digit grouping with backend numeric regex stripping.
+
 
 

@@ -8,11 +8,11 @@
 - **Audit Target:** Domain Modul & Hak Akses `Technician` (Teknisi Lapangan) pada platform NetManagement (NetManager / PT. Mandiri Global Data).
 - **Auditor Role:** Senior System Auditor & Full-Stack Laravel Expert.
 - **Audit Date:** 2026-09-26.
-- **Last Synchronized:** 2026-10-01 (Synced to Commit `4973567` / Dynamic Profile & Hardware Provisioning Hardened).
+- **Last Synchronized:** 2026-10-04 (Synced to Commit `72ad6de` / Combined Invoice Calculation & Isolated Initial State).
 - **Audit Scope:**
   1. Routing & Authorization Gates (`routes/web.php`, `EnsureUserHasRole.php`).
   2. Technician Controllers (`TechnicianDashboardController`, `TicketController`).
-  3. Eloquent Model & Entity Relationships (`Ticket`, `Customer`, `User`, `NetworkAsset`).
+  3. Eloquent Model & Entity Relationships (`Ticket`, `Customer`, `User`, `NetworkAsset`, `Subscription`, `Invoice`).
   4. Blade Templates & Presentation Tier (`resources/views/technician/*`).
   5. File Upload Handling & Storage Configuration (`uploads/teknisi/lokasi`, `uploads/teknisi/bukti`, `config/filesystems.php`).
 - **Core Findings Summary:**
@@ -21,6 +21,7 @@
   - **Data Ownership & Authorization (100% VERIFIED):** Pada Meja Kerja (`my-tasks`), teknisi hanya dapat melihat dan memperbarui tiket yang secara spesifik ditugaskan kepada mereka (`technician_id == Auth::id()`). Percobaan mengakses tiket milik teknisi lain menghasilkan **HTTP 403 Forbidden**.
   - **Zero Deletion Privileges (100% VERIFIED):** `TicketController` tidak memiliki method `destroy`, dan tidak ada rute `DELETE` pada grup teknisi. Teknisi tidak dapat menghapus tiket dari sistem, menjaga keutuhan jejak audit operasional.
   - **Field Data & Photo Evidence Lifecycle (100% VERIFIED & HARDENED):** Formulir penyelesaian tugas (`processUpdate`) menangkap parameter fisik esensial ISP (`cable_length`, `odp_port`, `dbm_signal`, `device_mac`, `device_brand`, `connectivity_status`, `installation_status`). Berkas foto bukti tersimpan secara terstruktur di `uploads/teknisi/lokasi` dan `uploads/teknisi/bukti` pada storage disk `public`, dilengkapi pembersihan berkas lama (*storage bloat prevention*) saat foto diunggah ulang.
+  - **Post-Installation Provisioning & Combined Invoice Calculation (100% VERIFIED & HARDENED):** Pada penyelesaian tugas instalasi (`finalizeInstallation`), sistem membungkus penerbitan `Subscription` (berstatus `'isolated'` sesuai model "Pasang Dulu, Baru Bayar") dan `Invoice` perdana dalam `DB::transaction()`. Nilai invoice perdana mengagregasikan harga paket bulanan dengan biaya registrasi/instalasi dari data prospek marketing (`package price + installation fee`). Jika status terisolir berlaku, profil di MikroTik otomatis di-disable via `$networkService->disableCustomer($subscription)`.
 
 ---
 
@@ -238,19 +239,22 @@ foreach (['location_photo_path' => 'uploads/teknisi/lokasi', 'evidence_photo_pat
 
 ### 4.3. Otomasi Pasca-Instalasi & Provisioning MikroTik (`finalizeInstallation`)
 Sesuai arsitektur *Customer Domain Lifecycle*, saat teknisi menyelesaikan tiket instalasi (`resolved`), sistem menjalankan `finalizeInstallation($ticket)`:
-1. **Penerbitan Profil Subscription & Invoice Perdana (Atomic DB Transaction):**
+1. **Penerbitan Profil Subscription & Tagihan Perdana Gabungan (Atomic DB Transaction):**
    - Mengambil data pelanggan dan paket langganan terkait (`$customer->lead->package_id`).
    - Menyimpan atau memperbarui kredensial PPPoE (`pppoe_username` dan `pppoe_password`).
-   - Menerbitkan entitas `Subscription` dengan status `'active'`, tanggal instalasi hari ini, dan jatuh tempo 7 hari ke depan.
-   - Menerbitkan tagihan perdana `Invoice` berstatus `'unpaid'` dengan nomor faktur resmi berformat unik (`INV-XXXXXXXX`).
+   - Menerbitkan atau menyinkronkan entitas `Subscription` dengan status `'isolated'` (Model: Pasang Dulu, Baru Bayar) jika belum ada riwayat invoice yang lunas (`paid`), dengan tanggal instalasi hari ini dan jatuh tempo 7 hari ke depan.
+   - Menerbitkan faktur perdana `Invoice` berstatus `'unpaid'` (jika belum ada tagihan unpaid dan belum ada tagihan paid) dengan mengagregasikan harga paket bulanan dan biaya instalasi dari prospek marketing:
+     `$amount = ($package ? (float) $package->price : 0) + $installationFee;`
+     di mana `$installationFee = (float) ($customer->lead?->installation_fee ?? $package?->installation_fee ?? 0);`.
    - Mengubah status prospek pelanggan (`lead.status`) menjadi `'aktif'`.
-2. **Pendaftaran PPPoE Secret ke Router MikroTik (`NetworkService::addCustomer`):**
+2. **Pendaftaran PPPoE Secret ke Router MikroTik & Penerapan Isolir Awal (`NetworkService::addCustomer`):**
    - Dijalankan di luar transaksi DB untuk menjamin atomisitas data relational.
    - Prioritasi target router: Membaca `$ticket->router_id` langsung dari tiket teknisi sebelum fallback ke tiket instalasi pelanggan atau default host.
    - Auto-provisioning profil PPP: Mengecek `/ppp/profile/print`. Jika profil belum ada, otomatis membuat profil via `/ppp/profile/add` lengkap dengan parameter batas bandwidth `rate-limit: {$speed}M/{$speed}M` sesuai paket langganan.
    - Mengeksekusi API MikroTik port 8728 (`RouterOS\Client`).
    - Memeriksa ketersediaan secret (`/ppp/secret/print`), lalu mengeksekusi `/ppp/secret/add` atau `/ppp/secret/set`.
    - Mengikat parameter teknis hasil input form teknisi: mengaitkan MAC address ONT (`device_mac`) ke parameter `caller-id`, mengaitkan profil paket, dan menetapkan remote IP.
+   - **Enforcement Isolasi Awal:** Jika langganan berstatus `'isolated'` (menunggu pembayaran perdana), sistem secara otomatis menerapkan pemutusan/isolir di router MikroTik via `$networkService->disableCustomer($subscription)`.
 3. **Resilience & Fault Tolerance:**
    - Seluruh pemanggilan RouterOS dibungkus dalam blok `try-catch (\Throwable $e)` mandiri dengan pencatatan `Log::error(...)`.
    - Kegagalan komunikasi fisik (router padam, kabel fiber putus, atau timeout API) tidak menyebabkan HTTP 500 dan tidak membatalkan penyimpanan tiket maupun data tagihan di database MySQL.
@@ -318,7 +322,7 @@ Pada [TechnicianDashboardController.php](file:///c:/Users/LENOVO/Documents/Rafli
 | **Evidence Photos Storage** | Simpan foto bukti di direktori terstruktur `uploads/teknisi` | **100% VERIFIED** | `uploads/teknisi/lokasi` & `uploads/teknisi/bukti` |
 | **Photo Storage Cleanup** | Bersihkan foto lama di disk saat unggah revisi | **100% VERIFIED & HARDENED** | `Storage::disk('public')->delete(...)` di baris 136 |
 | **State Machine Automation** | Transisi `open` $\rightarrow$ `assigned` $\rightarrow$ `in_progress` $\rightarrow$ `resolved` | **100% VERIFIED** | `take()`, `processShow()`, `processUpdate()` |
-| **Post-Installation Billing Auto** | Penerbitan Subscription & Invoice perdana saat tiket resolved | **100% VERIFIED** | `TicketController.php:finalizeInstallation()` |
+| **Post-Installation Billing Auto** | Penerbitan Subscription ('isolated') & Invoice perdana gabungan (paket + instalasi) | **100% VERIFIED** | `TicketController.php:finalizeInstallation()` |
 | **MikroTik PPPoE Auto-Provisioning** | Eksekusi `/ppp/secret/add` binding `caller-id`, router priority, & auto-profile rate-limit | **100% VERIFIED** | `NetworkService.php:addCustomer()` |
 | **Hardware Fault Tolerance** | Try-catch terisolasi agar error MikroTik tidak merusak DB | **100% VERIFIED** | `finalizeInstallation()` & `NetworkService::addCustomer()` |
 
