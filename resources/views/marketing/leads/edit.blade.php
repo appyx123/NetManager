@@ -8,7 +8,7 @@
                         <svg class="w-4 h-4 mr-1.5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                         Kembali ke Detail Prospek
                     </a>
-                    <h1 class="text-4xl font-black text-white tracking-tighter">Ubah <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">Data Prospek</span></h1>
+                    <h1 class="text-4xl font-black text-white tracking-tighter">Edit <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-200">Data Prospek</span></h1>
                     <p class="text-slate-400 mt-2 font-medium">Perbarui parameter informasi untuk: <span class="text-amber-400 font-bold underline decoration-amber-500/30 underline-offset-4">{{ $lead->name }}</span></p>
                 </div>
             </div>
@@ -246,7 +246,7 @@
                             </select>
                         </div>
                         <div class="space-y-2">
-                            <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Ubah Sumber Perolehan <span class="text-rose-500">*</span></label>
+                            <label class="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Edit Sumber Perolehan <span class="text-rose-500">*</span></label>
                             <select name="source" required class="w-full px-5 py-4 bg-slate-800/50 border border-slate-700 text-white rounded-2xl focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 font-bold uppercase text-xs tracking-widest">
                                 <option value="iklan" @selected(old('source', $lead->source) == 'iklan')>Iklan Digital (FB/IG/Google Ads)</option>
                                 <option value="referensi" @selected(old('source', $lead->source) == 'referensi')>Referensi Pelanggan</option>

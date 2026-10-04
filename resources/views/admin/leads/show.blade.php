@@ -132,7 +132,7 @@
 
                 <div class="flex flex-col sm:flex-row gap-4 mt-8 pt-8 border-t border-slate-800/60">
                     <a href="{{ route('admin.leads.edit', $lead) }}" class="px-8 py-3 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-500 shadow-[0_0_15px_rgba(217,119,6,0.3)] hover:shadow-[0_0_20px_rgba(217,119,6,0.5)] transition-all duration-200 text-center">
-                        Ubah Data Prospek
+                        Edit Data Prospek
                     </a>
                     <form id="delete-form-{{ $lead->id }}" action="{{ route('admin.leads.destroy', $lead) }}" method="POST" class="inline">
                         @csrf

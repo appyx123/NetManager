@@ -1231,7 +1231,7 @@ NetManagement is a comprehensive, production-hardened ISP management and billing
     - Billing / Invoicing: `Invoice` / `Billing` $\rightarrow$ `Tagihan`.
     - Lead Management: `Lead` / `Prospect` $\rightarrow$ `Prospek`.
     - Task & Complaint Tracking: `Ticket` (job/task) $\rightarrow$ `Tiket` / `Tugas`, `Ticket` (customer complaint) $\rightarrow$ `Pengaduan` / `Keluhan`.
-    - Actions & Controls: `Settings` $\rightarrow$ `Pengaturan`, `Reports` $\rightarrow$ `Laporan`, `Search` $\rightarrow$ `Cari`, `Submit`/`Save` $\rightarrow$ `Simpan` / `Kirim`, `Edit`/`Update` $\rightarrow$ `Ubah` / `Perbarui`, `Delete`/`Remove` $\rightarrow$ `Hapus`, `Create`/`Add` $\rightarrow$ `Tambah` / `Buat`.
+    - Actions & Controls: `Settings` $\rightarrow$ `Pengaturan`, `Reports` $\rightarrow$ `Laporan`, `Search` $\rightarrow$ `Cari`, `Submit`/`Save` $\rightarrow$ `Simpan` / `Kirim`, `Edit`/`Update` $\rightarrow$ `Edit` (per user preference), `Delete`/`Remove` $\rightarrow$ `Hapus`, `Create`/`Add` $\rightarrow$ `Tambah` / `Buat`.
   - **Tone & Style:** Professional, polite, passive-neutral (e.g., `"Pelanggan berhasil ditambahkan."`, `"Kata sandi berhasil direset."`).
 
 ### 2. Standardized Files Across Components & Modules

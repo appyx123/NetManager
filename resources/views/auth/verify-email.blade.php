@@ -30,7 +30,7 @@
                     href="{{ route('profile.show') }}"
                     class="underline text-sm text-slate-300 hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                    Ubah Profil</a>
+                    Edit Profil</a>
 
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf

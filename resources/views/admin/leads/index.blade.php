@@ -142,7 +142,7 @@
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-end gap-2 font-semibold">
                                             <a href="{{ route('admin.leads.show', $lead) }}" class="text-sky-400 hover:text-sky-300 transition-colors bg-sky-400/10 hover:bg-sky-400/20 px-3 py-1.5 rounded-lg border border-sky-400/20">Detail</a>
-                                            <a href="{{ route('admin.leads.edit', $lead) }}" class="text-amber-400 hover:text-amber-300 transition-colors bg-amber-400/10 hover:bg-amber-400/20 px-3 py-1.5 rounded-lg border border-amber-400/20">Ubah</a>
+                                            <a href="{{ route('admin.leads.edit', $lead) }}" class="text-amber-400 hover:text-amber-300 transition-colors bg-amber-400/10 hover:bg-amber-400/20 px-3 py-1.5 rounded-lg border border-amber-400/20">Edit</a>
                                             
                                             <form id="delete-form-{{ $lead->id }}" action="{{ route('admin.leads.destroy', $lead) }}" method="POST" class="inline">
                                                 @csrf

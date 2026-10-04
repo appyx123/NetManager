@@ -133,7 +133,7 @@
                         <div class="space-y-4">
                             <button class="w-full flex items-center justify-between p-4 border border-blue-200 rounded-lg hover:bg-blue-50 transition">
                                 <div class="text-left">
-                                    <p class="font-semibold text-blue-900">Ubah Password</p>
+                                    <p class="font-semibold text-blue-900">Edit Password</p>
                                     <p class="text-xs text-blue-600 mt-1">Terakhir diubah: 60 hari lalu</p>
                                 </div>
                                 <span class="text-blue-600">→</span>

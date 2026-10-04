@@ -67,7 +67,7 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-end gap-3 font-semibold">
-                                            <a href="{{ route('superadmin.users.edit', $user) }}" class="text-amber-400 hover:text-amber-300 transition-colors bg-amber-400/10 hover:bg-amber-400/20 px-3 py-1.5 rounded-lg border border-amber-400/20">Ubah</a>
+                                            <a href="{{ route('superadmin.users.edit', $user) }}" class="text-amber-400 hover:text-amber-300 transition-colors bg-amber-400/10 hover:bg-amber-400/20 px-3 py-1.5 rounded-lg border border-amber-400/20">Edit</a>
                                             
                                             <form id="reset-form-{{ $user->id }}" action="{{ route('superadmin.users.resetPassword', $user) }}" method="POST" class="inline">
                                                 @csrf

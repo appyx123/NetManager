@@ -32,7 +32,7 @@
                     <div class="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mb-4">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                     </div>
-                    <h4 class="font-bold text-slate-800 text-lg">Ubah Paket Internet</h4>
+                    <h4 class="font-bold text-slate-800 text-lg">Edit Paket Internet</h4>
                     <p class="text-sm text-slate-500 mt-2 mb-6">Ingin kecepatan lebih tinggi (Upgrade) atau lebih hemat (Downgrade)?</p>
                     <button class="w-full py-3 bg-indigo-50 text-indigo-700 font-bold rounded-xl hover:bg-indigo-100 transition mt-auto">Ajukan Perubahan Paket</button>
                 </div>

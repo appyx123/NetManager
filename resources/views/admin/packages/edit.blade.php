@@ -7,8 +7,8 @@
                     Kembali ke Daftar Paket
                 </a>
                 <div class="mt-4">
-                    <p class="text-xs font-black uppercase tracking-[0.2em] text-purple-400">Ubah Produk</p>
-                    <h1 class="text-3xl font-black text-white mt-1">Ubah Paket: {{ $package->name }}</h1>
+                    <p class="text-xs font-black uppercase tracking-[0.2em] text-purple-400">Edit Produk</p>
+                    <h1 class="text-3xl font-black text-white mt-1">Edit Paket: {{ $package->name }}</h1>
                     <p class="text-slate-400 text-sm mt-1">Perbarui tarif, bandwidth, atau status ketersediaan paket.</p>
                 </div>
             </div>
