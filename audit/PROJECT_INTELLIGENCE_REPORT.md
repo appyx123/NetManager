@@ -1198,18 +1198,14 @@ NetManagement is a comprehensive, production-hardened ISP management and billing
   - **Consistent Slate & Amber Styling:** Aligned `forgot-password.blade.php` to use the city background overlay, ambient radial glows, Slate 900 card backdrop, amber gradient action button (`bg-gradient-to-r from-amber-400 to-amber-500`), and sleek 'Kembali ke Halaman Login' footer action link with SVG arrow icon.
   - **Conditional Guest Navbar Suppression:** Wrapped the fixed guest navigation bar in `resources/views/layouts/guest.blade.php` with `@if (!request()->routeIs('login', 'password.*', 'two-factor.*', 'verification.*') && !request()->is('login', 'forgot-password', 'reset-password/*', 'two-factor-challenge', 'email/verify'))`, hiding the header cleanly on all auth screens while preserving it for public landing pages.
 
-### 2. High-Fidelity Multi-Resolution Favicon & Dark Slate App Icon Suite
-- **Files Generated / Modified:** `public/favicon.ico`, `public/favicon-16x16.png`, `public/favicon-32x32.png`, `public/apple-touch-icon.png`, `public/android-chrome-192x192.png`, `public/android-chrome-512x512.png`, `public/site.webmanifest`, `resources/views/layouts/guest.blade.php`, `resources/views/components/sidebar-layout.blade.php`, `resources/views/welcome.blade.php`
-- **Problem:** When mobile browsers (Chrome / Samsung Internet / Safari) generated home screen shortcuts, bookmarks, or tab tiles from a transparent favicon, the OS/browser automatically wrapped it in an arbitrary purple/violet gradient squircle (`#7C3AED` to `#6366F1`) that clashed with the blue and yellow brand colors.
+### 2. High-Fidelity Multi-Resolution Favicon Generation
+- **Files Generated / Modified:** `public/favicon.ico`, `resources/views/layouts/guest.blade.php`, `resources/views/components/sidebar-layout.blade.php`, `resources/views/welcome.blade.php`
+- **Problem:** The application lacked an official branded favicon icon, relying on generic browser defaults, and initial attempts to convert `LOGOMGD.png` risked non-proportional distortion ("penyok") across diverse screen resolutions.
 - **Resolution:**
-  - **Dark Slate Brand Background:** Rendered all icons on an official Dark Slate gradient canvas (`#0F172A` to `#020617`), perfectly matching NetManager's dark theme palette and providing high contrast for the electric blue GM emblem, golden yellow "MANDIRI GLOBAL DATA" text, and cyan "mgd.net.id" URL.
-  - **Safe Zone Margin:** Centered the logo occupying 72% of the canvas dimension, ensuring that Android adaptive squircle masks and iOS rounded masks never clip any logo details.
-  - **Comprehensive Multi-Platform Icon Suite:**
-    - `public/favicon.ico`: Standards-compliant multi-resolution binary embedding 16x16, 32x32, 48x48, 64x64, 128x128, 256x256 streams.
-    - `public/apple-touch-icon.png`: 180x180 px for iOS Safari homescreen and bookmarks.
-    - `public/android-chrome-192x192.png` & `android-chrome-512x512.png`: High-density maskable icons for Android Chrome PWA and shortcuts.
-    - `public/site.webmanifest`: Configured with `theme_color: "#0f172a"` and `background_color: "#020617"`.
-    - Added `<meta name="theme-color" content="#0f172a">` and full icon link tags across all layout headers (`guest.blade.php`, `welcome.blade.php`, `sidebar-layout.blade.php`).
+  - Analyzed alpha-channel bounding box dimensions of `storage/app/public/img/LOGOMGD.png` (non-transparent content: `1222 x 1239` pixels).
+  - Centered the cropped logo onto a square transparent canvas with proportional aspect ratio preservation and 5% edge margin.
+  - Generated a standards-compliant multi-resolution binary `public/favicon.ico` containing embedded mipmap streams across standard desktop and mobile resolutions (16x16, 32x32, 48x48, 64x64, 128x128, 256x256).
+  - Linked the favicon via `<link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">` across all system view layouts (`welcome.blade.php`, `guest.blade.php`, `sidebar-layout.blade.php`).
 
 ### 3. Slate & Amber Design System Harmonization & Smooth Mobile Animation
 - **Files:** `resources/views/layouts/guest.blade.php`, `resources/views/auth/login.blade.php`, `resources/views/components/authentication-card.blade.php`
