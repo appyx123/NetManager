@@ -8,10 +8,6 @@
     </div>
 
     <x-authentication-card>
-        <x-slot name="logo">
-            <x-authentication-card-logo />
-        </x-slot>
-
         <div class="space-y-1 mb-6">
             <h2 class="text-3xl font-bold text-white text-center">Welcome Back</h2>
             <p class="text-center text-gray-400 text-sm">Sign in to your NetManager account</p>
@@ -103,6 +99,15 @@
             </x-button>
         </form>
 
+        <!-- Back to Home -->
+        <div class="mt-6 text-center border-t border-gray-800 pt-6">
+            <a href="{{ route('home') }}" class="inline-flex items-center text-sm text-gray-400 hover:text-yellow-400 font-medium transition duration-200">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Kembali ke Beranda
+            </a>
+        </div>
     </x-authentication-card>
 
     <script>
