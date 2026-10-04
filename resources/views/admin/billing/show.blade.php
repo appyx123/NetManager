@@ -3,109 +3,173 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             
             <div class="mb-6 flex justify-between items-center">
-                <a href="{{ route('admin.billing.index') }}" class="text-amber-400 hover:text-amber-300 font-bold flex items-center transition">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <a href="{{ route('admin.billing.index') }}" class="text-amber-400 hover:text-amber-300 font-bold flex items-center transition text-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     Kembali ke Daftar Tagihan
                 </a>
             </div>
 
-            <div class="bg-slate-900 shadow-xl rounded-2xl border border-slate-800 overflow-hidden relative">
+            <div class="bg-slate-900/80 backdrop-blur-md shadow-2xl rounded-2xl border border-slate-800 overflow-hidden relative p-5 sm:p-8">
                 
-                @if($invoice->status === 'paid')
-                    <div class="absolute top-0 right-0 -mr-10 mt-6 transform rotate-45 bg-green-600 text-white font-bold py-1 px-12 shadow-md uppercase tracking-widest text-sm z-10">
-                        LUNAS
-                    </div>
-                @else
-                    <div class="absolute top-0 right-0 -mr-10 mt-6 transform rotate-45 bg-red-600 text-white font-bold py-1 px-12 shadow-md uppercase tracking-widest text-sm z-10">
-                        BELUM BAYAR
-                    </div>
-                @endif
-
-                <div class="p-8 md:p-12">
-                    <div class="flex justify-between items-start border-b border-slate-800 pb-8 mb-8">
-                        <div>
-                            <h1 class="text-3xl font-black text-amber-400 tracking-tighter uppercase">TAGIHAN</h1>
-                            <p class="text-slate-400 mt-1 font-mono font-bold">#{{ $invoice->invoice_number }}</p>
+                {{-- Header: Tagihan & Status Pill --}}
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-5 mb-5">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/20 shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         </div>
-                        <div class="text-right text-sm text-slate-400 space-y-1">
-                            <p><strong>Tanggal Terbit:</strong> {{ $invoice->created_at->format('d F Y') }}</p>
-                            <p><strong>Jatuh Tempo:</strong> <span class="{{ $invoice->due_date < now() && $invoice->status == 'unpaid' ? 'text-red-400 font-bold' : '' }}">{{ $invoice->due_date ? $invoice->due_date->format('d F Y') : '-' }}</span></p>
-                            @if($invoice->status === 'paid')
-                                <p class="text-green-400 font-bold mt-2">Dibayar pada: {{ $invoice->paid_at ? $invoice->paid_at->format('d F Y, H:i') : '-' }}</p>
-                            @endif
+                        <div class="min-w-0">
+                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Detail Tagihan Pelanggan</span>
+                            <h1 class="text-base sm:text-xl font-black text-white font-mono tracking-tight truncate">{{ $invoice->invoice_number }}</h1>
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-                        <div>
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Ditagihkan Kepada:</span>
-                            <h3 class="text-xl font-bold text-white mt-2">{{ $invoice->subscription->customer->user->name ?? '-' }}</h3>
-                            <p class="text-slate-400 text-sm mt-1 leading-relaxed">{{ $invoice->subscription->customer->address_installation ?? '-' }}</p>
-                            <p class="text-slate-400 text-sm font-bold mt-1">{{ $invoice->subscription->customer->phone_number ?? '-' }}</p>
-                            <p class="text-slate-400 text-sm font-mono mt-1">Kode Pelanggan: {{ $invoice->subscription->customer->customer_code ?? '-' }}</p>
-                        </div>
-                        <div class="md:text-right">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Info Layanan:</span>
-                            <p class="text-white font-bold mt-2 text-lg">{{ $invoice->subscription->package->name ?? '-' }}</p>
-                            <p class="text-slate-400 text-sm font-mono mt-1">PPPoE: {{ $invoice->subscription->pppoe_username ?? '-' }}</p>
-                            <p class="text-slate-400 text-sm mt-2">
-                                <span class="px-2 py-1 bg-blue-900/20 text-blue-400 rounded text-xs font-bold">
-                                    Status: {{ ucfirst($invoice->subscription->status) }}
-                                </span>
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="border border-slate-800 rounded-xl overflow-hidden mb-8">
-                        <table class="min-w-full divide-y divide-slate-800">
-                            <thead class="bg-slate-800">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-bold text-slate-300 uppercase">Deskripsi Layanan</th>
-                                    <th class="px-6 py-3 text-right text-xs font-bold text-slate-300 uppercase">Jumlah</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-slate-900 divide-y divide-slate-800">
-                                <tr>
-                                    <td class="px-6 py-4 text-sm text-slate-300 font-medium">Biaya Berlangganan Internet - {{ $invoice->subscription->package->name ?? '-' }}</td>
-                                    <td class="px-6 py-4 text-sm text-white font-bold text-right">Rp {{ number_format($invoice->subscription->package->price ?? 0, 0, ',', '.') }}</td>
-                                </tr>
-                                @if($invoice->amount > ($invoice->subscription->package->price ?? 0))
-                                <tr>
-                                    <td class="px-6 py-4 text-sm text-slate-300 font-medium">Biaya Instalasi / Penyesuaian / Denda</td>
-                                    <td class="px-6 py-4 text-sm text-white font-bold text-right">Rp {{ number_format($invoice->amount - ($invoice->subscription->package->price ?? 0), 0, ',', '.') }}</td>
-                                </tr>
-                                @endif
-                            </tbody>
-                            <tfoot class="bg-amber-900/20">
-                                <tr>
-                                    <td class="px-6 py-4 text-right font-black text-amber-400 uppercase">Total Keseluruhan</td>
-                                    <td class="px-6 py-4 text-right font-black text-xl text-amber-400">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-
-                    <div class="border-t border-dashed border-slate-700 pt-8 mt-8 flex flex-col items-center gap-4">
-                        @if($invoice->status === 'unpaid')
-                            <p class="text-sm text-slate-400 mb-2 text-center">Tagihan ini belum dibayar. Anda dapat menandainya sebagai lunas secara manual di sini.</p>
-                            
-                            <form action="{{ route('admin.billing.markAsPaid', $invoice) }}" method="POST" class="w-full sm:w-auto">
-                                @csrf
-                                @method('POST')
-                                <button type="submit" class="w-full sm:w-auto px-10 py-3 bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold rounded-xl shadow-lg hover:from-amber-700 hover:to-amber-800 transition">
-                                    Tandai Sebagai LUNAS
-                                </button>
-                            </form>
+                    <div class="shrink-0">
+                        @if($invoice->status === 'paid')
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider shadow-sm">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                Lunas
+                            </span>
                         @else
-                            <div class="w-full sm:w-auto flex items-center justify-center text-green-400 font-black text-lg bg-green-900/20 px-8 py-4 rounded-xl border border-green-800">
-                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                TAGIHAN TELAH LUNAS
-                            </div>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-rose-500/10 text-rose-400 border border-rose-500/20 uppercase tracking-wider shadow-sm">
+                                <span class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>
+                                Belum Bayar
+                            </span>
                         @endif
                     </div>
-
                 </div>
+
+                {{-- Metadata Strip: Terbit, Jatuh Tempo, ID Pelanggan --}}
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 bg-slate-950/60 rounded-xl border border-slate-800/80 mb-5 text-xs">
+                    <div>
+                        <span class="text-slate-500 font-bold block uppercase tracking-wider text-[10px]">Tanggal Terbit</span>
+                        <span class="text-slate-200 font-semibold mt-0.5 block">{{ $invoice->created_at->format('d M Y') }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 font-bold block uppercase tracking-wider text-[10px]">Jatuh Tempo</span>
+                        <span class="font-semibold mt-0.5 block {{ $invoice->due_date < now() && $invoice->status == 'unpaid' ? 'text-rose-400 font-bold' : 'text-slate-200' }}">
+                            {{ $invoice->due_date ? $invoice->due_date->format('d M Y') : '-' }}
+                        </span>
+                    </div>
+                    <div class="col-span-2 sm:col-span-1">
+                        <span class="text-slate-500 font-bold block uppercase tracking-wider text-[10px]">Kode Pelanggan</span>
+                        <span class="text-amber-400 font-mono font-bold mt-0.5 block">{{ $invoice->subscription->customer->customer_code ?? '-' }}</span>
+                    </div>
+                </div>
+
+                {{-- Bipartite Info: Ditagihkan & Info Layanan --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-5">
+                    <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 text-xs">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ditagihkan Kepada</p>
+                        <p class="text-sm font-bold text-white">{{ $invoice->subscription->customer->user->name ?? ($invoice->subscription->customer->lead->name ?? '-') }}</p>
+                        <p class="text-slate-400 mt-1 leading-relaxed">{{ $invoice->subscription->customer->address_installation ?? '-' }}</p>
+                        <p class="text-indigo-400 font-semibold mt-1.5">{{ $invoice->subscription->customer->phone_number ?? '-' }}</p>
+                    </div>
+                    <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 text-xs flex flex-col justify-between">
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Info Layanan</p>
+                            <p class="text-sm font-bold text-white">{{ $invoice->subscription->package->name ?? '-' }}</p>
+                            <p class="text-slate-400 mt-0.5 font-mono text-[11px]">PPPoE: {{ $invoice->subscription->pppoe_username ?? '-' }}</p>
+                        </div>
+                        <div class="mt-2.5 pt-2 border-t border-slate-700/50 flex items-center justify-between text-[11px]">
+                            <span class="text-slate-400">Status Layanan:</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ $invoice->subscription->status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20' }}">
+                                {{ ucfirst($invoice->subscription->status) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Breakdown Table --}}
+                <div class="border border-slate-700/60 rounded-xl overflow-hidden mb-6 shadow-sm bg-slate-800/20 text-xs">
+                    <table class="min-w-full divide-y divide-slate-700/50">
+                        <thead class="bg-slate-800/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            <tr>
+                                <th class="px-4 py-2.5 text-left">Deskripsi Layanan</th>
+                                <th class="px-4 py-2.5 text-right">Nominal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700/30">
+                            <tr>
+                                <td class="px-4 py-3 text-slate-200">
+                                    <span class="font-semibold text-white">Biaya Berlangganan Internet - {{ $invoice->subscription->package->name ?? '-' }}</span>
+                                </td>
+                                <td class="px-4 py-3 text-white font-bold text-right whitespace-nowrap">
+                                    Rp {{ number_format($invoice->subscription->package->price ?? 0, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            @if($invoice->amount > ($invoice->subscription->package->price ?? 0))
+                                <tr>
+                                    <td class="px-4 py-3 text-slate-200">
+                                        <span class="font-semibold text-white">Biaya Instalasi / Penyesuaian</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-white font-bold text-right whitespace-nowrap">
+                                        Rp {{ number_format($invoice->amount - ($invoice->subscription->package->price ?? 0), 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                            @endif
+                        </tbody>
+                        <tfoot class="bg-slate-950/80 border-t border-slate-700/80">
+                            <tr>
+                                <td class="px-4 py-3 font-bold text-slate-400 uppercase tracking-wider text-[11px]">Total Keseluruhan</td>
+                                <td class="px-4 py-3 text-right font-black text-lg text-amber-400 whitespace-nowrap">
+                                    Rp {{ number_format($invoice->amount, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                {{-- Action / Status Section --}}
+                <div class="border-t border-dashed border-slate-800 pt-6 mt-4 flex flex-col items-center gap-3">
+                    @if($invoice->status === 'unpaid')
+                        <p class="text-xs text-slate-400 text-center">Tagihan ini belum dibayar. Anda dapat menandainya sebagai lunas secara manual di sini.</p>
+                        
+                        <form id="mark-paid-form" action="{{ route('admin.billing.markAsPaid', $invoice) }}" method="POST" class="w-full sm:w-auto" onsubmit="event.preventDefault(); confirmMarkPaid(this);">
+                            @csrf
+                            <button type="submit" class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-xl shadow-lg shadow-amber-500/20 transition-all text-sm cursor-pointer active:scale-95">
+                                Tandai Sebagai LUNAS
+                            </button>
+                        </form>
+                    @else
+                        <div class="w-full max-w-md bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5 text-center">
+                            <div class="w-10 h-10 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2 border border-emerald-500/30">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <h3 class="text-base font-black text-emerald-400">Tagihan Telah Lunas</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">
+                                {{ $invoice->paid_at ? 'Dibayar pada: ' . $invoice->paid_at->format('d M Y, H:i') : 'Pembayaran telah terverifikasi.' }}
+                            </p>
+                        </div>
+                    @endif
+                </div>
+
             </div>
         </div>
     </div>
+
+    @if($invoice->status === 'unpaid')
+        <script>
+            function confirmMarkPaid(form) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Konfirmasi Pelunasan',
+                        text: 'Tandai tagihan #{{ $invoice->invoice_number }} sebesar Rp {{ number_format($invoice->amount, 0, ',', '.') }} sebagai LUNAS? Layanan pelanggan akan otomatis diaktifkan di router.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#10b981',
+                        cancelButtonColor: '#334155',
+                        confirmButtonText: 'Ya, Tandai Lunas',
+                        cancelButtonText: 'Batal',
+                        background: '#0f172a',
+                        color: '#f8fafc'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                } else if (confirm('Tandai tagihan #{{ $invoice->invoice_number }} sebagai LUNAS?')) {
+                    form.submit();
+                }
+            }
+        </script>
+    @endif
 </x-app-layout>
