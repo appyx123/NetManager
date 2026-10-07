@@ -3,16 +3,16 @@
 **Auditor:** Senior System Auditor & Full-Stack Laravel Expert  
 **Target:** Admin Domain (`role:admin,super_admin`, NOC, Keuangan, Dispatch)  
 **Status Audit:** Verified, Hardened & Bulletproof (100% Implemented)  
-**Last Synchronized:** 2026-10-04 (Synced to Commit `72ad6de` / Admin Invoice Layout Hardening & SweetAlert2 Modernization)
+**Last Synchronized:** 2026-10-07 (Synced to Commit `234e9a5` / FreeRADIUS Database Architecture, Lead Feasibility Survey Flow & ODP Port Capacity Governance)
 
 ---
 
 ## 1. Executive Summary
 
 Domain **Admin** pada NetManager memegang peranan krusial sebagai pusat kendali operasional harian ISP (*Operations Central*). Peran ini mencakup tiga divisi utama:
-1. **NOC (Network Operations Center):** Inventarisasi perangkat jaringan (Router, OLT, AP, ODP), tes konektivitas router, dan pengawasan log sistem.
+1. **NOC (Network Operations Center):** Inventarisasi perangkat jaringan (Router, OLT, AP, ODP), tes konektivitas router via socket non-blocking port 8728, pemantauan kapasitas port ODP, dan pengawasan log sistem.
 2. **Billing (Keuangan):** Rekapitulasi piutang/arus kas, monitoring invoice, perpanjangan masa aktif, dan validasi pelunasan manual tagihan.
-3. **Dispatch & Customer Care:** Pengawasan tiket teknisi, pemantauan status instalasi/repair/survey, eskalasi leads dari marketing, serta isolir darurat pelanggan.
+3. **Dispatch & Customer Care:** Pengawasan tiket teknisi (Instalasi, Perbaikan, dan Survey Lapangan), pemantauan status pekerjaan, eskalasi leads dari marketing, serta isolir darurat pelanggan.
 
 ### Matriks Pemisahan Peran & Batas Wewenang
 

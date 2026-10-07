@@ -1,6 +1,6 @@
 <x-app-layout>
     <div class="py-10 bg-slate-950 min-h-screen">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="mb-8">
                 <a href="{{ route('admin.packages.index') }}" class="inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-white transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
@@ -13,7 +13,7 @@
                 </div>
             </div>
 
-            <div class="max-w-2xl bg-slate-900/80 rounded-2xl shadow-2xl border border-slate-800 backdrop-blur-md p-6 sm:p-8">
+            <div class="bg-slate-900/80 rounded-2xl shadow-2xl border border-slate-800 backdrop-blur-md p-6 sm:p-8">
                 <form action="{{ route('admin.packages.update', $package) }}" method="POST" class="space-y-6">
                     @csrf
                     @method('PUT')

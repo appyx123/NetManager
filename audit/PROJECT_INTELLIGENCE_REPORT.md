@@ -32,6 +32,9 @@
   21. **Auth Experience Modernization, Multi-Resolution Favicon & Mobile-Optimized Animation Polish (RESOLVED):** The login card featured an awkward floating logo above the card container, lacked a back-to-home navigation link, displayed redundant guest navigation headers on `/login`, lacked an official branded favicon icon, and the initial animation caused stuttering on mobile viewports due to heavy CSS blurs and unthrottled canvas calculations. **Resolved:** Repositioned the company logo (`<x-authentication-card-logo />`) inside the card directly above 'Welcome Back'; integrated a 'Kembali ke Beranda' return action routed to `route('home')`; suppressed the guest navigation bar on login routes; generated an undistorted multi-resolution `public/favicon.ico` from `LOGOMGD.png` (16x16 to 256x256) and linked across all guest/app layouts; harmonized the card design with the Slate & Amber landing page palette; and optimized canvas particles for mobile (`fpsLimit: 60`, adaptive 30-node throttling, hardware-accelerated transforms, zero-blur radial gradients) ensuring smooth 60 FPS mobile performance.
   22. **Initial Customer Billing Lifecycle & Package + Installation Aggregation (RESOLVED):** Previously, new customers converted from marketing leads only had the recurring package price billed, or experienced issues where their dashboard falsely displayed that all bills were settled, or had no initial subscription/invoice created until a technician finalized installation. **Resolved:** Updated `LeadController::convertToCustomer` to create an initial `Subscription` (`status: isolated`) and combined `Invoice` (`package price + installation fee`). Added self-healing fallback in `CustomerDashboardController::index` ensuring customers always have a valid subscription and unpaid invoice with combined breakdown. Updated `Technician\TicketController::finalizeInstallation` to enforce initial invoice amount combining package price and lead installation fee. Updated `Customer\InvoiceController::pay` so Midtrans Snap `item_details` splits package subscription and installation fee.
   23. **UI Modernization: Ribbon Overlap Elimination, Custom SweetAlert2 Modals, and Dot Number Formatting (RESOLVED):** Invoice show views (`user/billing/show.blade.php` and `admin/billing/show.blade.php`) previously suffered from overlapping diagonal CSS ribbons (`rotate-45`) that blocked text on mobile and desktop viewports, and various views used browser-native `confirm()` dialogs. In lead creation/edit, registration fees defaulted to '0' without digit grouping. **Resolved:** Completely eliminated diagonal ribbons in both customer and admin invoice detail views, replacing them with modern, non-overlapping header status badges (`Belum Bayar` / `Lunas`) and 3-column metadata strips. Replaced native `confirm()` across the system with custom dark-themed SweetAlert2 dialogs (`confirmDelete`, `confirmConvert`, `confirmMarkPaid`) in `sidebar-layout.blade.php`. Updated `marketing/leads/create.blade.php` and `edit.blade.php` with placeholder `0` and client-side Indonesian thousand dots formatting (`Intl.NumberFormat('id-ID')`) alongside backend numeric sanitization.
+  24. **FreeRADIUS Database Architecture & PPPoE Provisioning Migration (RESOLVED):** PPPoE credentials were previously written directly into MikroTik RouterOS internal secrets via API port 8728, causing vulnerability to router API disconnects and lack of centralized AAA audit records. **Resolved:** Migrated PPPoE provisioning directly into FreeRADIUS SQL database tables (`radcheck`, `radreply`, `radgroupcheck`, `radgroupreply`, `radusergroup`, `radacct`, `radpostauth`, `nas`) via Eloquent models (`RadCheck`, `RadReply`, `RadAcct`, `RadPostAuth`). MikroTik now operates purely as a standard RADIUS client; RouterOS API is strictly utilized for session kicking (`/ppp/active/remove`) when customer isolation or activation occurs. Real-time traffic accounting and session telemetry are read from `radacct`.
+  25. **Lead Feasibility Survey Flow & ODP Port Capacity Pessimistic Locking (RESOLVED):** Leads could be converted without verifying physical optical distribution point (ODP) port availability, risking port over-subscription in the field, and marketing lacked a structured mechanism to request preliminary technician site surveys. **Resolved:** Implemented dedicated feasibility survey flow (`POST /marketing/leads/{lead}/survey` $\rightarrow$ `LeadController@requestSurvey`) creating independent technician tickets of type `survey`. Added ODP port capacity tracking columns (`total_ports`, `used_ports`, `odp_available_ports`) with strict validation on conversion (`used_ports < total_ports`) protected by pessimistic database locking (`lockForUpdate`). Automated port release (`releaseOdpPort`) on installation cancellation or field failure.
+  26. **Lean Testing Strategy & Full PHPUnit Hardening (RESOLVED):** The project previously maintained uninstalled or redundant Playwright and TypeScript test configurations that created bloat and failed in minimal environments. **Resolved:** Fully decommissioned Playwright and TypeScript test dependencies; hardened native backend test suite to 39 automated tests (109 assertions) running against SQLite in-memory with a 100% pass rate in ~8.6 seconds, covering FreeRADIUS provisioning, ODP capacity locking, RBAC Gates, and closed-registration redirection.
 
 ---
 
@@ -133,10 +136,11 @@ graph TD
 | **Ticket Governance** | Admin review & dispatch of tickets | Admin, SuperAdmin | `/admin/tickets` | `Admin\TicketManagementController` | `tickets`, `customers`, `users` | Confirmed Working | `TicketManagementController.php` |
 | **Audit Logs** | Log viewing and CSV export | SuperAdmin, Admin | `/admin/logs`, `/superadmin/audits` | `LogController`, `AuditController` | `audit_logs` | Confirmed Working | Null-safe operators & CSV stream |
 | **Lead Entry** | Marketing creation of prospects | Marketing | `/marketing/leads` | `Marketing\LeadController` | `leads` | Confirmed Working | `LeadController.php:46-100` |
-| **Lead Conversion** | Convert prospect to customer + ticket | Marketing | `/marketing/leads/{id}/convert` | `Marketing\LeadController@convert` | `users`, `customers`, `leads`, `tickets` | Confirmed Working | Direct customer ticket creation |
+| **Feasibility Survey** | Dispatch preliminary survey ticket | Marketing | `/marketing/leads/{id}/survey` | `Marketing\LeadController@requestSurvey` | `leads`, `tickets` | Confirmed Working | Creates survey ticket for technician |
+| **Lead Conversion** | Convert prospect with ODP capacity check | Marketing | `/marketing/leads/{id}/convert` | `Marketing\LeadController@convert` | `users`, `customers`, `leads`, `tickets`, `network_assets` | Confirmed Working | Pessimistic locking & ODP port decrement |
 | **Marketing Views** | Live customer & performance reports | Marketing | `/marketing/customers`, `/marketing/reports` | `Marketing\CustomerController`, `Marketing\ReportController` | `customers`, `leads`, `subscriptions` | Confirmed Working | Real DB pagination & analytical KPIs |
 | **Ticket Marketplace** | Technician claims available tickets | Technician | `/technician/open-tickets` | `Technician\TicketController@index` | `tickets` | Confirmed Working | `TicketController.php:16-60` |
-| **Technician Workbench** | Work order execution & photo upload | Technician | `/technician/my-tasks/{ticket}` | `Technician\TicketController` | `tickets` | Confirmed Working | Form saving, cleaned routes |
+| **Technician Workbench** | Work order execution, survey sync, & ODP release | Technician | `/technician/my-tasks/{ticket}` | `Technician\TicketController` | `tickets`, `leads`, `network_assets` | Confirmed Working | Survey ODP sync & release on failure |
 | **Technician Profile** | Profile page for technician | Technician | `/technician/profile` | `routes/web.php` | None | Confirmed Working | View `technician.profile.index` created |
 | **Customer Dashboard** | View active plan, invoice, tickets | Customer | `/client/dashboard` | `Customer\CustomerDashboardController` | `customers`, `subscriptions`, `invoices`, `tickets` | Confirmed Working | `CustomerDashboardController.php` |
 | **Customer Pay Invoice** | Midtrans Snap checkout popup | Customer | `/client/billing/{invoice}/pay` | `Customer\InvoiceController@pay` | `invoices`, `subscriptions` | Confirmed Working | `InvoiceController.php:47-101` |
@@ -272,13 +276,15 @@ The application registers 158 total routes (including Fortify, Jetstream, Sanctu
 - `POST /admin/leads/bulk-import` $\rightarrow$ `LeadManagementController@bulkImport`
 - `PATCH /admin/leads/{lead}/status` $\rightarrow$ `LeadManagementController@updateStatus`
 
-### Marketing Area (`prefix: marketing`, `middleware: role:marketing`)
+### Marketing Area (`prefix: marketing`, `middleware: role:marketing,super_admin,admin`)
 - `GET /marketing/dashboard` $\rightarrow$ `MarketingDashboardController@index`
 - `RESOURCE /marketing/leads` $\rightarrow$ `LeadController`
 - `POST /marketing/leads/{lead}/convert` $\rightarrow$ `LeadController@convert`
+- `POST /marketing/leads/{lead}/survey` $\rightarrow$ `LeadController@requestSurvey`
 - `GET /marketing/customers` $\rightarrow$ `Marketing\CustomerController@index`
 - `GET /marketing/customers/{customer}` $\rightarrow$ `Marketing\CustomerController@show`
 - `GET /marketing/reports` $\rightarrow$ `Marketing\ReportController@index`
+- `GET /marketing/reports/export` $\rightarrow$ `Marketing\ReportController@export`
 - `GET /marketing/profile` $\rightarrow$ `Route::view('marketing.profile.index')`
 
 ### Technician Area (`prefix: technician`, `middleware: role:technician`)
@@ -431,12 +437,15 @@ flowchart TD
 
 - **Database Engine:** MySQL 8.0+ / MariaDB (`DB_CONNECTION=mysql`).
 - **ORM:** Laravel Eloquent with active migrations and model relationships.
-- **Total Tables:** 14 active business & system tables:
-  `users`, `customers`, `packages`, `subscriptions`, `invoices`, `leads`, `tickets`, `network_assets`, `master_areas`, `audit_logs`, `system_integrations`, `role_permissions`, `notifications`, `failed_jobs`.
+- **Total Tables:** 22 active business & system tables:
+  `users`, `customers`, `packages`, `subscriptions`, `invoices`, `leads`, `tickets`, `network_assets`, `master_areas`, `audit_logs`, `system_integrations`, `role_permissions`, `notifications`, `failed_jobs`, `radcheck`, `radreply`, `radgroupcheck`, `radgroupreply`, `radusergroup`, `radacct`, `radpostauth`, `nas`.
 - **Recent Schema Changes:**
   - `system_settings` table dropped via migration `2026_09_17_000000_remove_system_settings_table.php`.
   - Dropped obsolete polymorphic tables (`survey_forms`, `installation_forms`, `device_configs`, `network_configs`, `repair_forms`) via migration `2026_09_25_131406`.
   - Added performance indexes via migration `2026_09_25_132436`.
+  - Added Jetstream two-factor columns via migration `2026_09_26_000000_add_two_factor_columns_to_users_table.php`.
+  - Added FreeRADIUS SQL schema tables (`radcheck`, `radreply`, `radgroupcheck`, `radgroupreply`, `radusergroup`, `radacct`, `radpostauth`, `nas`) via migration `2026_10_04_000001_create_freeradius_schema_tables.php`.
+  - Added ODP port capacity (`total_ports`, `used_ports`) and feasibility survey support to `leads` & `tickets` via migration `2026_10_04_000001_add_odp_capacity_and_survey_support.php`.
 
 ---
 
@@ -1357,6 +1366,78 @@ NetManagement is a comprehensive, production-hardened ISP management and billing
    - Protected "Tandai Sebagai LUNAS" in Admin Billing and Lead actions with custom dialogs.
 7. **Indonesian Thousand Separators (`Intl.NumberFormat('id-ID')`):**
    - `marketing/leads/create.blade.php` and `edit.blade.php` utilize `placeholder="0"` and dynamic JavaScript digit grouping with backend numeric regex stripping.
+
+---
+
+## 66. FreeRADIUS Database Architecture & PPPoE Provisioning Migration (Commits `da55627` & `234e9a5`)
+
+### 1. Problem Statement & Motivation
+- Direct provisioning to MikroTik via RouterOS API (`/ppp/secret/add`) creates high coupling and single points of failure.
+- In multi-router or high-concurrency environments, individual router connection drops or latency spikes can stall database transactions.
+- Lack of centralized AAA (Authentication, Authorization, Accounting) makes session audits, dynamic speed updates, and multi-NAS failovers complex.
+
+### 2. Implementation & Key Architectural Updates
+1. **FreeRADIUS SQL Schema & Eloquent Models:**
+   - Migration `2026_10_04_000001_create_freeradius_schema_tables.php` creates:
+     - `radcheck`: User authentication attributes (`Cleartext-Password`, `Calling-Station-Id`).
+     - `radreply`: Return attributes (`Framed-IP-Address`, `Mikrotik-Rate-Limit`, `Mikrotik-Address-List`).
+     - `radgroupcheck`, `radgroupreply`, `radusergroup`: Group policies.
+     - `radacct`: Real-time session accounting, start/stop times, input/output octets.
+     - `radpostauth`: Authentication request logs and reply codes.
+     - `nas`: Network Access Server definitions and radius shared secrets.
+   - Models created: `App\Models\RadCheck`, `App\Models\RadReply`, `App\Models\RadAcct`, `App\Models\RadPostAuth`.
+2. **NetworkService Decoupling (`app/Services/NetworkService.php`):**
+   - `addCustomer`: Inserts directly into `radcheck` (`Cleartext-Password`, `Calling-Station-Id` for ONT MAC binding) and `radreply` (`Mikrotik-Rate-Limit`, `Framed-IP-Address`). If initial status is `isolated`, inserts `Mikrotik-Address-List = ISOLIR`.
+   - `disableCustomer`: Inserts or updates `Mikrotik-Address-List = ISOLIR` in `radreply` and drops active connection via RouterOS API `/ppp/active/remove` (`kickSession`) or FreeRADIUS PoD/CoA.
+   - `enableCustomer`: Deletes `Mikrotik-Address-List = ISOLIR` in `radreply` and drops active session so client reconnects with normal profile.
+   - `checkStatus`: Reads active session telemetry, connected IP, and uptime directly from `radacct`.
+3. **Fault Tolerance:**
+   - All router disconnect calls are isolated in `try-catch` blocks outside core relational transactions.
+
+---
+
+## 67. Lead Feasibility Survey Flow & ODP Port Capacity Governance (Commit `65cb1d2`)
+
+### 1. Problem Statement & Motivation
+- Previously, sales leads were converted into customers without validating available port capacity on the optical distribution point (ODP), leading to potential physical port exhaustion in the field.
+- Marketing agents lacked a structured flow to request technician site surveys before converting prospects.
+
+### 2. Implementation & Key Architectural Updates
+1. **Schema Extension (`2026_10_04_000001_add_odp_capacity_and_survey_support.php`):**
+   - `network_assets`: Added `total_ports` (default 8) and `used_ports` (default 0), with virtual/helper `odp_available_ports`.
+   - `leads`: Added `requires_survey` (boolean), `survey_notes`, `assigned_technician_id`, `survey_ticket_id`.
+   - `tickets`: Added `lead_id`, enum type includes `survey`, and boolean `odp_released`.
+2. **Marketing Feasibility Survey Request (`LeadController@requestSurvey`):**
+   - Dispatches a preliminary survey ticket (`type = 'survey'`) assigned to technician bursa without creating premature customer or billing records.
+   - Updates lead status to `survey`.
+3. **Pessimistic Port Capacity Locking on Conversion (`LeadController@convertToCustomer`):**
+   - Requires valid `odp_id`.
+   - Enforces `odp_available_ports > 0` validation.
+   - Inside `DB::transaction`, acquires pessimistic row lock (`lockForUpdate`) on `NetworkAsset` to eliminate concurrency race conditions.
+   - Decrements available port quota upon conversion.
+4. **Technician Survey Execution & ODP Port Release (`Technician\TicketController`):**
+   - Survey execution (`form-survey.blade.php`) captures field feasibility, obstacles, and recommends target ODP and port, syncing back to `Lead`.
+   - If an installation ticket is marked `gagal`, `batal`, `failed`, or `cancelled`, method `$ticket->releaseOdpPort()` safely increments `odp_available_ports` back to the ODP pool.
+
+---
+
+## 68. Lean Testing Strategy & PHPUnit Full Test Suite Hardening
+
+### 1. Optimization & Decommissioning
+- Decommissioned unused Playwright and TypeScript configurations to ensure a lean, dependency-light deployment footprint.
+- Ensured full test isolation via SQLite in-memory (`<env name="DB_CONNECTION" value="sqlite"/>`, `<env name="DB_DATABASE" value=":memory:"/>` in `phpunit.xml`).
+- Cleaned up obsolete skipped tests and removed dead Jetstream test stubs.
+
+### 2. Comprehensive Test Verification
+The backend test suite achieves 100% pass rate:
+- **Total Tests:** 39 passed
+- **Total Assertions:** 109
+- **Execution Duration:** ~8.6 seconds
+- **Key Suites:**
+  - `FreeRadiusNetworkServiceTest`: Validates SQL radius records insertion, isolation address-list attribute toggling, and accounting telemetry inspection.
+  - `LeadSurveyAndOdpValidationTest`: Validates feasibility survey dispatch, ODP capacity exhaustion rejection, atomic port decrementing, survey recommendation syncing, and installation failure port release.
+  - `AuthenticationTest`, `TwoFactorAuthenticationSettingsTest`, `RolePermissionGateTest`, `SyncPaidInvoiceHardwareJobTest`: Validate enterprise security and queue reliability.
+
 
 
 

@@ -8,17 +8,19 @@
 - **Audit Target:** Domain Modul & Hak Akses `Marketing` pada platform NetManagement (NetManager / PT. Mandiri Global Data).
 - **Auditor Role:** Senior System Auditor & Full-Stack Laravel Expert.
 - **Audit Date:** 2026-09-26.
-- **Last Synchronized:** 2026-10-04 (Synced to Commit `72ad6de` / Billing Calculation, Overlap Elimination & SweetAlert2 Confirmation).
+- **Last Synchronized:** 2026-10-07 (Synced to Commit `234e9a5` / Lead Feasibility Survey Flow, ODP Port Capacity Pessimistic Locking & SweetAlert2 Modernization).
 - **Audit Scope:**
   1. Routing & Authorization Gates (`routes/web.php`, `EnsureUserHasRole.php`).
   2. Marketing Controllers (`MarketingDashboardController`, `LeadController`, `CustomerController`, `ReportController`).
-  3. Eloquent Models & Entity Relationships (`Lead`, `User`, `Customer`, `Package`, `Ticket`, `Subscription`, `Invoice`).
+  3. Eloquent Models & Entity Relationships (`Lead`, `User`, `Customer`, `Package`, `Ticket`, `Subscription`, `Invoice`, `NetworkAsset`).
   4. Blade Templates & Presentation Tier (`resources/views/marketing/*`).
   5. Document Ingestion, Private Storage, and Streaming Security (`CustomerDocumentController`, `config/filesystems.php`).
 - **Core Findings Summary:**
   - **Strict Access Control (VERIFIED):** Route group `prefix('marketing')` dilindungi middleware `role:marketing`. Mekanisme sandboxing berhasil mengunci role marketing agar tidak dapat menjangkau endpoint SuperAdmin, Admin, Teknisi, maupun Pelanggan. Akun non-aktif ditendang otomatis secara real-time.
   - **Data Isolation / Tenancy (VERIFIED):** Seluruh query pada controller marketing diisolasi secara ketat berdasarkan `marketing_id = Auth::id()`. Sales tidak dapat mengintip atau mengklaim prospek milik sales lain.
-  - **Lead Conversion, Initial Subscription & Combined Invoice (VERIFIED & HARDENED):** Method `LeadController::convert` (`convertToCustomer`) membungkus pembuatan akun `User` (role: `customer`), record `Customer` (`is_isolated = true`), pembaruan status `Lead` (`aktif`), tiket pasang baru, record `Subscription` (`status: isolated`), faktur perdana `Invoice` (gabungan `harga paket + biaya instalasi`), dan pengiriman kredensial login otomatis via WhatsApp (`WhatsappService::sendAccountCreated`) dalam satu `DB::transaction(...)`. Status prospek secara presisi dimutakhirkan ke `aktif` sesuai batasan ENUM skema MySQL/SQLite tanpa memicu kegagalan constraint. Berhasil mem-bypass dan memusnahkan dependensi pada model/tabel polymorphic lawas.
+  - **Feasibility Survey Flow (VERIFIED & HARDENED - BARU):** Method `LeadController::requestSurvey` memungkinkan tim marketing mengirimkan permintaan survey kelayakan lokasi ke tim teknisi lapangan sebelum proses konversi. Tiket survey independen dibuat di bursa tiket tanpa membuat akun pelanggan atau invoice prematur.
+  - **ODP Port Capacity Validation & Pessimistic Locking (VERIFIED & HARDENED - BARU):** Konversi prospek (`convertToCustomer`) mewajibkan pemilihan ODP dan memvalidasi `odp_available_ports > 0` dengan `lockForUpdate()` dalam transaksi database. Port ODP otomatis didekremen saat konversi berhasil, dan dikembalikan (`releaseOdpPort`) jika instalasi gagal atau dibatalkan.
+  - **Lead Conversion, Initial Subscription & Combined Invoice (VERIFIED & HARDENED):** Method `LeadController::convert` (`convertToCustomer`) membungkus pembuatan akun `User` (role: `customer`), record `Customer` (`is_isolated = true`), pembaruan status `Lead` (`aktif`), tiket pasang baru dengan target ODP, record `Subscription` (`status: isolated`), faktur perdana `Invoice` (gabungan `harga paket + biaya instalasi`), dan pengiriman kredensial login otomatis via WhatsApp (`WhatsappService::sendAccountCreated`) dalam satu `DB::transaction(...)`. Status prospek secara presisi dimutakhirkan ke `aktif` sesuai batasan ENUM skema MySQL/SQLite tanpa memicu kegagalan constraint. Berhasil mem-bypass dan memusnahkan dependensi pada model/tabel polymorphic lawas.
   - **KTP & Customer Photo Storage, Streaming Security & Orphan Cleanup (VERIFIED & HARDENED):** Upload identitas KTP dan foto calon pelanggan (wajah) diarahkan ke disk `local` (`storage/app/uploads/ktp` dan `storage/app/uploads/customer`) yang berada di luar jangkauan root publik web server. Akses hanya dapat dilakukan melalui controller terotentikasi `CustomerDocumentController@showKtp` dan `@showCustomerPhoto` dengan otorisasi ketat. Seluruh operasi `store()` dan `update()` pada `LeadController` dibungkus dalam `DB::transaction()` dengan proteksi *rollback* otomatis yang menghapus file fisik di storage jika query database gagal. Berkas fisik dibersihkan tuntas dari disk `local` (dan fallback `public`) saat prospek di-update atau di-destroy.
   - **Interactive File Upload UX, Formatted Registration Fee & Real-time Progress (VERIFIED):** Form input prospek baru (`marketing/leads/create.blade.php` & `edit.blade.php`) dilengkapi preview interaktif (live thumbnail, ukuran berkas KB/MB, validasi batas 5MB, reset file), pemformatan angka biaya registrasi dengan titik rupiah otomatis (`Intl.NumberFormat('id-ID')`) dan placeholder "0", serta modal upload tracker real-time (`XMLHttpRequest.upload.onprogress`) yang menampilkan persentase dan status pengiriman data secara transparan. Konfirmasi aksi (konversi dan hapus prospek) menggunakan dialog custom bertema gelap **SweetAlert2** terpadu menggantikan popup browser bawaan.
   - **Real Data Binding & Clean Architecture (100% VERIFIED):** Seluruh modul operasional Marketing (Prospek, Pelanggan, Laporan Kinerja, Dashboard) telah 100% menggunakan query Eloquent database hidup dengan pagination dan agregasi dinamis. Fitur Jadwal (`/marketing/schedules`) yang sebelumnya menggunakan mock `@for` loop telah dihapus total (route, view, dan navigation menus dibersihkan) demi menjaga integritas sistem produksi.
@@ -32,17 +34,19 @@ Pada [routes/web.php](file:///c:/Users/LENOVO/Documents/Rafli/Project/NetManager
 
 ```php
 // ZONE 2: MARKETING AREA
-Route::middleware(['role:marketing'])->prefix('marketing')->name('marketing.')->group(function () {
+Route::middleware(['role:marketing,super_admin,admin'])->prefix('marketing')->name('marketing.')->group(function () {
     Route::get('/dashboard', [MarketingDashboardController::class, 'index'])->name('dashboard');
 
-    // Mengelola Prospek
+    // Mengelola Prospek & Survey
     Route::resource('leads', LeadController::class);
     Route::post('/leads/{lead}/convert', [LeadController::class, 'convert'])->name('leads.convert');
+    Route::post('/leads/{lead}/survey', [LeadController::class, 'requestSurvey'])->name('leads.survey');
 
-    // Pelanggan Milik Marketing
+    // Pelanggan Milik Marketing & Laporan
     Route::get('/customers', [MarketingCustomerController::class, 'index'])->name('customers.index');
     Route::get('/customers/{customer}', [MarketingCustomerController::class, 'show'])->name('customers.show');
     Route::get('/reports', [MarketingReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export', [MarketingReportController::class, 'export'])->name('reports.export');
     Route::view('/profile', 'marketing.profile.index')->name('profile.index');
 });
 ```
@@ -110,7 +114,7 @@ Selain proteksi tingkat rute, controller marketing mengimplementasikan isolasi d
 ## 3. Lead Conversion Workflow (Transaction Analysis)
 
 ### 3.1. Alur Transaksi Konversi (`LeadController@convert` / `convertToCustomer`)
-Fungsi konversi lead diimplementasikan pada [LeadController.php](file:///c:/Users/LENOVO/Documents/Rafli/Project/NetManager/app/Http/Controllers/Marketing/LeadController.php#L317-L409).
+Fungsi konversi lead diimplementasikan pada [LeadController.php](file:///c:/Users/LENOVO/Documents/Rafli/Project/NetManager/app/Http/Controllers/Marketing/LeadController.php#L338-L469).
 
 ```mermaid
 sequenceDiagram
@@ -118,6 +122,7 @@ sequenceDiagram
     actor M as Marketing Agent
     participant C as LeadController
     participant DB as Database Transaction
+    participant ODP as NetworkAsset (ODP)
     participant U as User Model (customer)
     participant Cust as Customer Profile
     participant L as Lead Model
@@ -126,16 +131,18 @@ sequenceDiagram
     participant Inv as Invoice Model (unpaid)
     participant WA as WhatsappService
 
-    M->>C: POST /marketing/leads/{lead}/convert
+    M->>C: POST /marketing/leads/{lead}/convert (odp_id, odp_port)
     C->>C: Cek status: jika 'aktif' -> Return Error
+    C->>ODP: Cek odp_available_ports > 0
     C->>DB: DB::transaction(callback)
     activate DB
+    DB->>ODP: lockForUpdate() & decrement('odp_available_ports')
     DB->>U: User::create(role: 'customer', email, password, is_active: true)
     U-->>DB: $user instance
     DB->>Cust: Customer::create(user_id, lead_id, customer_code: 'CUST-XXXXX', is_isolated: true)
     Cust-->>DB: $customer instance
-    DB->>L: $lead->update(['status' => 'aktif'])
-    DB->>T: $customer->tickets()->create(type: 'installation', status: 'open')
+    DB->>L: $lead->update(['status' => 'aktif', 'odp_id', 'odp_port'])
+    DB->>T: $customer->tickets()->create(type: 'installation', odp_id, odp_port, status: 'open')
     T-->>DB: $ticket created
     DB->>Sub: Subscription::create(package_id, status: 'isolated', due_date: +7 days)
     Sub-->>DB: $subscription created
@@ -147,7 +154,13 @@ sequenceDiagram
     C-->>M: Redirect /marketing/leads dengan Alert Sukses & Kredensial
 ```
 
-### 3.2. Analisis Keamanan & Integritas Transaksi
+### 3.2. Alur Permintaan Survey Kelayakan Lapangan (`LeadController@requestSurvey`)
+Sebelum mengonversi prospek, tim marketing dapat mengirimkan permohonan survey kelayakan jaringan melalui route `POST /marketing/leads/{lead}/survey`:
+1. **Penerbitan Tiket Mandiri:** Menghasilkan entitas `Ticket` dengan tipe `'survey'`, status `'open'`, dan menghubungkannya dengan `lead_id`. Tiket ini muncul di bursa tugas teknisi tanpa membuat entitas `User`, `Customer`, `Subscription`, atau `Invoice`.
+2. **Pembaruan Status Prospek:** Status lead bertransisi ke `'survey'`.
+3. **Hasil Survey Lapangan:** Teknisi merekam data kelayakan (`survey_status`), catatan hambatan (`location_obstacle`), dan rekomendasi ODP target (`odp_id` & `odp_port`) yang disinkronisasikan langsung ke entitas `Lead` saat survey diselesaikan di meja kerja teknisi.
+
+### 3.3. Analisis Keamanan, Validasi Port ODP & Integritas Transaksi
 
 1. **State Guard:**
    ```php
@@ -157,34 +170,49 @@ sequenceDiagram
    ```
    Mencegah duplikasi akun pengguna jika tombol diklik berulang kali (*double submit protection*). Menggunakan status ENUM resmi `aktif`.
 
-2. **Atomic Execution (`DB::transaction`):**
-   Seluruh pembuatan entitas dibungkus dalam blok `DB::transaction(function () use ($lead) { ... })`. Jika terjadi kegagalan saat membuat tiket, profil pelanggan, subscription, atau invoice perdana, seluruh operasi akan di-rollback tanpa meninggalkan record *orphan* (yatim).
+2. **Validasi Kuota Port ODP & Pessimistic Locking (`lockForUpdate`):**
+   - Form konversi mewajibkan pemilihan target ODP (`odp_id => 'required|exists:network_assets,id'`).
+   - Sebelum membuka transaksi, sistem memvalidasi ketersediaan port (`(int) $odp->odp_available_ports <= 0`).
+   - Di dalam transaksi atomik, baris data ODP dikunci pesimistis:
+     ```php
+     $lockedOdp = NetworkAsset::where('id', $odp->id)->lockForUpdate()->firstOrFail();
+     if ((int) $lockedOdp->odp_available_ports <= 0) {
+         throw new \Exception('Kapasitas ODP target sudah penuh.');
+     }
+     $lockedOdp->decrement('odp_available_ports');
+     ```
+   - Mencegah fenomena over-subscription jika dua staf melakukan konversi ke ODP yang sama pada saat bersamaan (*zero race condition*).
+   - Jika pemasangan dibatalkan atau dinyatakan gagal oleh teknisi, port dikembalikan secara otomatis via `$ticket->releaseOdpPort()`.
 
-3. **Pemberian Akun Pelanggan & Kredensial Otomatis:**
+3. **Atomic Execution (`DB::transaction`):**
+   Seluruh pembuatan entitas dibungkus dalam blok `DB::transaction(...)`. Jika terjadi kegagalan saat membuat tiket, profil pelanggan, subscription, atau invoice perdana, seluruh operasi di-rollback tanpa meninggalkan record *orphan* (yatim).
+
+4. **Pemberian Akun Pelanggan & Kredensial Otomatis:**
    - Menghasilkan `customer_code` unik: `'CUST-' . strtoupper(Str::random(5))`.
    - Menghasilkan password default otomatis: `'password'`.
    - Mengisi fallback email unik jika email lead kosong: `strtolower(str_replace(' ', '', $lead->name)) . rand(100, 999) . '@net.local'`.
    - Meng-hash password menggunakan Bcrypt (`Hash::make($password)`).
    - Menyimpan kredensial sementara ke dalam session flash (`session()->flash('generated_credential', [...])`) untuk segera diserahkan ke pelanggan baru.
 
-4. **Bypass & Eliminasi Model Polymorphic Usang:**
-   - Pada arsitektur legacy lama, konversi mencoba memanggil relasi polymorphic `installationForm()`, `surveyForm()`, atau `deviceConfig()` yang memicu `BadMethodCallException`.
-   - Tabel dan model usang (`SurveyForm`, `InstallationForm`, `DeviceConfig`, `NetworkConfig`, `RepairForm`) telah di-drop tuntas melalui migrasi `2026_09_25_131406_drop_legacy_polymorphic_tables.php`.
-   - Kode saat ini langsung membuat tiket kerja terstruktur:
+5. **Tiket Instalasi Terkait ODP:**
+   - Kode saat ini langsung membuat tiket kerja terstruktur yang membawa relasi ODP:
      ```php
      $customer->tickets()->create([
+         'lead_id' => $lead->id,
+         'odp_id' => $lockedOdp->id,
+         'odp_port' => $request->odp_port ?? $lead->odp_port,
          'technician_id' => null, // Belum ditugaskan (tersedia di bursa open-tickets teknisi)
          'type' => 'installation',
          'status' => 'open',
          'subject' => 'Pasang Baru: ' . ($lead->package->name ?? 'Paket Kustom'),
-         'description' => 'Instalasi pelanggan baru ' . $lead->name . '. Paket: ' . ($lead->package->name ?? '-') . '. Alamat: ' . ($lead->address_installation ?? $lead->address),
+         'description' => 'Instalasi pelanggan baru ' . $lead->name . ' (ODP: ' . $lockedOdp->name . '). Paket: ' . ($lead->package->name ?? '-') . '. Alamat: ' . ($lead->address_installation ?? $lead->address),
          'connection_type' => 'fiber',
          'notes' => $lead->notes_summary ?? null,
      ]);
      ```
    - Alur ini secara instan mempublikasikan tiket pasang baru ke dashboard teknisi (`/technician/open-tickets`) tanpa perantara manual.
 
-5. **Inisialisasi Langganan & Tagihan Perdana Gabungan (Package + Installation Fee):**
+6. **Inisialisasi Langganan & Tagihan Perdana Gabungan (Package + Installation Fee):**
    - Menerbitkan entitas `Subscription` dengan status `'isolated'` (Model: Pasang Dulu Baru Bayar) hingga pembayaran perdana dilunasi:
      ```php
      $subscription = Subscription::create([
@@ -211,7 +239,7 @@ sequenceDiagram
      ```
    - Mencegah timbulnya kondisi "Lunas Semua" palsu di portal pelanggan baru dan menjamin piutang instalasi tercatat sejak detik pertama konversi.
 
-6. **Pengiriman Notifikasi Kredensial via WhatsApp Gateway Otomatis:**
+7. **Pengiriman Notifikasi Kredensial via WhatsApp Gateway Otomatis:**
    - Melalui `WhatsappService::sendAccountCreated(...)`, sistem secara otomatis mengirim pesan WhatsApp berisi detail akun (Nama, Kode Pelanggan, Username, Password, URL Portal Klien) ke nomor telepon calon pelanggan secara instan.
 
 ---

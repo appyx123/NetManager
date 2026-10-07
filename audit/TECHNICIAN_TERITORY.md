@@ -8,11 +8,11 @@
 - **Audit Target:** Domain Modul & Hak Akses `Technician` (Teknisi Lapangan) pada platform NetManagement (NetManager / PT. Mandiri Global Data).
 - **Auditor Role:** Senior System Auditor & Full-Stack Laravel Expert.
 - **Audit Date:** 2026-09-26.
-- **Last Synchronized:** 2026-10-04 (Synced to Commit `72ad6de` / Combined Invoice Calculation & Isolated Initial State).
+- **Last Synchronized:** 2026-10-07 (Synced to Commit `234e9a5` / FreeRADIUS Database Architecture, Lead Feasibility Survey Flow & ODP Port Release Automation).
 - **Audit Scope:**
   1. Routing & Authorization Gates (`routes/web.php`, `EnsureUserHasRole.php`).
   2. Technician Controllers (`TechnicianDashboardController`, `TicketController`).
-  3. Eloquent Model & Entity Relationships (`Ticket`, `Customer`, `User`, `NetworkAsset`, `Subscription`, `Invoice`).
+  3. Eloquent Model & Entity Relationships (`Ticket`, `Customer`, `User`, `NetworkAsset`, `Subscription`, `Invoice`, `Lead`).
   4. Blade Templates & Presentation Tier (`resources/views/technician/*`).
   5. File Upload Handling & Storage Configuration (`uploads/teknisi/lokasi`, `uploads/teknisi/bukti`, `config/filesystems.php`).
 - **Core Findings Summary:**
@@ -20,8 +20,10 @@
   - **State Machine Integrity & Row Locking (100% VERIFIED & HARDENED):** Alur klaim tiket (`open-tickets/{ticket}/take`) dibungkus dalam `DB::transaction(...)` dengan penguncian baris database pesimistik (`lockForUpdate()`). Mencegah *race condition* konkurensi antar-teknisi saat mengklaim tiket terbuka. Siklus status bertransisi mulus dan aman: `open` $\rightarrow$ `assigned` $\rightarrow$ `in_progress` $\rightarrow$ `resolved`.
   - **Data Ownership & Authorization (100% VERIFIED):** Pada Meja Kerja (`my-tasks`), teknisi hanya dapat melihat dan memperbarui tiket yang secara spesifik ditugaskan kepada mereka (`technician_id == Auth::id()`). Percobaan mengakses tiket milik teknisi lain menghasilkan **HTTP 403 Forbidden**.
   - **Zero Deletion Privileges (100% VERIFIED):** `TicketController` tidak memiliki method `destroy`, dan tidak ada rute `DELETE` pada grup teknisi. Teknisi tidak dapat menghapus tiket dari sistem, menjaga keutuhan jejak audit operasional.
+  - **Feasibility Survey Execution & Lead ODP Sync (100% VERIFIED - BARU):** Formulir survey (`form-survey.blade.php`) memungkinkan teknisi mendokumentasikan kelayakan lokasi, kendala lapangan, serta merekomendasikan ODP dan nomor port. Penyelesaian survey secara otomatis memperbarui data prospek pada tabel `leads` (`odp_id`, `odp_port`, `survey_notes`).
+  - **ODP Port Capacity Release on Cancellation/Failure (100% VERIFIED - BARU):** Jika tiket instalasi dihentikan dengan status `gagal`, `batal`, `failed`, atau `cancelled`, sistem memanggil `$ticket->releaseOdpPort()` untuk mengembalikan port ODP (`increment('odp_available_ports')`) secara instan.
   - **Field Data & Photo Evidence Lifecycle (100% VERIFIED & HARDENED):** Formulir penyelesaian tugas (`processUpdate`) menangkap parameter fisik esensial ISP (`cable_length`, `odp_port`, `dbm_signal`, `device_mac`, `device_brand`, `connectivity_status`, `installation_status`). Berkas foto bukti tersimpan secara terstruktur di `uploads/teknisi/lokasi` dan `uploads/teknisi/bukti` pada storage disk `public`, dilengkapi pembersihan berkas lama (*storage bloat prevention*) saat foto diunggah ulang.
-  - **Post-Installation Provisioning & Combined Invoice Calculation (100% VERIFIED & HARDENED):** Pada penyelesaian tugas instalasi (`finalizeInstallation`), sistem membungkus penerbitan `Subscription` (berstatus `'isolated'` sesuai model "Pasang Dulu, Baru Bayar") dan `Invoice` perdana dalam `DB::transaction()`. Nilai invoice perdana mengagregasikan harga paket bulanan dengan biaya registrasi/instalasi dari data prospek marketing (`package price + installation fee`). Jika status terisolir berlaku, profil di MikroTik otomatis di-disable via `$networkService->disableCustomer($subscription)`.
+  - **Post-Installation Provisioning & Combined Invoice Calculation (100% VERIFIED & HARDENED):** Pada penyelesaian tugas instalasi (`finalizeInstallation`), sistem membungkus penerbitan `Subscription` (berstatus `'isolated'` sesuai model "Pasang Dulu, Baru Bayar") dan `Invoice` perdana dalam `DB::transaction()`. Nilai invoice perdana mengagregasikan harga paket bulanan dengan biaya registrasi/instalasi dari data prospek marketing (`package price + installation fee`). Jika status terisolir berlaku, profil di FreeRADIUS / MikroTik otomatis di-disable via `$networkService->disableCustomer($subscription)`.
 
 ---
 
@@ -223,7 +225,7 @@ foreach (['location_photo_path' => 'uploads/teknisi/lokasi', 'evidence_photo_pat
    - Foto lokasi survey/rumah: Disimpan di `storage/app/public/uploads/teknisi/lokasi/`.
    - Foto bukti modem/redaman/redaman sinyal: Disimpan di `storage/app/public/uploads/teknisi/bukti/`.
 4. **Visibilitas Berkas:** Disimpan pada disk `'public'`, sehingga dapat dirender secara cepat pada dashboard admin maupun aplikasi pelanggan melalui URL symlink `asset('storage/' . $ticket->evidence_photo_path)`.
-5. **Penyelesaian Tiket & Otomasi Pasca-Instalasi:**
+5. **Penyelesaian Tiket, Sinkronisasi Survey & Otomasi Pasca-Instalasi:**
    ```php
    $ticket->update(array_merge($validated, [
        'technical_notes' => $validated['technical_notes'] ?? $ticket->technical_notes,
@@ -231,13 +233,30 @@ foreach (['location_photo_path' => 'uploads/teknisi/lokasi', 'evidence_photo_pat
        'completed_at' => now(),
    ]));
 
+   // Sinkronisasi rekomendasi ODP dari survey ke Lead
+   if ($ticket->type === 'survey' && $ticket->lead) {
+       $ticket->lead->update([
+           'odp_id' => $validated['odp_id'] ?? $ticket->odp_id,
+           'odp_port' => $validated['odp_port'] ?? $ticket->odp_port,
+           'survey_notes' => $validated['survey_notes'] ?? null,
+       ]);
+   }
+
+   // Penanganan tiket instalasi & pengembalian kuota ODP jika gagal/batal
    if ($ticket->type === 'installation') {
-       $this->finalizeInstallation($ticket);
+       $statusCheck = strtolower($validated['installation_status'] ?? '');
+       if (in_array($statusCheck, ['gagal', 'batal', 'failed', 'cancelled'])) {
+           $ticket->releaseOdpPort();
+       } else {
+           $this->finalizeInstallation($ticket);
+       }
    }
    ```
-   Tiket secara instan ditandai `resolved` dan diberi stempel waktu penyelesaian `completed_at`. Jika tiket bertipe instalasi (`installation`), sistem secara otomatis menjalankan otomasi pasca-instalasi.
+   - **Tiket Survey:** Jika tiket bertipe `survey`, rekomendasi ODP (`odp_id`, `odp_port`) dan catatan teknis survey (`survey_notes`) langsung disinkronkan ke record `Lead`. Data ini otomatis mengisi form rekomendasi saat marketing melakukan konversi.
+   - **Tiket Instalasi (Gagal / Batal):** Jika instalasi dibatalkan atau terkendala lapangan (`gagal`/`batal`/`failed`/`cancelled`), method `$ticket->releaseOdpPort()` secara aman mengembalikan kuota port ODP (`increment('odp_available_ports')`) dan menandai `odp_released = true`.
+   - **Tiket Instalasi (Berhasil):** Menjalankan otomasi `finalizeInstallation($ticket)` untuk memicu pendaftaran FreeRADIUS dan billing perdana.
 
-### 4.3. Otomasi Pasca-Instalasi & Provisioning MikroTik (`finalizeInstallation`)
+### 4.3. Otomasi Pasca-Instalasi & Provisioning FreeRADIUS (`finalizeInstallation`)
 Sesuai arsitektur *Customer Domain Lifecycle*, saat teknisi menyelesaikan tiket instalasi (`resolved`), sistem menjalankan `finalizeInstallation($ticket)`:
 1. **Penerbitan Profil Subscription & Tagihan Perdana Gabungan (Atomic DB Transaction):**
    - Mengambil data pelanggan dan paket langganan terkait (`$customer->lead->package_id`).

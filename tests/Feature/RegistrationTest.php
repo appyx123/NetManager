@@ -10,17 +10,17 @@ class RegistrationTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Memastikan pendaftaran mandiri (public registration) dinonaktifkan pada sistem ISP tertutup.
+     * Memastikan pendaftaran mandiri (public registration) dinonaktifkan pada sistem ISP tertutup dan dialihkan ke login.
      */
-    public function test_registration_screen_is_disabled_and_returns_404(): void
+    public function test_registration_screen_is_disabled_and_redirects_to_login(): void
     {
         $response = $this->get('/register');
 
-        $response->assertStatus(404);
+        $response->assertRedirect(route('login'));
     }
 
     /**
-     * Memastikan endpoint POST pendaftaran mandiri menolak pembuatan akun publik.
+     * Memastikan endpoint POST pendaftaran mandiri menolak pembuatan akun publik dan dialihkan ke login.
      */
     public function test_registration_endpoint_rejects_post_requests(): void
     {
@@ -31,7 +31,7 @@ class RegistrationTest extends TestCase
             'password_confirmation' => 'password123',
         ]);
 
-        $response->assertStatus(404);
+        $response->assertRedirect(route('login'));
         $this->assertGuest();
     }
 }

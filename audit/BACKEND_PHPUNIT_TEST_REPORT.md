@@ -171,89 +171,112 @@ PHPUnit otomatis menggunakan SQLite in-memory berdasarkan `phpunit.xml`.
 Result akhir:
 
 ```text
-Tests:    0 skipped, 29 passed (58 assertions)
-Duration: 2.85s
+Tests:    0 skipped, 39 passed (109 assertions)
+Duration: 8.63s
 ```
 
 Ringkasan:
 
 | Status | Jumlah |
 |---|---:|
-| Passed | 29 |
+| Passed | 39 |
 | Failed | 0 |
 | Skipped | 0 |
-| Assertions | 58 |
+| Assertions | 109 |
 
 ## 9. Test yang Berhasil
 
-Test utama yang berhasil:
+Test suite yang berhasil (100% Passed):
 
-- `AuthenticationTest`
-  - Login screen
-  - Login dengan credential valid
-  - Login dengan password salah
-  - Inactive account ditolak
-- `BrowserSessionsTest`
-- `CustomerPortalAccessTest`
-- `DeleteAccountTest`
-- `PasswordConfirmationTest`
-- `PasswordResetTest`
-- `ProfileInformationTest`
-- `TwoFactorAuthenticationSettingsTest`
-- `UpdatePasswordTest`
-- `RegistrationTest`
-  - Public registration returns 404 (disabled by business policy)
-- `RolePermissionGateTest` (BARU)
+- `AuthenticationTest` (4 tests)
+  - Login screen can be rendered
+  - Users can authenticate using the login screen
+  - Users can not authenticate with invalid password
+  - Inactive users cannot authenticate
+- `BrowserSessionsTest` (1 test)
+  - Other browser sessions can be logged out
+- `CustomerPortalAccessTest` (1 test)
+  - Customer root redirects to dashboard
+- `DeleteAccountTest` (2 tests)
+  - User accounts can be deleted
+  - Correct password must be provided before account can be deleted
+- `ExampleTest` (Feature & Unit) (2 tests)
+  - Application returns successful response
+  - True is true
+- `FreeRadiusNetworkServiceTest` (4 tests - BARU)
+  - `add customer inserts into radcheck and radreply` (PPPoE Cleartext-Password, Calling-Station-Id, Mikrotik-Rate-Limit)
+  - `disable customer sets address list isolir in radreply` (Menyisipkan atribut isolir dan drop sesi router)
+  - `enable customer removes address list isolir from radreply` (Menghapus atribut isolir dan drop sesi router)
+  - `check status reads active session from radacct` (Membaca telemetri sesi aktif dan trafik dari radacct)
+- `LeadSurveyAndOdpValidationTest` (5 tests - BARU)
+  - `marketing can request survey creates survey ticket without customer or invoice` (Tiket survey mandiri)
+  - `convert fails when odp is full` (Validasi port habis menolak konversi dengan aman)
+  - `convert succeeds decrements odp available ports and creates records` (Pessimistic lock dan decrement port ODP)
+  - `technician survey updates odp recommendation on lead` (Sinkronisasi rekomendasi ODP teknisi ke prospek)
+  - `failed installation releases odp available ports` (Pengembalian kuota port ODP jika instalasi batal/gagal)
+- `PasswordConfirmationTest` (3 tests)
+  - Confirm password screen can be rendered
+  - Password can be confirmed
+  - Password is not confirmed with invalid password
+- `PasswordResetTest` (4 tests)
+  - Reset password link screen can be rendered
+  - Reset password link can be requested
+  - Reset password screen can be rendered
+  - Password can be reset with valid token
+- `ProfileInformationTest` (2 tests)
+  - Current profile information is available
+  - Profile information can be updated
+- `RegistrationTest` (2 tests)
+  - Registration screen is disabled and redirects to login (Sistem ISP tertutup / closed-registration)
+  - Registration endpoint rejects post requests and redirects to login
+- `RolePermissionGateTest` (2 tests)
   - Super admin bypasses all permission checks
-  - Role permissions evaluated dynamically via Laravel Gate
-  - Denies unauthorized abilities
-- `SyncPaidInvoiceHardwareJobTest` (BARU)
-  - Asynchronous background queue job dispatches from webhook/checkStatus
-  - Non-blocking hardware sync & notification processing
-- Unit test dasar
+  - Staff role permission is enforced via gate and model
+- `SyncPaidInvoiceHardwareJobTest` (1 test)
+  - Sync paid invoice hardware job is dispatched via webhook / checkStatus
+- `TwoFactorAuthenticationSettingsTest` (3 tests)
+  - Two factor authentication can be enabled
+  - Recovery codes can be regenerated
+  - Two factor authentication can be disabled
+- `UpdatePasswordTest` (3 tests)
+  - Password can be updated
+  - Current password must be correct
+  - New passwords must match
 
-## 10. Pembersihan Kode Mati & Skipped Tests
+## 10. Pembersihan Kode Mati, Skipped Tests & Build Asset
 
-Semua 8 skenario test skipped sebelumnya telah dibersihkan secara tuntas:
-
-- File test untuk fitur Jetstream yang dinonaktifkan (`ApiTokenPermissionsTest.php`, `CreateApiTokenTest.php`, `DeleteApiTokenTest.php`, `EmailVerificationTest.php`) telah dihapus dari repositori.
-- `RegistrationTest.php` diperbarui untuk secara aktif memverifikasi proteksi sistem: memvalidasi bahwa endpoint registrasi publik mengembalikan respons HTTP 404 (Not Found).
-- Hasil akhir: **0 skipped tests** dan seluruh rangkaian pengujian berjalan 100% passed.
+- File test untuk fitur Jetstream yang dinonaktifkan (`ApiTokenPermissionsTest.php`, `CreateApiTokenTest.php`, `DeleteApiTokenTest.php`, `EmailVerificationTest.php`) telah dihapus secara tuntas dari repositori.
+- `RegistrationTest.php` dimutakhirkan untuk memvalidasi kebijakan closed-registration NetManager: permintaan GET maupun POST ke `/register` dialihkan secara elegan (`assertRedirect(route('login'))`) tanpa registrasi publik.
+- Seluruh asset Vite (`public/build/manifest.json`) telah dikompilasi sehingga seluruh view otentikasi dapat dirender tanpa hambatan.
+- Hasil akhir: **0 skipped tests**, **0 failures**, dan seluruh rangkaian pengujian berjalan 100% passed.
 
 ## 11. Business Logic dan Security yang Terverifikasi
 
-### Authentication
-
+### Authentication & Authorization
 - Credential valid dapat login.
 - Password salah ditolak.
-- Akun inactive ditolak.
-- Pesan akun inactive dikembalikan ke halaman login.
+- Akun inactive ditolak secara instan.
+- Super admin bypass gate; role permission dievaluasi dinamis.
 
-### Customer portal
+### FreeRADIUS Network Provisioning
+- Kredensial PPPoE disimpan langsung pada tabel basis data FreeRADIUS (`radcheck`, `radreply`).
+- Isolir dan aktivasi memperbarui atribut RADIUS dan mendepak sesi aktif MikroTik via API port 8728.
+- Monitoring status dan penggunaan bandwidth membaca tabel akuntansi `radacct`.
 
-- Customer dapat diarahkan ke dashboard customer.
-- Akses customer diproses melalui middleware role.
-- Root customer redirect bekerja sesuai role.
+### ODP Port Capacity & Feasibility Survey
+- Kapasitas port ODP (`odp_available_ports`) divalidasi ketat dengan locking pesimistik (`lockForUpdate`) saat konversi prospek.
+- Alur survey kelayakan lokasi menerbitkan tiket teknisi tipe `survey` tanpa membuat entitas pelanggan atau tagihan prematur.
+- Pembatalan atau kegagalan instalasi otomatis mengembalikan alokasi port ODP (`releaseOdpPort`).
 
-### Account security
-
-- Penghapusan akun membutuhkan password yang benar.
-- Password confirmation bekerja.
-- Password reset flow berjalan.
-- Update password memvalidasi password lama dan kecocokan password baru.
-
-### Two-factor authentication
-
-- Secret dibuat saat 2FA diaktifkan.
-- Recovery codes dibuat sebanyak delapan kode.
-- Recovery codes dapat dibuat ulang.
-- 2FA dapat dinonaktifkan.
+### Customer portal & Billing
+- Customer dialihkan ke dashboard customer.
+- Tagihan perdana otomatis menggabungkan harga paket dan biaya instalasi prospek.
+- Asynchronous queue job (`SyncPaidInvoiceHardwareJob`) disalurkan saat pelunasan tagihan.
 
 ### Database isolation
-
-- Test memakai SQLite in-memory melalui PHPUnit.
-- `RefreshDatabase` menjalankan migrasi untuk test yang membutuhkan database.
-- Test tidak menggunakan database production.
+- Test memakai SQLite in-memory melalui PHPUnit (`phpunit.xml`).
+- `RefreshDatabase` menjalankan migrasi lengkap termasuk skema FreeRADIUS dan port ODP.
+- Test terisolasi penuh dan tidak menyentuh database production.
 
 ## 12. Perintah Reproduksi
 
@@ -261,6 +284,18 @@ Menjalankan semua backend test:
 
 ```bash
 php artisan test
+```
+
+Menjalankan test FreeRADIUS:
+
+```bash
+php artisan test tests/Feature/FreeRadiusNetworkServiceTest.php
+```
+
+Menjalankan test Survey & ODP:
+
+```bash
+php artisan test tests/Feature/LeadSurveyAndOdpValidationTest.php
 ```
 
 Menjalankan test tertentu:
@@ -278,7 +313,7 @@ php artisan test tests/Feature/TwoFactorAuthenticationSettingsTest.php
 Menjalankan satu test berdasarkan nama:
 
 ```bash
-php artisan test --filter="inactive users"
+php artisan test --filter="odp"
 ```
 
 Menampilkan test tanpa warna:
@@ -309,21 +344,22 @@ DB_CONNECTION=mysql
 
 Dengan pemisahan ini:
 
-- PHPUnit aman dan cepat.
-- E2E tetap dapat dijalankan terhadap local application server (`php artisan serve`).
+- PHPUnit aman, cepat, dan terisolasi.
 - Database development tidak terhapus oleh PHPUnit.
+- FreeRADIUS tables termigrasi mulus di SQLite in-memory maupun MySQL produksi.
 
 ## 14. Final Kesimpulan
 
-Backend test suite sudah diperbaiki, dimutakhirkan, dan berhasil dijalankan secara optimal.
+Backend test suite telah dimutakhirkan secara menyeluruh sesuai arsitektur terbaru NetManager.
 
 Result final:
 
 ```text
-PASS: 29
+PASS: 39
 FAIL: 0
 SKIP: 0
-ASSERTIONS: 58
+ASSERTIONS: 109
+DURATION: ~8.6s
 ```
 
-Error schema Jetstream sudah diselesaikan melalui migration resmi project. Kode mati Jetstream (API Token & Email Verification) serta 8 skipped tests telah dihapus. Fitur RBAC Gate dan Queue Job Webhook telah dilengkapi pengujian otomatis yang 100% passed.
+Fitur FreeRADIUS Database Architecture, Feasibility Survey Flow, ODP Port Capacity Pessimistic Locking, dan Closed Registration Policy terverifikasi 100% lulus uji.
