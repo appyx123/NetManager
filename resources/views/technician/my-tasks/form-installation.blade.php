@@ -1,7 +1,17 @@
 <x-app-layout>
-    <div class="min-h-screen bg-slate-950 py-10"><div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        <div class="mb-8"><p class="text-xs font-black uppercase tracking-[0.2em] text-indigo-400">Laporan Instalasi #{{ $ticket->id }}</p><h1 class="mt-2 text-3xl font-black text-white">Form Instalasi</h1></div>
-        <form method="POST" action="{{ route('technician.process.update', $ticket) }}" enctype="multipart/form-data" class="space-y-6 rounded-[2.5rem] border border-slate-800 bg-slate-900/80 p-8 shadow-2xl backdrop-blur-md">
+    <div class="min-h-screen bg-slate-950 py-10 selection:bg-indigo-500/30">
+        <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+            <div class="mb-8">
+                <a href="{{ route('technician.tasks.index') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-white transition-colors mb-4 group">
+                    <svg class="w-4 h-4 mr-1.5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Kembali ke Daftar Tugas
+                </a>
+                <div class="mt-2">
+                    <p class="text-xs font-black uppercase tracking-[0.2em] text-indigo-400">Laporan Instalasi #{{ $ticket->id }}</p>
+                    <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight mt-1">Form Instalasi</h1>
+                </div>
+            </div>
+            <form method="POST" action="{{ route('technician.process.update', $ticket) }}" enctype="multipart/form-data" class="space-y-6 rounded-2xl border border-slate-800 bg-slate-900/80 p-6 sm:p-8 shadow-xl backdrop-blur-md">
             @csrf @method('PUT')
             <div class="grid gap-6 sm:grid-cols-2">
                 <div><label class="label">Panjang Kabel (meter)</label><input type="number" min="0" step="0.1" name="cable_length" required value="{{ old('cable_length', $ticket->cable_length) }}" class="field"></div>
